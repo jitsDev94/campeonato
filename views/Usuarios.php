@@ -21,7 +21,7 @@ if (!isset($_SESSION['idUsuario'])) {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Usuarios</title>
+ 
   <?php
     require "../template/encabezado.php";
     ?>
@@ -242,7 +242,7 @@ if (!isset($_SESSION['idUsuario'])) {
 
      function ListarUsuarios(){             
 
-      $("#contenerdor_tabla").html('<div class="col-md-5 loading"> <center><i class="fa fa-spinner fa-pulse fa-5x" style="color:#3c8dbc"></i><br/>Acualizando Usuarios...</center></div>');
+      $("#contenerdor_tabla").html('<div class="col-md-5 loading"> <center><i class="fa fa-spinner fa-pulse fa-5x" style="color:#3c8dbc"></i><br/>Actualizando Usuarios...</center></div>');
 
 
         $.ajax({
@@ -251,14 +251,14 @@ if (!isset($_SESSION['idUsuario'])) {
             success: function(data) {
             
                 $("#contenerdor_tabla").html('');
-              //  $('#example1').DataTable().destroy();
+                $('#example1').DataTable().destroy();
                 $("#contenerdor_tabla").html(data);
                 $("#example1").DataTable({
                     "responsive": true, 
                     "lengthChange": false, 
                     "autoWidth": false,
                     "language": lenguaje_español
-                }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');            
+                });            
             }          
         })         
     }

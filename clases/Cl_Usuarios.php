@@ -62,8 +62,7 @@ if($tipo == "ListarUsuarios"){
                 if($row->estado == "Deshabilitado"){
                  $tabla .= "<button type='button' class='btn btn-success btn-sm checkbox-toggle' onclick='ConfirmarHabilitar(".$row->idUsuario.")'>Habilitar</button>";                 
                 }
-                else{
-                    $tabla .= "&nbsp <button type='button' title='Administrar Permisos' class='btn btn-primary btn-sm checkbox-toggle' onclick='editarPermisos(".$row->idUsuario.")'><i class='fas fa-list'></i></button>";
+                else{                   
                     $tabla .= "&nbsp <button type='button' class='btn btn-danger btn-sm checkbox-toggle' onclick='ConfirmarDeshabilitar(".$row->idUsuario.")'>Deshabilitar</button>";                     
                 }
               $tabla .= "</td>";

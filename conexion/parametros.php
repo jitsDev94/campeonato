@@ -4,6 +4,69 @@ include_once("conexionBd.php");
 class parametros
 {
 
+    public function ListarRoles(){
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return false;
+        }
+
+                                 
+        $consulta = "SELECT * FROM rol";
+        if(!$db->Query($consulta)) {
+            return 0;
+        }      
+        return $db;
+    }
+
+    public function EstadoRol($id, $estado)
+	{       
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return 'error';
+        }           
+
+        $consulta = "UPDATE rol SET estado = '$estado' where id=$id";
+            
+        if (!$db->Query($consulta)) {
+            $db->Kill();
+            return 'error';
+        }
+       
+        return 'ok';
+      
+    }
+
+
+    public function RegistrarRol($nombre)
+	{       
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return 'error';
+        }
+      
+        $consulta= "SELECT * from rol where nombreRol = '$nombre' ";
+        $db->Query($consulta);
+        if($db->RowCount() > 0){
+            return 'existe';
+        }
+
+        $consulta = "INSERT INTO rol(nombreRol,estado) values('$nombre','Habilitado')";
+            
+        if (!$db->Query($consulta)) {
+            $db->Kill();
+            return 'Ha ocurrido un error al registrar el rol.';
+        }
+       
+        return 'ok';
+      
+    }
+
     public function RegistrarUsuario($idRol,$idEquipo,$usuario ,$contra)
 	{       
 
@@ -12,6 +75,13 @@ class parametros
             $db->Kill();
             return 'error';
         }
+
+        $consulta= "SELECT * from Usuario where usuario = '$usuario' ";
+        $db->Query($consulta);
+        if($db->RowCount() > 0){
+            return 'Ya existe un usuario con ese nombre, intente con otro nombre';
+        }
+
 
         $equipoNombre = '';
         $equipoValor = '';
@@ -31,7 +101,6 @@ class parametros
         return 'ok';
       
     }
-
 
     public function ListarUsuarios(){
 
