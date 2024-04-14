@@ -39,26 +39,11 @@ if($tipo == "RegistrarUsuario"){
   
 }
 
-
-
 if($tipo == "ListarUsuarios"){
 
     $resp = $parametro->ListarUsuarios();
  
-       $tabla = "";
-    //    $tabla .= '<table id="example1" class="table table-bordered table-striped"  method="POST">
-    //                <thead>
-    //                     <tr>
-    //                         <th>#</th>
-    //                         <th>Rol</th>
-    //                         <th>Equipo</th>
-    //                         <th>Usuario</th> 
-    //                         <th>Estado</th>                 
-    //                         <th>Acción</th>          
-    //                     </tr>
-    //                </thead>
-    //                <tbody > ';
-    
+       $tabla = "";   
        $cont = 0;
        if ($resp->RowCount() > 0) {
         $resp->MoveFirst();
@@ -84,8 +69,7 @@ if($tipo == "ListarUsuarios"){
               $tabla .= "</td>";
                $tabla .= "</tr>";
            }
-        //    $tabla .= "</tbody>               
-        //        </table>";
+     
        echo  $tabla;   
        }
        else{
