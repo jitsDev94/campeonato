@@ -136,10 +136,47 @@ if (!isset($_SESSION['idUsuario'])) {
     </div>
       <!-- /.modal -->
 
+
+        <!-- Modal nuevo/editar jugador --> 
+    <div class="modal fade" id="modalListarPermisos">
+        <div class="modal-dialog modal-md">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title">Permisos</h4>
+              <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                  <table id="example2" class="table table-bordered table-striped" sytle="width: 100%;" method="POST">
+                    <thead>
+                          <tr>
+                              <th sytle="width: 20%;">Seleccionar</th>
+                              <th sytle="width: 80%;">Nombre Permiso</th>                                       
+                          </tr>
+                    </thead>
+                    <tbody id="contenerdor_tabla2" > 
+                          
+                    </tbody>
+                  </table>
+                </div>
+            </div>
+            <div class="modal-footer col-md-12">               
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cerrar</button>            
+            </div>
+          </div>
+          <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+      <!-- /.modal -->
+
   <script>
   
     function modalNuevoRol(){
        
+     
         $("#modalNuevoRol").modal("show");
     }
 
@@ -201,7 +238,57 @@ if (!isset($_SESSION['idUsuario'])) {
          })         
     }
 
+    function modalListarPermisos(idRol){
+      ListarPermisos(idRol);
+       $("#modalListarPermisos").modal("show");
+    }
 
+    function ListarPermisos(idRol){             
+
+      $("#contenerdor_tabla2").html('<div class="col-md-5 loading"> <center><i class="fa fa-spinner fa-pulse fa-5x" style="color:#3c8dbc"></i><br/>Obteniendo Permisos...</center></div>');
+
+      $.ajax({
+          url: '../clases/Cl_Permisos.php?op=ListarPermisos',
+          type: 'POST', 
+          data: {
+              idRol: idRol
+            },
+          success: function(data) {
+          
+              $("#contenerdor_tabla2").html('');
+              $('#example2').DataTable().destroy();
+              $("#contenerdor_tabla2").html(data);
+              $("#example2").DataTable({
+                  "responsive": true, 
+                  "lengthChange": false, 
+                  "autoWidth": false,
+                  "language": lenguaje_español
+              });            
+          }          
+      })         
+    }
+
+    function guardarPermisoRol(idPermiso,idRol){
+
+      $.ajax({
+          url: '../clases/Cl_Permisos.php?op=guardarPermisoRol',
+          type: 'POST',
+          data: {
+            idPermiso: idPermiso,
+            idRol: idRol        
+          }, 
+          success: function(vs) {
+              if (vs == 'error') {
+                $("#chekPermisos"+idPermiso).prop("checked",false);
+                Swal.fire("Error..!", "ha ocurrido un error al asignar el permiso", "error"); 
+              }else{
+                
+                //Swal.fire('Exito..!','Usuario habilitado correctamente.',  'success');                    
+                                  
+              }
+          }
+      })         
+    }
      function ListarRoles(){             
 
       $("#contenerdor_tabla").html('<div class="col-md-5 loading"> <center><i class="fa fa-spinner fa-pulse fa-5x" style="color:#3c8dbc"></i><br/>Actualizando Roles...</center></div>');
@@ -210,6 +297,7 @@ if (!isset($_SESSION['idUsuario'])) {
         $.ajax({
             url: '../clases/Cl_Permisos.php?op=ListarRoles',
             type: 'POST', 
+           
             success: function(data) {
             
                 $("#contenerdor_tabla").html('');
@@ -241,10 +329,7 @@ if (!isset($_SESSION['idUsuario'])) {
             nombre: nombre
              }, 
              success: function(vs) { 
-               
               
-                // Swal.fire('Exito!', 'Usuario registrado correctamente',  'success');
-                // ListarRoles();
                  if (vs == 'existe') {   
                    
                     Swal.fire('Error..!', 'Ya existe un rol con ese nombre, intente con otro nombre',  'error');
@@ -268,15 +353,12 @@ if (!isset($_SESSION['idUsuario'])) {
      <script>
 
   $(document).ready(function() {
-    console.log(window.jQuery);
+   
     ListarRoles();
     
   });
 
-  $(function () {   
 
-   
-  })
 
   var lenguaje_español = {
       "sProcessing":     "Procesando...",

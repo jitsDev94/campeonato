@@ -4,6 +4,34 @@ include_once("conexionBd.php");
 class parametros
 {
 
+    public function PermisoAsignado($idPermiso,$idRol)
+	{       
+
+        $consulta = "SELECT * FROM `rolpermiso` where idPermiso = $idPermiso and idRol = $idRol and baja = 0";
+
+        $db = new MySQL();
+		if ($db->Error()) $db->Kill();
+		if (!$db->Query($consulta)) $db->Kill();
+        return $db->RowCount();
+      
+    }
+
+    public function ListarPermisos(){
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return false;
+        }
+
+                                 
+        $consulta = "SELECT * FROM permisos";
+        if(!$db->Query($consulta)) {
+            return 0;
+        }      
+        return $db;
+    }
+
     public function ListarRoles(){
 
         $db = new MySQL();
@@ -34,6 +62,35 @@ class parametros
         if (!$db->Query($consulta)) {
             $db->Kill();
             return 'error';
+        }
+       
+        return 'ok';
+      
+    }
+
+    public function guardarPermisoRol($idPermiso,$idRol)
+	{       
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return 'error';
+        }
+      
+        $consulta = "SELECT * FROM `rolpermiso` where idPermiso = $idPermiso and idRol = $idRol";
+        $db->Query($consulta);
+        if($db->RowCount() > 0){
+            $row=$db->Row();
+
+            $consulta = "UPDATE `rolpermiso` SET baja = 0 where idRolPermiso = $row->idRolPermiso";
+            $db->Query($consulta);
+        }
+
+        $consulta = "INSERT INTO rolpermiso(idPermiso,idRol,fechaAsignacion,baja) values('$idPermiso','$idRol',sysdate(),0)";
+            
+        if (!$db->Query($consulta)) {
+            $db->Kill();
+            return 'Ha ocurrido un error al registrar el rol.';
         }
        
         return 'ok';
