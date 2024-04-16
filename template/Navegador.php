@@ -36,40 +36,33 @@
             <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" >
                 <?php echo $usuario; ?> <i class="fas fa-user fa-fw"></i>
             </a>
-            <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right" aria-labelledby="navbarDropdown">
+            <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right" style=" width: 320px;" aria-labelledby="navbarDropdown">
                 <div class="card-group">
-                    <div class="card">
+                    <div class="card  w-75">
                         <img src="../img/desconocido.jpg" class="card-img-top" alt="...">
-                        <div class="card-body text-center card-md">
+                        <div class="card-body text-center card-lg">
                             <div class="row">
                                 <div class="col-12">
-                                    <b><h5 class="card-text"><?php if($idRol == 1) {echo 'Miembro Directiva';} else{ echo 'Delegado';}?></h5></b>
+                                    <b><h5 class="card-text"><?php if($idRol == 1 || $idRol == 2) {echo 'Miembro Directiva';} else{ echo 'Delegado';}?></h5></b>
                                 </div>  
                             </div>          
                             <div class="row">
                                 <div class="col-12">
-                                    <p class="card-text"><?php if($idRol == 1){ echo $_SESSION['nombreRol'];} else{echo $nombreEquipoDelegado;} ?></p>                                                          
+                                    <p class="card-text"><?php if($idRol == 1 || $idRol == 2){ echo $_SESSION['nombreRol'];} else{echo $nombreEquipoDelegado;} ?></p>                                                          
                                 </div>
                             </div>
                         </div>
                         <div class="dropdown-divider"></div>
                         <div class="card-footer">
-                            <div class="row">
+                            <div class="row pt-3 pb-3">
                                 <div class="col-12">                      
-                                    <p><button type="button" class="btn btn-default btn-sm" onclick="ModalCambiarContrasena()">Cambiar Contraseña</button> <a href="logout.php" type="button" class="btn btn-default btn-sm">Cerrar Sesión</a></p>
+                                    <p><button type="button" class="btn btn-success btn-sm" onclick="ModalCambiarContrasena()">Cambiar Contraseña</button> &nbsp; <a href="logout.php" type="button" class="btn btn-danger btn-sm">Cerrar Sesión <i class="fas fa-sign-out-alt"></i></a></p>
                                 </div>
                             </div>
                         </div>                    
                     </div>
                 </div>
-                <!-- <div class="dropdown-divider"></div>
-                <a href="datosUsuario.php" class="dropdown-item">
-                    <i class="fas fa-tools"></i> Configuracion
-                </a>
-                <div class="dropdown-divider"></div>
-                <a href="logout.php" class="dropdown-item">
-                    <i class="fas fa-sign-out-alt"></i> Salir
-                </a> -->
+             
             </div>
         </li>
     </ul>
@@ -82,7 +75,7 @@
       <div class="modal-content">
         <div class="modal-header">
            
-          <h4 class="modal-title"> Modificar Contraseña</h4>
+          <h5 class="modal-title"> Modificar Contraseña</h5>
           <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>

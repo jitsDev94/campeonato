@@ -3,11 +3,16 @@
 
    $parametro = new parametros();
 
+   $jugadores =  $parametro->TotalJugadores($idEquipoDelegado,$idRol);    
+   $Equipos =  $parametro->totalEquipos();
+   $inscritos = $parametro->totalInscritos(); 
+   $totalMultas = $parametro->TotalMultas($idEquipoDelegado,$idRol);
+   $Observaciones = $parametro->TotalObservaciones($idEquipoDelegado,$idRol);
    ?>
    <!-- Main Sidebar Container -->
         <aside class="main-sidebar sidebar-dark-primary elevation-4">
             <!-- Brand Logo -->
-            <a href="../views/index3.html" class="brand-link">
+            <a href="../views/index.php" class="brand-link">
                 <img src="../img/image.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
                 <span class="brand-text font-weight-light">Campeonato</span>
             </a>
@@ -20,7 +25,7 @@
                         <img src="../img/logoEquipo.png" class="img-circle elevation-2" alt="User Image">
                     </div>
                     <div class="info">
-                        <a href="#" class="d-block"><?php if($nombreEquipoDelegado == "" || $nombreEquipoDelegado == null){ echo 'Miembro Directiva';}else{ echo $nombreEquipoDelegado; }?></a>
+                        <a href="../views/index.php" class="d-block"><?php if($nombreEquipoDelegado == "" || $nombreEquipoDelegado == null){ echo 'Miembro Directiva';}else{ echo $nombreEquipoDelegado; }?></a>
                     </div>
                 </div>
 
@@ -47,20 +52,17 @@
                                 </p>
                             </a>
                         </li>
-                     
+
                         <li class="nav-item">
                             <a href="../views/jugadores.php" class="nav-link">
-                              <i class="nav-icon fas fa-running"></i>
-                                    <?php  
-                                        $jugadores =  $parametro->TotalJugadores($idEquipoDelegado,$idRol);                                           
-                                    ?>
+                              <i class="nav-icon fas fa-running"></i>                                  
                                 <p>
                                     Jugadores        
                                     <span class="badge badge-success right"><?php echo $jugadores;?></span>                       
                                 </p>
                             </a>
                         </li>
-                        <?php if($idRol == 1){ ?>
+                        <?php if($parametro->verificarPermisos($_SESSION['idUsuario'],12) > 0){ ?>
                         <li class="nav-item">
                             <a href="../views/transferencia.php" class="nav-link">
                               <i class="nav-icon fas fa-random"></i>
@@ -70,16 +72,10 @@
                             </a>
                         </li>
                             <?php }
-                            if($idRol == 1){ ?>
+                            if($parametro->verificarPermisos($_SESSION['idUsuario'],7) > 0){ ?>
                         <li class="nav-item">
                             <a href="../views/equipos.php" class="nav-link">
-                              <i class="nav-icon fas fa-users"></i>
-                              <?php                                    
-                                        $consulta = "SELECT count(id) as totalEquipos from Equipo where estado = 'Habilitado'";
-                                        $ejecutar = mysqli_query($conectar, $consulta) or die(mysqli_error($conectar));
-                                        $row = $ejecutar->fetch_assoc();
-                                        $Equipos = $row['totalEquipos'];
-                                    ?>
+                              <i class="nav-icon fas fa-users"></i>                                  
                                 <p>
                                     Equipos
                                     <span class="badge badge-success right"><?php echo $Equipos;?></span>
@@ -87,18 +83,10 @@
                             </a>
                         </li>
                             <?php }
-                            if($_SESSION['idRol'] == 1){ ?>
+                            if($parametro->verificarPermisos($_SESSION['idUsuario'],8) > 0){ ?>
                         <li class="nav-item">
                             <a href="../views/inscripcion.php" class="nav-link">
-                              <i class="nav-icon fas fa-file-signature"></i>
-                                    <?php                                    
-                                        $consulta = "SELECT count(i.id) as totalInscritos FROM Inscripcion as i
-                                        LEFT JOIN Campeonato as c on c.id = i.idCampeonato
-                                        where c.estado = 'En Curso'";
-                                        $ejecutar = mysqli_query($conectar, $consulta) or die(mysqli_error($conectar));
-                                        $row = $ejecutar->fetch_assoc();
-                                        $inscritos = $row['totalInscritos'];
-                                    ?>
+                              <i class="nav-icon fas fa-file-signature"></i>                              
                                 <p>
                                     Inscripción    
                                     <span class="badge badge-success right"><?php echo $inscritos;?></span>                                
@@ -106,7 +94,7 @@
                             </a>
                         </li>
                         <?php }
-                            if($_SESSION['idRol'] == 1){ ?>
+                            if($parametro->verificarPermisos($_SESSION['idUsuario'],10) > 0){ ?>
                         <li class="nav-item">
                             <a href="../views/campeonato.php" class="nav-link">
                               <i class="nav-icon fas fa-trophy"></i>
@@ -115,7 +103,8 @@
                                 </p>
                             </a>
                         </li>
-
+                        <?php }
+                            if($parametro->verificarPermisos($_SESSION['idUsuario'],9) > 0){ ?>
                         <li class="nav-item">
                             <a href="../views/Gastos.php" class="nav-link">
                               <i class="nav-icon fas fa-cash-register"></i>
@@ -128,22 +117,7 @@
 
                         <li class="nav-item">
                             <a href="../views/Multas.php" class="nav-link">
-                              <i class="nav-icon fas fa-list"></i>
-                              <?php  
-
-                                $condicion = "";
-                                if($idRol == 3){
-                                    $condicion = "and m.idEquipo = $idEquipoDelegado";
-                                }  
-
-                            //    $consulta = "SELECT count(m.motivoMulta) as totalMultas FROM Multa as m
-                            //    LEFT JOIN Campeonato as c on c.id = m.IdCampeonato
-                            //    LEFT JOIN Equipo as e on e.id = m.idEquipo
-                            //    where c.estado = 'En Curso' and m.estado ='Pendiente' $condicion";
-                            //    $ejecutar = mysqli_query($conectar, $consulta) or die(mysqli_error($conectar));
-                            //    $row = $ejecutar->fetch_assoc();
-                            //   $totalMultas = $row['totalMultas'];
-                            $totalMultas = 0;?>
+                              <i class="nav-icon fas fa-list"></i>                              
                                 <p>
                                     Multas   
                                     <span class="badge badge-success right"><?php echo $totalMultas;?></span>                             
@@ -161,13 +135,14 @@
                                 </p>
                             </a>
                             <ul class="nav nav-treeview">
-                            <?php if($idRol == 1){ ?>
+                            <?php if($parametro->verificarPermisos($_SESSION['idUsuario'],14) > 0){ ?>
                                 <li class="nav-item">
                                     <a href="../views/programacionPartidos.php" class="nav-link" style="padding-left:35px;">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p> Programar Partidos</p>
                                     </a>
                                 </li>
+                                <?php } if($parametro->verificarPermisos($_SESSION['idUsuario'],1) > 0){ ?>
                                 <li class="nav-item">
                                     <a href="../views/partido.php" class="nav-link" style="padding-left:35px;">
                                         <i class="far fa-circle nav-icon"></i>
@@ -184,19 +159,7 @@
                                 
                                 <li class="nav-item">
                                     <a href="../views/observaciones.php" class="nav-link" style="padding-left:35px;">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <?php  
-                                        $condicion = "";
-                                        if($idRol == 3){
-                                            $condicion = "and p.equipoObservado = $idEquipoDelegado";
-                                        }                                  
-                                        $consulta = "SELECT COUNT(p.id) as tarjetas FROM Partido as p 
-                                        LEFT join Campeonato as c on c.id = p.idCampeonato
-                                        where p.estadoObservacion = 'Pendiente' and c.estado = 'En Curso' $condicion";
-                                        $ejecutar = mysqli_query($conectar, $consulta) or die(mysqli_error($conectar));
-                                        $row = $ejecutar->fetch_assoc();
-                                        $Observaciones = $row['tarjetas'];
-                                        ?>
+                                        <i class="far fa-circle nav-icon"></i>                                      
                                         <p>   Observaciones
                                         <span class="badge badge-danger right"><?php echo $Observaciones;?></span>
                                         </p>
@@ -206,10 +169,10 @@
                                     <a href="../views/tarjetas.php" class="nav-link" style="padding-left:35px;">
                                         <i class="far fa-circle nav-icon"></i>
                                         <?php   
-                                        $condicion = "";
-                                        if($idRol == 3){
-                                            $condicion = " and e.id = $idEquipoDelegado";
-                                        } 
+                                        // $condicion = "";
+                                        // if($idRol == 3){
+                                        //     $condicion = " and e.id = $idEquipoDelegado";
+                                        // } 
 
                                         // $consulta = "SELECT COUNT(hp.id) as tarjetas FROM HechosPartido as hp
                                         // LEFT JOIN Partido as p on p.id = hp.idPartido
@@ -226,20 +189,21 @@
                                         </p>
                                     </a>
                                 </li>
-                                <?php if($idRol == 1){ ?>
+                                <?php if($parametro->verificarPermisos($_SESSION['idUsuario'],4) > 0){ ?>
                                 <li class="nav-item">
                                     <a href="../views/arbitraje.php" class="nav-link" style="padding-left:35px;">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>   Arbitraje</p>
                                     </a>
                                 </li>   
+                                <?php } if($parametro->verificarPermisos($_SESSION['idUsuario'],15) > 0){?>  
                                 <li class="nav-item">
                                     <a href="../views/suspeciones.php" class="nav-link" style="padding-left:35px;">
                                         <i class="far fa-circle nav-icon"></i>
-                                        <p>   Suspenciones</p>
+                                        <p>Suspenciones</p>
                                     </a>
                                 </li>
-                                <?php } ?>                         
+                                <?php } ?>                  
                             </ul>
                         </li>
 
@@ -267,18 +231,20 @@
                                         <p>Estadistica Deportivas</p>
                                     </a>
                                 </li>
-                                <?php if($idRol == 1){ ?>
+                                <?php //if($idRol == 1){ ?>
                                 <li class="nav-item">
                                     <a href="../views/Finanzas.php" class="nav-link" style="padding-left:35px;">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>Datos Financieros</p>
                                     </a>
                                 </li>
-                                <?php } ?>
+                                <?php //} ?>
                             </ul>
                         </li>
-                        <?php if($idRol == 1){ ?>
+                        <?php if($idRol != 3){ ?>
                         <li class="nav-header">Configuraciones</li>
+                        <?php } ?>
+                        <?php  if($parametro->verificarPermisos($_SESSION['idUsuario'],16) > 0){?>  
                         <li class="nav-item">
                             <a href="../views/Usuarios.php" class="nav-link">
                               <i class="nav-icon fas fa-user"></i>
@@ -287,6 +253,16 @@
                                 </p>
                             </a>
                         </li>
+                        <?php } if($parametro->verificarPermisos($_SESSION['idUsuario'],17) > 0){?>  
+                        <li class="nav-item">
+                            <a href="../views/permisos.php" class="nav-link">
+                              <i class="nav-icon fas fa-user-check"></i>
+                                <p>
+                                   Administrar Roles
+                                </p>
+                            </a>
+                        </li>
+                        <?php } if($parametro->verificarPermisos($_SESSION['idUsuario'],3) > 0){?>  
                         <li class="nav-item">
                             <a href="../views/configurar_Cobros.php" class="nav-link">
                               <i class="nav-icon fas fa-cogs"></i>
@@ -295,6 +271,7 @@
                                 </p>
                             </a>
                         </li>
+                        <?php } if($parametro->verificarPermisos($_SESSION['idUsuario'],13) > 0){?>  
                         <li class="nav-item">
                             <a href="../views/Historial_Anuncios.php" class="nav-link">
                               <i class="nav-icon fas fa-history"></i>
@@ -305,381 +282,7 @@
                         </li>
                         <?php }?>
                         <br><br><br>
-                         <!--<li class="nav-header">EXTRAS</li>
-                         <li class="nav-item">
-                            <a href="../views/pages/calendar.html" class="nav-link">
-                                <i class="nav-icon far fa-calendar-alt"></i>
-                                <p>
-                                    Calendar
-                                    <span class="badge badge-info right">2</span>
-                                </p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="../views/pages/gallery.html" class="nav-link">
-                                <i class="nav-icon far fa-image"></i>
-                                <p>
-                                    Gallery
-                                </p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="../views/pages/kanban.html" class="nav-link">
-                                <i class="nav-icon fas fa-columns"></i>
-                                <p>
-                                    Kanban Board
-                                </p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="../views/#" class="nav-link">
-                                <i class="nav-icon far fa-envelope"></i>
-                                <p>
-                                    Mailbox
-                                    <i class="fas fa-angle-left right"></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview">
-                                <li class="nav-item">
-                                    <a href="../views/pages/mailbox/mailbox.html" class="nav-link">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Inbox</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="../views/pages/mailbox/compose.html" class="nav-link">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Compose</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="../views/pages/mailbox/read-mail.html" class="nav-link">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Read</p>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-                        <li class="nav-item">
-                            <a href="../views/#" class="nav-link">
-                                <i class="nav-icon fas fa-book"></i>
-                                <p>
-                                    Pages
-                                    <i class="fas fa-angle-left right"></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview">
-                                <li class="nav-item">
-                                    <a href="../views/pages/examples/invoice.html" class="nav-link">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Invoice</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="../views/pages/examples/profile.html" class="nav-link">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Profile</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="../views/pages/examples/e-commerce.html" class="nav-link">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>E-commerce</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="../views/pages/examples/projects.html" class="nav-link">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Projects</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="../views/pages/examples/project-add.html" class="nav-link">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Project Add</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="../views/pages/examples/project-edit.html" class="nav-link">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Project Edit</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="../views/pages/examples/project-detail.html" class="nav-link">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Project Detail</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="../views/pages/examples/contacts.html" class="nav-link">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Contacts</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="../views/pages/examples/faq.html" class="nav-link">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>FAQ</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="../views/pages/examples/contact-us.html" class="nav-link">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Contact us</p>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-                        <li class="nav-item">
-                            <a href="../views/#" class="nav-link">
-                                <i class="nav-icon far fa-plus-square"></i>
-                                <p>
-                                    Extras
-                                    <i class="fas fa-angle-left right"></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview">
-                                <li class="nav-item">
-                                    <a href="../views/#" class="nav-link">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>
-                                            Login & Register v1
-                                            <i class="fas fa-angle-left right"></i>
-                                        </p>
-                                    </a>
-                                    <ul class="nav nav-treeview">
-                                        <li class="nav-item">
-                                            <a href="../views/pages/examples/login.html" class="nav-link">
-                                                <i class="far fa-circle nav-icon"></i>
-                                                <p>Login v1</p>
-                                            </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="../views/pages/examples/register.html" class="nav-link">
-                                                <i class="far fa-circle nav-icon"></i>
-                                                <p>Register v1</p>
-                                            </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="../views/pages/examples/forgot-password.html" class="nav-link">
-                                                <i class="far fa-circle nav-icon"></i>
-                                                <p>Forgot Password v1</p>
-                                            </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="../views/pages/examples/recover-password.html" class="nav-link">
-                                                <i class="far fa-circle nav-icon"></i>
-                                                <p>Recover Password v1</p>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="../views/#" class="nav-link">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>
-                                            Login & Register v2
-                                            <i class="fas fa-angle-left right"></i>
-                                        </p>
-                                    </a>
-                                    <ul class="nav nav-treeview">
-                                        <li class="nav-item">
-                                            <a href="../views/pages/examples/login-v2.html" class="nav-link">
-                                                <i class="far fa-circle nav-icon"></i>
-                                                <p>Login v2</p>
-                                            </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="../views/pages/examples/register-v2.html" class="nav-link">
-                                                <i class="far fa-circle nav-icon"></i>
-                                                <p>Register v2</p>
-                                            </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="../views/pages/examples/forgot-password-v2.html" class="nav-link">
-                                                <i class="far fa-circle nav-icon"></i>
-                                                <p>Forgot Password v2</p>
-                                            </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="../views/pages/examples/recover-password-v2.html" class="nav-link">
-                                                <i class="far fa-circle nav-icon"></i>
-                                                <p>Recover Password v2</p>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="../views/pages/examples/lockscreen.html" class="nav-link">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Lockscreen</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="../views/pages/examples/legacy-user-menu.html" class="nav-link">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Legacy User Menu</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="../views/pages/examples/language-menu.html" class="nav-link">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Language Menu</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="../views/pages/examples/404.html" class="nav-link">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Error 404</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="../views/pages/examples/500.html" class="nav-link">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Error 500</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="../views/pages/examples/pace.html" class="nav-link">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Pace</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="../views/pages/examples/blank.html" class="nav-link">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Blank Page</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="../views/starter.html" class="nav-link">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Starter Page</p>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-                        <li class="nav-item">
-                            <a href="../views/#" class="nav-link">
-                                <i class="nav-icon fas fa-search"></i>
-                                <p>
-                                    Search
-                                    <i class="fas fa-angle-left right"></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview">
-                                <li class="nav-item">
-                                    <a href="../views/pages/search/simple.html" class="nav-link">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Simple Search</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="../views/pages/search/enhanced.html" class="nav-link">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Enhanced</p>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-                        <li class="nav-header">MISCELLANEOUS</li>
-                        <li class="nav-item">
-                            <a href="../views/iframe.html" class="nav-link">
-                                <i class="nav-icon fas fa-ellipsis-h"></i>
-                                <p>Tabbed IFrame Plugin</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="../views/https://adminlte.io/docs/3.1/" class="nav-link">
-                                <i class="nav-icon fas fa-file"></i>
-                                <p>Documentation</p>
-                            </a>
-                        </li>
-                        <li class="nav-header">MULTI LEVEL EXAMPLE</li>
-                        <li class="nav-item">
-                            <a href="../views/#" class="nav-link">
-                                <i class="fas fa-circle nav-icon"></i>
-                                <p>Level 1</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="../views/#" class="nav-link">
-                                <i class="nav-icon fas fa-circle"></i>
-                                <p>
-                                    Level 1
-                                    <i class="right fas fa-angle-left"></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview">
-                                <li class="nav-item">
-                                    <a href="../views/#" class="nav-link">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Level 2</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="../views/#" class="nav-link">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>
-                                            Level 2
-                                            <i class="right fas fa-angle-left"></i>
-                                        </p>
-                                    </a>
-                                    <ul class="nav nav-treeview">
-                                        <li class="nav-item">
-                                            <a href="../views/#" class="nav-link">
-                                                <i class="far fa-dot-circle nav-icon"></i>
-                                                <p>Level 3</p>
-                                            </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="../views/#" class="nav-link">
-                                                <i class="far fa-dot-circle nav-icon"></i>
-                                                <p>Level 3</p>
-                                            </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="../views/#" class="nav-link">
-                                                <i class="far fa-dot-circle nav-icon"></i>
-                                                <p>Level 3</p>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="../views/#" class="nav-link">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Level 2</p>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-                        <li class="nav-item">
-                            <a href="../views/#" class="nav-link">
-                                <i class="fas fa-circle nav-icon"></i>
-                                <p>Level 1</p>
-                            </a>
-                        </li>
-                        <li class="nav-header">LABELS</li>
-                        <li class="nav-item">
-                            <a href="../views/#" class="nav-link">
-                                <i class="nav-icon far fa-circle text-danger"></i>
-                                <p class="text">Important</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="../views/#" class="nav-link">
-                                <i class="nav-icon far fa-circle text-warning"></i>
-                                <p>Warning</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="../views/#" class="nav-link">
-                                <i class="nav-icon far fa-circle text-info"></i>
-                                <p>Informational</p>
-                            </a>
-                        </li> -->
+                    
                     </ul>
                 </nav>
                 <!-- /.sidebar-menu -->

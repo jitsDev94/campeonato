@@ -23,7 +23,12 @@ if (!isset($_SESSION['idUsuario'])) {
   <?php
     require "../template/encabezado.php";
     ?>
-
+<style>
+  .card {
+    border-top-color: cornflowerblue;
+    border-top-width: 3px;
+  }
+</style>
 </head>
 
 <body class="hold-transition sidebar-mini layout-fixed sidebar-closed sidebar-collapse">

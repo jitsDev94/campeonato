@@ -4,6 +4,30 @@ include_once("conexionBd.php");
 class parametros
 {
 
+    public function verificarPermisos($idUsuario, $idpermiso)
+	{       
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return 'error';
+        }           
+
+        $consulta = "SELECT u.id as idUsuario,u.usuario,rp.idRol,r.nombreRol, rp.idPermiso,p.nombrePermiso FROM rolpermiso rp 
+        LEFT join rol r on r.id = rp.idRol
+        LEFT join usuario u on u.idRol = r.id
+        LEFT join permisos p on p.idPermiso = rp.idPermiso
+        where u.id = $idUsuario and rp.idPermiso = $idpermiso";
+
+        if (!$db->Query($consulta)) {
+            $db->Kill();
+            return 'error';
+        }
+       
+        return $db->RowCount();
+      
+    }
+
     public function PermisoAsignado($idPermiso,$idRol)
 	{       
 
@@ -82,8 +106,10 @@ class parametros
         if($db->RowCount() > 0){
             $row=$db->Row();
 
-            $consulta = "UPDATE `rolpermiso` SET baja = 0 where idRolPermiso = $row->idRolPermiso";
+            $consulta = "DELETE FROM `rolpermiso` where idRolPermiso = $row->idRolPermiso";
             $db->Query($consulta);
+
+            return 'ok';
         }
 
         $consulta = "INSERT INTO rolpermiso(idPermiso,idRol,fechaAsignacion,baja) values('$idPermiso','$idRol',sysdate(),0)";
@@ -177,6 +203,97 @@ class parametros
         return $db;
     }
 
+    public function totalInscritos(){
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return false;
+        }
+
+                                      
+        $consulta = "SELECT count(i.id) as totalInscritos FROM Inscripcion as i
+        LEFT JOIN Campeonato as c on c.id = i.idCampeonato
+        where c.estado = 'En Curso'";
+        if(!$db->Query($consulta)) {
+            return 0;
+        }
+        $db->MoveFirst();
+        $row = $db->Row();		
+
+        return $row->totalInscritos;
+    }
+     
+    public function totalEquipos(){
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return false;
+        }
+
+                                      
+        $consulta = "SELECT count(id) as totalEquipos from Equipo where estado = 'Habilitado'";
+        if(!$db->Query($consulta)) {
+            return 0;
+        }
+        $db->MoveFirst();
+        $row = $db->Row();		
+
+        return $row->totalEquipos;
+    }
+
+    public function TotalObservaciones($idEquipoDelegado,$idRol){
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return false;
+        }
+
+        $condicion = "";
+        if($idRol == 3){
+            $condicion = "and p.idEquipoObservado = $idEquipoDelegado";
+        }                                 
+        $consulta = "SELECT COUNT(p.id) as tarjetas 
+        FROM Partido as p 
+        LEFT join Campeonato as c on c.id = p.idCampeonato
+        where p.estadoObservacion = 'Pendiente' and c.estado = 'En Curso' $condicion";
+        if(!$db->Query($consulta)) {
+            return 0;
+        }
+        $db->MoveFirst();
+        $row = $db->Row();		
+
+        return $row->tarjetas;
+    }
+
+
+    public function TotalMultas($idEquipoDelegado,$idRol){
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return false;
+        }
+
+        $condicion = "";
+        if($idRol == 3){
+            $condicion = "and i.idEquipo = $idEquipoDelegado";
+        }                                 
+        $consulta = "SELECT count(m.motivoMulta) as totalMultas FROM Multa as m
+        LEFT join inscripcion i on i.inscripcion = m.idEquipo
+        LEFT JOIN Equipo as e on e.id = i.idEquipo
+        LEFT JOIN Campeonato as c on c.id = i.idCampeonato
+        where c.estado = 'En Curso' and m.estado ='Pendiente' $condicion";
+        if(!$db->Query($consulta)) {
+            return 0;
+        }
+        $db->MoveFirst();
+        $row = $db->Row();		
+
+        return $row->totalMultas;
+    }
 
     public function TotalJugadores($idEquipoDelegado,$idRol){
 

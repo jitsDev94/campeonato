@@ -1,5 +1,5 @@
 <?php
-include '../conexion/conexion.php';
+
 require_once '../conexion/parametros.php';
 $parametro = new parametros();
 session_start();
