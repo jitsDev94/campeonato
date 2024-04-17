@@ -1,7 +1,7 @@
 <?php
 
-include 'clases/conexion.php';
-require_once 'clases/parametros.php';
+
+require_once '../conexion/parametros.php';
 session_start();
 
 if (!isset($_SESSION['idUsuario'])) {
@@ -26,24 +26,10 @@ $cobros = $parametro->traerPrecio('Transferencias');
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Transferencias</title>
-    <link rel="icon" type="image/jpg" href="img/image.png">
-    <!-- Google Font: Source Sans Pro -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
-    <!-- Ionicons -->
-    <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
-    <!-- DataTables -->
-    <link rel="stylesheet" href="plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
-    <link rel="stylesheet" href="plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
-    <link rel="stylesheet" href="plugins/datatables-buttons/css/buttons.bootstrap4.min.css">
-    <!-- Theme style -->
-    <link rel="stylesheet" href="dist/css/adminlte.min.css">
-    <!-- SweetAlert2 -->
-    <link rel="stylesheet" href="plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css">
-    <!-- Toastr -->
-    <link rel="stylesheet" href="plugins/toastr/toastr.min.css">
-
+    
+    <?php
+    require "../template/encabezado.php";
+    ?>
     <style>
         .card {
             border-top-color: cornflowerblue;
@@ -63,15 +49,15 @@ $cobros = $parametro->traerPrecio('Transferencias');
 
 </head>
 
-<body class="hold-transition sidebar-mini layout-fixed sidebar-closed sidebar-collapse" onload="CargarDatos();">
+<body class="hold-transition sidebar-mini layout-fixed sidebar-closed sidebar-collapse">
     <div class="wrapper">
 
         <?php
-        require "Navegador.php";
+        require "../template/Navegador.php";
         ?>
 
         <?php
-        require "Menus.php";
+        require "../template/Menus.php";
         ?>
 
         <div class="content-wrapper">
@@ -87,7 +73,7 @@ $cobros = $parametro->traerPrecio('Transferencias');
             </div>
 
             <!-- Transferencia -->
-            <section class="col-lg-12 col-md-12"> <br>
+            <section class="col-lg-12 col-md-12 pr-4 pl-4"> <br>
                 <div class="card info-box shadow-lg">
                     <div class="card-body">
                         <div class="row">
@@ -107,7 +93,7 @@ $cobros = $parametro->traerPrecio('Transferencias');
                                         <h5><b>Fecha</b></h5>
                                     </label>
                                     <div class="col-sm-4 col-8">
-                                        <input type="date" class="form-control" id="fecha" disabled>
+                                        <input type="date" class="form-control" id="fecha" value="<?php echo date('Y-m-d'); ?>" disabled>
                                     </div>
                                 </div>
 
@@ -117,23 +103,23 @@ $cobros = $parametro->traerPrecio('Transferencias');
                             </div>
                         </div>
                         <div class="row">
-                            <section class="col-md-5 card shadow-lg">
+                            <section class="col-md-5 card shadow-lg pl-4">
                                 <br>
                                 <h4 class="text-center">Datos Equipo Origen</h4><br>
                                 <form id="datosJugadores" method="POST">
                                     <div class="mb-3 row m-2">
-                                        <label for="inputPassword" class="col-sm-5 col-form-label">Nombre Equipo(*)</label>
-                                        <div class="col-sm-7">
-                                            <select class="form-control" id="idEquipoOrigen" onchange="BuscarJugador($(this).val())">                                              
+                                        <label for="inputPassword" class="col-sm-4 col-form-label">Nombre Equipo(*)</label>
+                                        <div class="col-sm-8">
+                                            <select class="form-control" id="idEquipoOrigen" onchange="BuscarJugador($(this).val())">                                                                                          
                                                 <?php 
-                                                    $parametro->DropDownBuscarAllEquipos();
+                                                    $parametro->DropDownBuscarEquipos();
                                                 ?>
                                             </select>
                                         </div>
                                     </div>
                                     <div class="mb-3 row m-2">
-                                        <label for="inputPassword" class="col-sm-5 col-form-label">Nombre Jugador(*)</label>
-                                        <div class="col-sm-7">
+                                        <label for="inputPassword" class="col-sm-4 col-form-label">Nombre Jugador(*)</label>
+                                        <div class="col-sm-8">
                                             <select class="form-control" id="idJugador" name="idJugador" >
                                             <!-- onchange="ObteneridJugador($(this).val())" -->
                                                 <option value='0'>Seleccionar Jugador..</option>
@@ -147,22 +133,23 @@ $cobros = $parametro->traerPrecio('Transferencias');
                                 <br>
                             </section>
                             <section class="col-md-2"></section>
-                            <section class="col-md-5 card shadow-lg">
+                            <section class="col-md-5 card shadow-lg pr-4">
                                 <br>
                                 <h4 class="text-center">Datos Equipo Destino</h4><br>
                                 <div class="mb-3 row m-2">
-                                    <label for="inputPassword" class="col-sm-5 col-form-label">Nombre Equipo(*)</label>
-                                    <div class="col-sm-7">
+                                    <label for="inputPassword" class="col-sm-4 col-form-label">Nombre Equipo(*)</label>
+                                    <div class="col-sm-8">
                                         <select class="form-control" id="idEquipoDestino">
+                                        <option value='0'>Seleccionar Equipo..</option>
                                             <?php 
-                                                    $parametro->DropDownBuscarAllEquipos();
+                                                    $parametro->DropDownListarEquiposInscritos();
                                                 ?>
                                         </select>
                                     </div>
                                 </div>
                                 <div class="mb-3 row m-2">                                      
-                                    <label for="inputPassword" class="col-sm-5 col-form-label">Precio(*)</label>
-                                    <div class="col-sm-7">
+                                    <label for="inputPassword" class="col-sm-4 col-form-label">Precio(*)</label>
+                                    <div class="col-sm-8">
                                         <input type="text" class="form-control" id="precio" value="<?php echo $cobros->precio; ?>" placeholder="Precio de la transferencia">
                                     </div>
                                 </div>
@@ -187,7 +174,7 @@ $cobros = $parametro->traerPrecio('Transferencias');
             </section>
 
             <!-- Filtros -->
-            <section class="col-lg-12 col-md-12">
+            <section class="col-lg-12 col-md-12 pr-4 pl-4">
                 <div id="accordion">
                     <div class="card info-box shadow-lg">
                         <div class="card-header" id="headingOne">
@@ -211,8 +198,9 @@ $cobros = $parametro->traerPrecio('Transferencias');
                                                 <div class="col-md-3">
                                                     <label for="inputPassword" class="form-label"><b>Nombre Equipo Destino</b></label>
                                                     <select class="form-control" id="filIdEquipo">
+                                                        <option value='0'>Seleccionar Equipo..</option>
                                                         <?php 
-                                                            $parametro->DropDownBuscarAllEquipos();
+                                                            $parametro->DropDownListarEquiposInscritos();
                                                         ?>
                                                     </select>
                                                 </div>
@@ -244,7 +232,7 @@ $cobros = $parametro->traerPrecio('Transferencias');
 
 
             <!-- lista -->
-            <section class="col-lg-12 col-md-12"> <br>
+            <section class="col-lg-12 col-md-12 pr-4 pl-4"> <br>
                 <div class="card info-box shadow-lg">
                     <div class="card-header">
                         <div class="row">
@@ -275,13 +263,9 @@ $cobros = $parametro->traerPrecio('Transferencias');
             <!-- /.control-sidebar -->
         </div>
 
-        <?php $año = date('Y'); ?>
-        <footer class="main-footer">
-            <div class="float-right d-none d-sm-block">
-                <b>Version</b> 1.0
-            </div>
-            <strong>Copyright &copy; Software Bolivia <?php echo $año ?></strong> Todos los derechos reservados.
-        </footer>
+        <?php
+        require "../template/footer.php";
+        ?>
 
     </div>
     <!-- ./wrapper -->
@@ -317,13 +301,9 @@ $cobros = $parametro->traerPrecio('Transferencias');
                             <br>
                             <label for="inputPassword" class="form-label"><b>Nombre Equipo(*)</b></label>
                             <select class="form-control" id="idEquipo">
-                                <?php
-                                $consultar = "SELECT * FROM Equipo where estado = 'Habilitado' order by nombreEquipo asc";
-                                $resultado1 = mysqli_query($conectar, $consultar);
-                                while ($listado = mysqli_fetch_array($resultado1)) {
-                                ?>
-                                    <option value="<?php echo $listado['id']; ?>"><?php echo $listado['nombreEquipo']; ?></option>
-                                <?php } ?>
+                                    <?php 
+                                        $parametro->DropDownBuscarEquipos();
+                                    ?>
                             </select>
                         </div>
                         <div class="col-md-6">
@@ -410,7 +390,7 @@ $cobros = $parametro->traerPrecio('Transferencias');
             $("#cargando_add").html('<div class="loading"> <center><i class="fa fa-spinner fa-pulse fa-5x" style="color:#3c8dbc"></i><br/>Procesando ...</center></div>');
 
             $.ajax({
-                url: 'clases/Cl_Transferencia.php?op=RegistrarTransferencia',
+                url: '../clases/Cl_Transferencia.php?op=RegistrarTransferencia',
                 type: 'POST',
                 data: {
                     idJugador: idJugador,
@@ -421,26 +401,24 @@ $cobros = $parametro->traerPrecio('Transferencias');
                     idCampeonato: idCampeonato
                 },
                 success: function(vs) {
+                    console.log(vs);
                     $("#btn_add").prop("disabled", false);
                     $("#cargando_add").html('');
-                    if (vs == 2) {                     
-                        Swal.fire("Error..!", "Error al actualizar el nuevo equipo del jugador", "error");
-                    } else {
-                        if (vs == 1) {
+                    
+                       
+                    if (vs == 3) {
+                        Swal.fire('Error..!', 'Error al registrar la transferencia correctamente.', 'error');
+                    }
+                    else {
+                        if (vs == 4) {
+                            Swal.fire('Advertencia..!', 'Ya existe un jugador en el equipo destino con el mismo numero de camiseta, favor cambiar de nuemro y vuelva a intentar.', 'warning');
+                        }
+                        else{
                             Swal.fire('Exito..!', 'Jugador transferido correctamente.', 'success');
                             location.reload();
                         }
-                        else {
-                            if (vs == 3) {
-                                Swal.fire('Error..!', 'Error al registrar la transferencia correctamente.', 'error');
-                            }
-                            else {
-                                if (vs == 4) {
-                                    Swal.fire('Advertencia..!', 'Ya existe un jugador en el equipo destino con el mismo numero de camiseta, favor cambiar de nuemro y vuelva a intentar.', 'warning');
-                                }
-                            }
-                        }
                     }
+                                            
                 },
                 error: function(){
                     $("#btn_add").prop("disabled", false);
@@ -450,11 +428,10 @@ $cobros = $parametro->traerPrecio('Transferencias');
         }
 
         function BuscarJugador(id) {
-            //var id= ("#idEquipoOrigen").val();
-            var html = '<option value ="0" selected disabled>seleccionar...</option>';
-            $("#idJugador").html(html);
+            //var id = $("#idEquipoOrigen").val();
+            
             $.ajax({
-                url: 'clases/Cl_Transferencia.php?op=BuscarJugador',
+                url: '../clases/Cl_Transferencia.php?op=BuscarJugador',
                 type: 'POST',
                 data: {
                     id: id
@@ -463,6 +440,7 @@ $cobros = $parametro->traerPrecio('Transferencias');
                     if (data == "error") {
                         Swal.fire("Error..!", "Ha ocurrido un error al obtener la lista de jugadores", "error");
                     } else {
+                        $("#idJugador").html('');
                         $("#idJugador").append(data);
 
                     }
@@ -475,8 +453,7 @@ $cobros = $parametro->traerPrecio('Transferencias');
 
             //ListaEquiposInscritos();
             //CargarCampeonato();
-            let hoy = new Date();
-            document.getElementById("fecha").value = hoy.toJSON().slice(0, 10);
+          
             ListaTransferencias();
         }
 
@@ -490,7 +467,7 @@ $cobros = $parametro->traerPrecio('Transferencias');
             $("#cargando_add1").html('<div class="loading"> <center><i class="fa fa-spinner fa-pulse fa-5x" style="color:#3c8dbc"></i><br/>Procesando ...</center></div>');
   
             $.ajax({
-                url: 'clases/Cl_Transferencia.php?op=ListarTransferencias',
+                url: '../clases/Cl_Transferencia.php?op=ListarTransferencias',
                 type: 'POST',
                 data: {
                     idEquipo: idEquipo,
@@ -524,31 +501,18 @@ $cobros = $parametro->traerPrecio('Transferencias');
 
     </script>
 
+        <?php
+      require "../template/piePagina.php";
+      ?>
 
-
-    <!-- Option 1: Bootstrap Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-    <!-- SweetAlert2 -->
-    <script src="plugins/sweetalert2/sweetalert2.min.js"></script>
-    <!-- Toastr -->
-    <script src="plugins/toastr/toastr.min.js"></script>
-    <!-- jQuery -->
-    <script src="plugins/jquery/jquery.min.js"></script>
-    <!-- Bootstrap 4 -->
-    <script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <!-- DataTables  & Plugins -->
-    <script src="plugins/datatables/jquery.dataTables.min.js"></script>
-    <script src="plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
-    <script src="plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
-    <script src="plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
-    <script src="plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
-    <script src="plugins/datatables-buttons/js/buttons.bootstrap4.min.js"></script>
-    <!-- AdminLTE App -->
-    <script src="dist/js/adminlte.min.js"></script>
-    <!-- AdminLTE for demo purposes -->
-    <script src="dist/js/demo.js"></script>
-    <!-- Page specific script -->
+  
     <script>
+
+        $(document).ready(function() {
+          
+            CargarDatos();
+        
+        });
         var lenguaje_español = {
             "processing": "Procesando...",
             "lengthMenu": "Mostrar _MENU_ registros",

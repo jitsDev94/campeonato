@@ -1,9 +1,8 @@
 <?php
 
 session_start();
-include("conexion.php");
 
-require_once 'parametros.php';
+require_once '../conexion/parametros.php';
 $parametro = new parametros();
 
 $tipo = $_GET["op"];
@@ -16,19 +15,23 @@ if($tipo == "BuscarJugador"){
 
     $idEquipo = $_POST["id"];
 
-    $Consultar = "SELECT id,nombre,apellidos FROM Jugador where idEquipo = $idEquipo";
-    $resultado = mysqli_query($conectar, $Consultar);
-    $options="";
-    while ($row=$resultado->fetch_array(MYSQLI_ASSOC)) { 
-        $options.="<option value=\"$row[id]\">$row[nombre] $row[apellidos]</option>"; 
-    }
+    $resp = $parametro->DropDownBuscarJugadores($idEquipo); 
+    echo  $resp ;
+   
 
-    if($resultado){
-        echo $options;
-    }
-    else{
-        echo 'error';
-    } 
+    // $Consultar = "SELECT id,nombre,apellidos FROM Jugador where idEquipo = $idEquipo";
+    // $resultado = mysqli_query($conectar, $Consultar);
+    // $options="";
+    // while ($row=$resultado->fetch_array(MYSQLI_ASSOC)) { 
+    //     $options.="<option value=\"$row[id]\">$row[nombre] $row[apellidos]</option>"; 
+    // }
+
+    // if($resultado){
+    //     echo $options;
+    // }
+    // else{
+    //     echo 'error';
+    // } 
 }
 
 if($tipo == "RegistrarTransferencia"){
@@ -42,40 +45,20 @@ if($tipo == "RegistrarTransferencia"){
     
     //Validamos que no se repide el mismo numero de camiseta de un juegador en el mismo equipo
     $ConsultarNumeroCamiseta = $parametro->validarNroJugador($idEquipoDestino,$idJugador); 
-  
-    // $ConsultarNumeroCamiseta = "SELECT * FROM Jugador WHERE idEquipo = $idEquipoDestino and nroCamiseta = (SELECT nroCamiseta from Jugador where id = $idJugador)";
-    // $resultado3 = mysqli_query($conectar, $ConsultarNumeroCamiseta);
-    // $row = $resultado3->fetch_assoc();
-    // $totalJugadores = $row['id'];
     
     if($ConsultarNumeroCamiseta > 0){
         echo 4;      
     }
     else{
         $resultado = $parametro->RegistrarTransferencia($idJugador,$idEquipoOrigen,$idEquipoDestino,$fecha,$precio,$idCampeonato); 
-        // $registrar = "INSERT INTO Transferencia values(null,$idJugador,$idEquipoOrigen,$idEquipoDestino,'$fecha',$precio,$idCampeonato)";
-        // $resultado = mysqli_query($conectar, $registrar);
-    
+       
         if($resultado){
-
-            $resultado2 = $parametro->actualizarEquipoJugador($idJugador,$idEquipoDestino); 
-            // $actualizar = "UPDATE Jugador SET idEquipo = $idEquipoDestino where id = $idJugador";
-            // $resultado2 = mysqli_query($conectar, $actualizar);
-
-            if($resultado2){
-                echo '1';
-            }
-            else{
-                //eliminar la ultima transferencia porque no se pude actualizar el nuevo equipo del jugador
-                // $eliminar = "DELETE FROM Transferencia where idJugador = $idJugador and fecha = '$fecha'";
-                // $resultado = mysqli_query($conectar, $eliminar);
-                $db->TransactionRollback();
-                $db->Kill();
-                echo '2';
-            }
+            echo '1';                   
         }
         else{
-            echo '3';
+            $db->TransactionRollback();
+                $db->Kill();
+                echo '2';
         }
     }
 }
@@ -121,14 +104,14 @@ if($tipo == "ListarTransferencias"){
             while (!$resultado1->EndOfSeek()) {
                 $row = $resultado1->Row();
                 $cont++;
-                $EquipoDestino= utf8_encode($row->EquipoDestino);
-                $EquipoInicial= utf8_encode($row->EquipoInicial);
+                // $EquipoDestino= utf8_encode($row->EquipoDestino);
+                // $EquipoInicial= utf8_encode($row->EquipoInicial);
                 $tabla .= "<tr>";
                 $tabla .= "<td data-title=''>" .  $cont . "</td>";
                 $tabla .= "<td data-title=''>" . $row->nombre . " " . $row->apellidos . "</td>";
                 $tabla .= "<td data-title=''>".$row->EquipoInicial."</td>";  
                 $tabla .= "<td data-title=''>".$row->EquipoDestino."</td>";             
-                $tabla .= "<td data-title=''>" . $row->Campeonato . "</td>";                
+                $tabla .= "<td data-title=''>" . $row->campeonato . "</td>";                
                 $tabla .= "<td data-title=''>" . $row->fecha . "</td>";
                 $tabla .= "<td data-title=''>" . $row->precioTransferencia . "</td>";
                 $tabla .= "</td>";

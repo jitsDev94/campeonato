@@ -339,6 +339,23 @@ class parametros
       
     }
 
+    public function DropDownBuscarJugadores($idEquipo)
+	{      
+
+        $consulta = "SELECT id,concat(nombre,' ',apellidos) as nombreJugador FROM Jugador where idEquipo = $idEquipo";
+
+       
+        $db = new MySQL();
+		if ($db->Error()) $db->Kill();
+		if (!$db->Query($consulta)) $db->Kill();
+		$db->MoveFirst();
+		
+		while (!$db->EndOfSeek()) {
+			$row = $db->Row();		
+			echo "<option value='" . $row->id . "'>" . $row->nombreJugador . "</option>";
+		}
+    }
+
     public function DropDownListarRoles()
 	{      
 
@@ -359,7 +376,7 @@ class parametros
     public function DropDownListarEquiposInscritos()
 	{      
 
-        $consulta = "SELECT e.id,e.nombreEquipo FROM Inscripcion as i
+        $consulta = "SELECT i.id,e.nombreEquipo FROM Inscripcion as i
                                 left join Equipo as e on e.id = i.idEquipo
                                 left join Campeonato as c on c.id = i.idCampeonato
                                 where c.estado = 'En Curso'";
@@ -396,20 +413,17 @@ class parametros
     public function DropDownBuscarEquipos()
 	{      
 
-        $consulta = "SELECT e.id as idEquipo,e.nombreEquipo FROM Inscripcion as i
-        LEFT join Equipo as e on e.id = i.idEquipo
-        LEFT join Campeonato as c on c.id = i.idCampeonato
-        where c.estado= 'En Curso' order by e.nombreEquipo asc";
+        $consulta = "SELECT * FROM Equipo where estado = 'Habilitado' order by nombreEquipo asc";
 
 
         $db = new MySQL();
 		if ($db->Error()) $db->Kill();
 		if (!$db->Query($consulta)) $db->Kill();
 		$db->MoveFirst();
-		echo "<option value='0'>Seleccionar</option>";
+		echo "<option value='0'>Seleccionar Equipo</option>";
 		while (!$db->EndOfSeek()) {
 			$row = $db->Row();		
-			echo "<option value='" . $row->idEquipo . "'>" . $row->nombreEquipo . "</option>";
+			echo "<option value='" . $row->id . "'>" . $row->nombreEquipo . "</option>";
 		}
     }
 
@@ -437,21 +451,7 @@ class parametros
 		}
     }
 
-    public function DropDownBuscarAllEquipos()
-	{      
 
-        $consulta = "SELECT * FROM Equipo where estado = 'Habilitado' order by nombreEquipo asc";
-
-        $db = new MySQL();
-		if ($db->Error()) $db->Kill();
-		if (!$db->Query($consulta)) $db->Kill();
-		$db->MoveFirst();
-		echo "<option value='0'>Seleccionar Equipo..</option>";
-		while (!$db->EndOfSeek()) {
-			$row = $db->Row();		
-			echo "<option value='" . $row->id . "'>" . $row->nombreEquipo . "</option>";
-		}
-    }
 
 
     public function DropDownHechosPartido()
@@ -545,13 +545,15 @@ class parametros
         if($consulta == ''){
             $consulta = " and c.estado = 'En Curso'";
         }
-        $consulta = "SELECT j.nombre,j.apellidos, e1.nombreEquipo as EquipoInicial, e.nombreEquipo as EquipoDestino,c.nombre as Campeonato,
-                    t.fecha, t.precioTransferencia
-                    FROM Transferencia as t 
-                    left join Jugador as j on j.id = t.idJugador
-                    left join Equipo as e on e.id = t.idEquipo
-                    left join Equipo as e1 on e1.id = t.EquipoInicial
-                    left join Campeonato as c on c.id = t.idCampeonato
+        $consulta = "SELECT j.nombre,j.apellidos, e1.nombreEquipo as EquipoInicial, e.nombreEquipo as EquipoDestino,c.nombre as campeonato,
+        t.fecha, t.precioTransferencia
+        FROM Transferencia as t 
+        left join Jugador as j on j.id = t.idJugador                   
+        left join Equipo as e1 on e1.id = t.idEquipoInicial                   
+        LEFT join inscripcion i on i.id = t.idEquipo
+          left join Equipo as e on e.id = i.idEquipo
+          LEFT join campeonato c on c.id = i.idCampeonato
+                    
                     where 1=1 $consulta";
 
         $db = new MySQL();
@@ -654,13 +656,15 @@ class parametros
     public function RegistrarTransferencia($idJugador,$idEquipoOrigen,$idEquipoDestino,$fecha,$precio,$idCampeonato)
 	{       
 
-        $consulta = "INSERT INTO Transferencia values(null,$idJugador,$idEquipoOrigen,$idEquipoDestino,'$fecha',$precio,$idCampeonato)";
-
         $db = new MySQL();
         if ($db->Error()) {
             $db->Kill();
             return false;
         }
+        
+        $consulta = "INSERT INTO Transferencia(idJugador,idEquipoInicial,idEquipo,fecha,precioTransferencia) values($idJugador,$idEquipoOrigen,$idEquipoDestino,'$fecha',$precio)";
+
+        
        
         $success = true;
 
@@ -668,30 +672,27 @@ class parametros
             $success = false;
         }
        
-        return $success;
-      
-    }
 
-    public function actualizarEquipoJugador($idJugador,$idEquipoDestino)
-	{       
+        $consulta = "SELECT e.id as idEquipo,e.nombreEquipo FROM Inscripcion as i
+        left join Equipo as e on e.id = i.idEquipo                                
+        where i.id = $idEquipoDestino";
+        $db->Query($consulta);
+        $row = $db->Row();                                
 
-        $consulta = "UPDATE Jugador SET idEquipo = $idEquipoDestino where id = $idJugador";
+        $consulta = "UPDATE Jugador SET idEquipo = $row->idEquipo where id = $idJugador";
 
-        $db = new MySQL();
-        if ($db->Error()) {
-            $db->Kill();
-            return false;
-        }
-       
-        $success = true;
+        file_put_contents('./datos.log',$consulta);
 
         if (!$db->Query($consulta)) {
-            $success = false;
+        $success = false;
         }
-       
+
+
         return $success;
       
     }
+
+  
 
     public function ActualizarTablaPosicion($puntos, $PartidosGanados, $PartidosEmpatados, $PartidosPerdidos, $golFavor, $golContra, $idValidacionEquipo)
 	{       

@@ -120,7 +120,7 @@ $torneo = $parametro->TraerUltimoTorneo();
                                     <div class="col-sm-8">
                                         <select class="form-control" id="idEquipo1"> 
                                             <?php 
-                                                $parametro->DropDownBuscarEquipos();
+                                                $parametro->DropDownListarEquiposInscritos();
                                             ?>
                                         </select>  
                                     </div>
@@ -131,7 +131,7 @@ $torneo = $parametro->TraerUltimoTorneo();
                                         <select class="form-control" id="idEquipo2"> 
                                          
                                             <?php 
-                                                $parametro->DropDownBuscarEquipos();
+                                                $parametro->DropDownListarEquiposInscritos();
                                             ?>
                                            
                                         </select>       
