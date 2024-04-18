@@ -527,6 +527,39 @@ class parametros
       
     }
 
+    public function ListaJugadores($idEquipoDelegado,$idRol,$nombreJugadorFiltro,$idEquipoFiltro)
+	{       
+
+        $db = new MySQL();
+		if ($db->Error()) $db->Kill();
+        
+        $condicion = "";
+
+        if($idRol == 3){
+
+            $condicion .= " and j.idEquipo = $idEquipoDelegado";
+        }
+   
+        if($nombreJugadorFiltro != ""){
+            $condicion .= " and j.nombre like '%$nombreJugadorFiltro%' or j.apellidos like '%$nombreJugadorFiltro%'";
+        }
+    
+        if($idEquipoFiltro != 0){
+            $condicion .= " and j.idEquipo = $idEquipoFiltro";
+        }
+    
+
+        $consulta="SELECT j.id as idJugador,j.nombre,j.apellidos,j.ci,j.fechaNacimiento,j.nroCamiseta,e.nombreEquipo,j.estado,j.idEquipo
+            FROM Jugador as j 
+            left join Equipo as e on e.id = j.idEquipo where 1=1 $condicion order by j.idEquipo,j.nombre asc";
+
+      
+		if (!$db->Query($consulta)) $db->Kill();
+		
+        return $db;
+      
+    }
+
 
     public function ListarTransferencias($nombreJugador,$idCampeonato,$idEquipoDestino)
 	{       

@@ -1,6 +1,8 @@
 <?php
 
-include 'clases/conexion.php';
+require_once '../conexion/parametros.php';
+$parametro = new parametros();
+
 session_start();
 
 if (!isset($_SESSION['idUsuario'])) {
@@ -18,25 +20,10 @@ if (!isset($_SESSION['idUsuario'])) {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Jugadores</title>
-  <link rel="icon" type="image/jpg" href="img/image.png">
-  <!-- Google Font: Source Sans Pro -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
-  <!-- Ionicons -->
-  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
-   <!-- DataTables -->
-   <link rel="stylesheet" href="plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
-  <link rel="stylesheet" href="plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
-  <link rel="stylesheet" href="plugins/datatables-buttons/css/buttons.bootstrap4.min.css">
-  <!-- Theme style -->
-  <link rel="stylesheet" href="dist/css/adminlte.min.css">
-   <!-- SweetAlert2 -->
-   <link rel="stylesheet" href="plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css">
-  <!-- Toastr -->
-  <link rel="stylesheet" href="plugins/toastr/toastr.min.css">
-  
+  <?php
+    require "../template/encabezado.php";
+    ?>
+
    <style>
     .card{
       border-top-color: cornflowerblue;
@@ -45,15 +32,15 @@ if (!isset($_SESSION['idUsuario'])) {
   </style>
 
 </head>
-<body class="hold-transition sidebar-mini layout-fixed sidebar-closed sidebar-collapse" onload="ListaJugadores();" >
+<body class="hold-transition sidebar-mini layout-fixed sidebar-closed sidebar-collapse" >
 <div class="wrapper">
 
     <?php  
-        require "Navegador.php";
+        require "../template/Navegador.php";
     ?>
 
     <?php  
-        require "Menus.php";
+        require "../template/Menus.php";
     ?>
 
 <div class="content-wrapper">
@@ -102,22 +89,16 @@ if (!isset($_SESSION['idUsuario'])) {
                                         <div class="col-md-4">
                                             <div class="form-group">
                                                 <label for="inputCasa" class="form-label"><b>Nombre Equipo</b></label> 
-                                                <select class="form-control" id="filEquipo"> 
-                                                    <option value="0" selected>Seleccionar Equipo...</option>
+                                                <select class="form-control" id="filEquipo">                                                     
                                                     <?php 
-                                                      $consultar = "SELECT * FROM Equipo where estado = 'Habilitado' order by nombreEquipo asc";
-                                                      $resultado1 = mysqli_query($conectar, $consultar);
-                                                      while ($listado = mysqli_fetch_array($resultado1)) {  
-                                                        $equipos = utf8_encode($listado['nombreEquipo']);                                                  
+                                                        $parametro->DropDownBuscarEquipos();
                                                     ?>
-                                                    <option value="<?php echo $listado['id']; ?>"><?php echo $listado['nombreEquipo']; ?></option>
-                                                    <?php }?>
                                                 </select>
                                             </div>
                                         </div>
                                         <div class="col-md-4">
                                             <div class="d-grid gap-2 d-md-flex" style="margin-top:32px;">
-                                            <button type="button" class="btn btn-primary" id="btnFiltrar" onclick="FiltrarJugadores()"><i class="fas fa-filter"></i>  Filtrar</button>
+                                            <button type="button" class="btn btn-primary" id="btnFiltrar" onclick="ListaJugadores()"><i class="fas fa-filter"></i>  Filtrar</button>
                                             </div>
                                         </div>                                   
                                     </div>  
@@ -182,13 +163,9 @@ if (!isset($_SESSION['idUsuario'])) {
       <!-- /.control-sidebar -->
       </div>
 
-           <?php $año = date('Y'); ?>
-        <footer class="main-footer">
-            <div class="float-right d-none d-sm-block">
-            <b>Version</b> 1.0
-            </div>
-            <strong>Copyright &copy; Software Bolivia <?php echo $año ?></strong> Todos los derechos reservados.
-        </footer>
+      <?php
+      require "../template/footer.php";
+      ?>
     
     </div>
     <!-- ./wrapper -->
@@ -199,102 +176,46 @@ if (!isset($_SESSION['idUsuario'])) {
 <!--        MODAL         -->
 
    <!-- Modal nuevo/editar jugador --> 
-   <div class="modal fade" id="ModalRegistrarJugador">
+      <div class="modal fade" id="ModalRegistrarJugador">
         <div class="modal-dialog">
           <div class="modal-content">
             <div class="modal-header">
-              <h4 class="modal-title" id="tituloJugador"><i class="nav-icon fas fa-running"></i> Nuevo Jugador</h4>
+              <h4 class="modal-title" id="tituloJugador"> Nuevo Jugador</h4>
               <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
               </button>
             </div>
             <div class="modal-body">
               <form method="POST" id="formEditarLote" class="row g-3">                              
-                    <div class="col-md-6">
-                      <br>
-                        <label for="inputName" class="form-label"><b>Nombre(*)</b></label>
-                        <div class="input-group">
-                            <div class="input-group-prepend">
-                            <span class="input-group-text"><i class="fas fa-user-tie"></i></span>
-                            </div>
-                            <input type="text" class="form-control" id ="nombre" placeholder="Ingresar Nombre">                          
-                        </div>                 
+                    <div class="col-md-6 mt-3">                    
+                        <label for="inputName" class="form-label"><b>Nombre(*)</b></label>                                                 
+                        <input type="text" class="form-control input" id ="nombre" placeholder="Ingresar Nombre">                                                               
                     </div> 
-                    <div class="col-md-6">
-                      <br>
-                        <label for="inputName" class="form-label"><b>Apellidos(*)</b></label>
-                        <div class="input-group">
-                            <div class="input-group-prepend">
-                            <span class="input-group-text"><i class="fas fa-user-tie"></i></span>
-                            </div>
-                            <input type="text" class="form-control" id ="apellidos" placeholder="Ingresar Apellidos">                          
-                        </div>                 
+                    <div class="col-md-6 mt-3">                      
+                        <label for="inputName" class="form-label"><b>Apellidos(*)</b></label>                       
+                        <input type="text" class="form-control input" id ="apellidos" placeholder="Ingresar Apellidos">                                                                   
                     </div>                  
-                    <div class="col-md-6">
-                    <br>
-                        <label for="inputName" class="form-label"><b>Carnet(*)</b></label>
-                        <div class="input-group">
-                            <div class="input-group-prepend">
-                            <span class="input-group-text"><i class="fas fa-user-tie"></i></span>
-                            </div>
-                            <input type="text" class="form-control" id ="carnet" placeholder="Ingresar Carnet">                           
-                        </div>                 
+                    <div class="col-md-6 mt-3">                  
+                        <label for="inputName" class="form-label"><b>Carnet(*)</b></label>                       
+                        <input type="text" class="form-control input" id ="carnet" placeholder="Ingresar Carnet">                                                                 
                     </div>            
-                    <div class="col-md-6">
-                    <br>
-                        <label for="inputName" class="form-label"><b>Fecha Nacimiento(*)</b></label>
-                        <div class="input-group">                 
-                            <input type="date" class="form-control" id ="fecha">                          
-                        </div>                 
+                    <div class="col-md-6 mt-3">
+                   
+                        <label for="inputName" class="form-label"><b>Fecha Nacimiento(*)</b></label>                                      
+                        <input type="date" class="form-control input" id ="fecha">                                                                
                     </div>             
-                <div class="col-md-6">
-                <br>
-                  <label for="inputName" class="form-label"><b>Numero Camiseta</b></label>
-                  <div class="input-group">
-                    <div class="input-group-prepend">
-                      <span class="input-group-text"><i class="fas fa-clipboard-list"></i></span>
-                    </div>
-                    <input type="text" class="form-control" id ="nroCamiseta" placeholder="Nro de Camiseta">                  
-                  </div>                 
+                <div class="col-md-6 mt-3">               
+                  <label for="inputName" class="form-label"><b>Numero Camiseta</b></label>                
+                  <input type="text" class="form-control input" id ="nroCamiseta" placeholder="Nro de Camiseta">                                                   
                 </div>             
-                <div class="col-md-6" id="Equipos">
-                      <div class="form-group">
-                      <br>
-                          <label for="inputCasa" class="form-label"><b>Equipo(*)</b></label> 
-                          <select class="form-control" id="idEquipo"> 
-                              <option value="0" selected disabled>Seleccionar Equipo...</option>
-                              <?php 
-                                $consultar = "SELECT * FROM Equipo where estado = 'Habilitado' order by nombreEquipo asc";
-                                $resultado1 = mysqli_query($conectar, $consultar);
-                                while ($listado = mysqli_fetch_array($resultado1)) {   
-                                  $equipos = utf8_encode($listado['nombreEquipo']);                                                 
-                              ?>
-                              <option value="<?php echo $listado['id']; ?>"><?php echo $listado['nombreEquipo']; ?></option>
-                              <?php }?>
-                          </select>                       
-                      </div>
-                </div>
-             
-                <div class="col-md-6">
-                <br>
-                  <label for="inputName" class="form-label"><b>Año Misión(*)</b></label>
-                  <div class="input-group">
-                    <div class="input-group-prepend">
-                      <span class="input-group-text"><i class="fas fa-clipboard-list"></i></span>
-                    </div>
-                    <input type="text" class="form-control" id ="anoMision" placeholder="Año de Misión">                
-                  </div>                 
-                </div> 
-                <div class="col-md-6">
-                <br>
-                  <label for="inputName" class="form-label"><b>Misión(*)</b></label>
-                  <div class="input-group">
-                    <div class="input-group-prepend">
-                      <span class="input-group-text"><i class="fas fa-clipboard-list"></i></span>
-                    </div>
-                    <input type="text" class="form-control" id ="mision" placeholder="Nombre de Misión">                 
-                  </div>                 
-                </div> 
+                <div class="col-md-6 mt-3" id="Equipos">                    
+                  <label for="inputCasa" class="form-label"><b>Equipo(*)</b></label> 
+                  <select class="form-control input" id="idEquipo"> 
+                      <?php 
+                          $parametro->DropDownBuscarEquipos();
+                      ?>
+                  </select>                                          
+                </div>                           
                
                 <div class="col-md-6">               
                     <input type="hidden" class="form-control" id ="id">                                          
@@ -316,10 +237,10 @@ if (!isset($_SESSION['idUsuario'])) {
       <!-- /.modal -->
 
 
-  <script>
+    <script>
        
         function modalRegistrarJugador(id) {    
-          $("#tituloJugador").html("<i class='nav-icon fas fa-running'></i> Nuevo Jugador");  
+          $("#tituloJugador").html("Nuevo Jugador");  
           $("#botonRegistro").html("<button type='button' class='btn btn-primary' id='btnRegistro' onclick='RegistrarJugador()'>Registrar</button>");
           $("#Equipos").show();
           $('#id').val("");
@@ -334,38 +255,22 @@ if (!isset($_SESSION['idUsuario'])) {
         }
 
 
-        function modalEditarJugador(id) {       
+        function modalEditarJugador(id,nombre,apellidos,ci,fechaNacimiento,nroCamiseta) {       
 
-          $.ajax({
-            url: 'clases/Cl_Jugador.php?op=DatosJugador',
-            type: 'POST',
-            data: {
-                id: id
-            }, 
-            success: function(data) {
-              if(data == ""){
-                Swal.fire("Error..!", "Ha ocurrido un error al obtener los datos del jugador", "error");      
-              }
-              else{
-                var resp= $.parseJSON(data);
-                $("#tituloJugador").html("<i class='nav-icon fas fa-edit'></i> Editar Jugador");  
-                $("#botonRegistro").html("<button type='button' class='btn btn-primary' id='botonRegistro' onclick='EditarJugador()'>Editar</button>");
-                $("#id").val(resp.id);           
-                $("#nombre").val(resp.nombre);
-                $("#apellidos").val(resp.apellidos);
-                $("#carnet").val(resp.ci);
-                $("#fecha").val(resp.fechaNacimiento);
-                $("#nroCamiseta").val(resp.nroCamiseta);
-                $("#Equipos").hide();
-                $("#anoMision").val(resp.anoMision);
-                $("#mision").val(resp.nombreMision);
-                $('#ModalRegistrarJugador').modal('show');
-              }              
-            }            
-          })               
+          $("#tituloJugador").html("Editar Jugador");  
+          $("#botonRegistro").html("<button type='button' class='btn btn-primary' id='botonRegistro' onclick='EditarJugador()'>Editar</button>");
+          $("#id").val(id);           
+          $("#nombre").val(nombre);
+          $("#apellidos").val(apellidos);
+          $("#carnet").val(ci);
+          $("#fecha").val(fechaNacimiento);
+          $("#nroCamiseta").val(nroCamiseta);
+          $("#Equipos").hide();
+          
+          $('#ModalRegistrarJugador').modal('show');          
         }
 
-        function EditarJugador(){
+      function EditarJugador(){
 
         var id = $('#id').val();
         var nombre = $('#nombre').val();
@@ -384,7 +289,7 @@ if (!isset($_SESSION['idUsuario'])) {
         }
 
          $.ajax({
-         url: 'clases/Cl_Jugador.php?op=EditarJugador',
+         url: '../clases/Cl_Jugador.php?op=EditarJugador',
          type: 'POST',
          data: {
             id: id,
@@ -447,7 +352,7 @@ if (!isset($_SESSION['idUsuario'])) {
       function EstadoJugador(id,estado) {
          
          $.ajax({
-         url: 'clases/Cl_Jugador.php?op=EstadoJugador',
+         url: '../clases/Cl_Jugador.php?op=EstadoJugador',
          type: 'POST',
          data: {
              id: id,
@@ -471,19 +376,30 @@ if (!isset($_SESSION['idUsuario'])) {
              }
          })         
      }
+
+
      function ListaJugadores(){
         
+      var nombre = $("#filNombre").val();    
+      var idEquipo = $("#filEquipo").val();
+
         $.ajax({
-            url: 'clases/Cl_Jugador.php?op=ListaJugadores',
+            url: '../clases/Cl_Jugador.php?op=ListaJugadores',
             type: 'POST', 
+            data:{
+              nombre: nombre,
+              idEquipo: idEquipo
+            },
             success: function(data) {
                 $("#contenerdor_tabla").html('');
                 $('#example1').DataTable().destroy();
                 $("#contenerdor_tabla").html(data);
                 $("#example1").DataTable({
-                    "responsive": true, "lengthChange": false, "autoWidth": false,
+                    "responsive": true, 
+                    "lengthChange": false, 
+                    "autoWidth": false,
                     "language": lenguaje_español
-                }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');            
+                });            
             }          
         })         
     }
@@ -505,7 +421,7 @@ if (!isset($_SESSION['idUsuario'])) {
       $("#cargando_add1").html('<div class="loading"> <center><i class="fa fa-spinner fa-pulse fa-5x" style="color:#3c8dbc"></i><br/>Procesando ...</center></div>');
 
         $.ajax({
-            url: 'clases/Cl_Jugador.php?op=FiltrarJugadores',
+            url: '../clases/Cl_Jugador.php?op=FiltrarJugadores',
             type: 'POST', 
             data:{
               nombre: nombre,
@@ -529,7 +445,7 @@ if (!isset($_SESSION['idUsuario'])) {
         })         
     }
 
-     function RegistrarJugador() {
+      function RegistrarJugador() {
          
       
      
@@ -554,7 +470,7 @@ if (!isset($_SESSION['idUsuario'])) {
         $("#cargando_add").html('<div class="loading"> <center><i class="fa fa-spinner fa-pulse fa-5x" style="color:#3c8dbc"></i><br/>Procesando ...</center></div>');
 
          $.ajax({
-         url: 'clases/Cl_Jugador.php?op=RegistrarJugador',
+         url: '../clases/Cl_Jugador.php?op=RegistrarJugador',
          type: 'POST',
          data: {
             nombre: nombre,
@@ -583,38 +499,17 @@ if (!isset($_SESSION['idUsuario'])) {
              }
          })         
      }
-      </script>
+  </script>
 
-
-
-<!-- Option 1: Bootstrap Bundle with Popper -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-<!-- SweetAlert2 -->
-<script src="plugins/sweetalert2/sweetalert2.min.js"></script>
-<!-- Toastr -->
-<script src="plugins/toastr/toastr.min.js"></script>
-<!-- jQuery -->
-<script src="plugins/jquery/jquery.min.js"></script>
-<!-- Bootstrap 4 -->
-<script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-<!-- DataTables  & Plugins -->
-<script src="plugins/datatables/jquery.dataTables.min.js"></script>
-<script src="plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
-<script src="plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
-<script src="plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
-<script src="plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
-<script src="plugins/datatables-buttons/js/buttons.bootstrap4.min.js"></script>
-<!-- AdminLTE App -->
-<script src="dist/js/adminlte.min.js"></script>
-<!-- AdminLTE for demo purposes -->
-<script src="dist/js/demo.js"></script>
-<!-- Page specific script -->
+      <?php
+      require "../template/piePagina.php";
+      ?>
 <script>
   $(function () {
-    $("#example1").DataTable({
-      "responsive": true, "lengthChange": false, "autoWidth": false,
-      "language": lenguaje_español
-    }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
+
+    ListaJugadores();
+
+    
   })
 
   var lenguaje_español = 

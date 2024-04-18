@@ -3,7 +3,10 @@
 session_start();
 $idEquipoDelegado = $_SESSION['idEquipo'];
 $idRol = $_SESSION['idRol'];   
-include("conexion.php");
+include("../conexion/conexion.php");
+require_once '../conexion/parametros.php';
+$parametro = new parametros();
+
 
 $tipo = $_GET["op"];
 
@@ -57,76 +60,53 @@ if($tipo == "EditarJugador"){
 
 if($tipo == "ListaJugadores"){
 
-    $condicion = "";
-    if($idRol == 3){
+    $nombre = $_POST["nombre"];
+    $idEquipo = $_POST["idEquipo"];
 
-    $condicion = "where idEquipo = $idEquipoDelegado";
-    }
-    $registrarInventario="SELECT j.id as idJugador,j.nombre,j.apellidos,j.ci,j.fechaNacimiento,j.nombreMision,j.anoMision,j.nroCamiseta,e.nombreEquipo,j.estado
-     FROM Jugador as j left join Equipo as e on e.id = j.idEquipo $condicion order by j.idEquipo,j.nombre asc";
-    $resultado1 = mysqli_query($conectar, $registrarInventario);
-
-        $tabla = "";
-        if($idRol == 3){
-            $tabla .= '<table id="example1" class="table table-bordered table-striped"  method="POST">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Nombre</th>
-                    <th>Apellidos</th>
-                    <th>Carnet</th>
-                    <th>Fecha Nac.</th>                   
-                    <th>Nro Camiseta</th>
-                    <th>Equipo</th>
-                    <th>Misión</th>
-                    <th>Año Misión</th>            
-                </tr>
-            </thead>
-            <tbody > ';
-        }
-        else{
-            $tabla .= '<table id="example1" class="table table-bordered table-striped"  method="POST">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Nombre</th>
-                    <th>Apellidos</th>
-                    <th>Carnet</th>
-                    <th>Fecha Nac.</th>                   
-                    <th>Nro Camiseta</th>
-                    <th>Equipo</th>
-                    <th>Misión</th>
-                    <th>Año Misión</th>                  
-                    <th>Acción</th>	             
-                </tr>
-            </thead>
-            <tbody > ';
-        }
+    $resultado1 = $parametro->ListaJugadores($idEquipoDelegado,$idRol,$nombre,$idEquipo);    
+  
+    $resultado1->MoveFirst();
+        $tabla = "";            
        
-     
+            $tabla .= '<table id="example1" class="table table-bordered table-striped"  method="POST">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Nombre</th>
+                    <th>Apellidos</th>
+                    <th>Carnet</th>
+                    <th>Fecha Nac.</th>                   
+                    <th>Nro Camiseta</th>
+                    <th>Equipo</th>';
+                    if($idRol != 3){
+                        $tabla .= '<th>Acción</th>';
+                    }                                 
+                    $tabla .= '</tr>
+            </thead>
+            <tbody > ';
+      
         $cont = 0;
         if ($resultado1) {
-            while ($listado = mysqli_fetch_array($resultado1)) {
+            while (!$resultado1->EndOfSeek()) {
+                $listado = $resultado1->Row();
                 $cont++;
              
                 $tabla .= "<tr>";
                 $tabla .= "<td data-title=''>" .  $cont . "</td>";
-                $tabla .= "<td data-title=''>" . $listado['nombre'] . "</td>";
-                $tabla .= "<td data-title=''>" . $listado['apellidos'] . "</td>";
-                $tabla .= "<td data-title=''>" . $listado['ci'] . "</td>";
-                $tabla .= "<td data-title=''>" . $listado['fechaNacimiento'] . "</td>";
-                $tabla .= "<td data-title=''>" . $listado['nroCamiseta'] . "</td>";
-                $tabla .= "<td data-title=''>" . $listado['nombreEquipo'] . "</td>";
-                $tabla .= "<td data-title=''>" . $listado['nombreMision'] . "</td>";
-                $tabla .= "<td data-title=''>" . $listado['anoMision'] . "</td>";
+                $tabla .= "<td data-title=''>" . $listado->nombre . "</td>";
+                $tabla .= "<td data-title=''>" . $listado->apellidos . "</td>";
+                $tabla .= "<td data-title=''>" . $listado->ci . "</td>";
+                $tabla .= "<td data-title=''>" . $listado->fechaNacimiento . "</td>";
+                $tabla .= "<td data-title=''>" . $listado->nroCamiseta . "</td>";
+                $tabla .= "<td data-title=''>" . $listado->nombreEquipo . "</td>";               
                 if($idRol != 3){
-                $tabla .= "<td data-title=''><button type='button' class='btn btn-primary btn-sm checkbox-toggle' onclick='modalEditarJugador(".$listado['idJugador'].")'><i title= 'Editar' class='fas fa-pen'></i></button>";      
+                $tabla .= "<td data-title=''><button type='button' class='btn btn-primary btn-sm checkbox-toggle' onclick='modalEditarJugador(".chr(34).$listado->idJugador.chr(34).",".chr(34).$listado->nombre.chr(34).",".chr(34).$listado->apellidos.chr(34).",".chr(34).$listado->ci.chr(34).",".chr(34).$listado->fechaNacimiento.chr(34).",".chr(34).$listado->nroCamiseta.chr(34).")'><i title= 'Editar' class='fas fa-pen'></i></button>";      
                
-                    if($listado['estado'] == "Habilitado"){
-                        $tabla .= " <button type='button' class='btn btn-danger btn-sm checkbox-toggle' onclick='ConfirmarDeshabilitar(".$listado['idJugador'].")'>Deshabilitar</button>";                          
+                    if($listado->estado == "Habilitado"){
+                        $tabla .= " <button type='button' class='btn btn-danger btn-sm checkbox-toggle' onclick='ConfirmarDeshabilitar(".$listado->idJugador.")'>Deshabilitar</button>";                          
                         $tabla .= "</td>";
                     }else{
-                        $tabla .= " <button type='button' class='btn btn-success btn-sm checkbox-toggle' onclick='ConfirmarHabilitar(".$listado['idJugador'].")'>Habilitar</button>";                          
+                        $tabla .= " <button type='button' class='btn btn-success btn-sm checkbox-toggle' onclick='ConfirmarHabilitar(".$listado->idJugador.")'>Habilitar</button>";                          
                         $tabla .= "</td>";
                     }
                 }
@@ -142,81 +122,7 @@ if($tipo == "ListaJugadores"){
 }
 
 
-if($tipo == "FiltrarJugadores"){
 
-    $nombre = $_POST["nombre"];
-    $idEquipo = $_POST["idEquipo"];
-    $consulta == "";
-
-    if($nombre != "" && $idEquipo > 0){
-        $consulta = "where nombre like '%$nombre%' and idEquipo = $idEquipo";
-    }
-    else{
-        if($nombre != ""){
-            $consulta = "where nombre like '%$nombre%'";
-        }
-    
-        if($idEquipo > 0){
-            $consulta = "where idEquipo = $idEquipo";
-        }
-    }
-   
-    
-
-    $registrarInventario = "SELECT j.id as idJugador,j.nombre,j.apellidos,j.ci,j.fechaNacimiento,j.nombreMision,j.anoMision,j.nroCamiseta,e.nombreEquipo,j.estado
-     FROM Jugador as j left join Equipo as e on e.id = j.idEquipo $consulta order by j.idEquipo,j.nombre asc";
-    $resultado1 = mysqli_query($conectar, $registrarInventario);
-
-        $tabla = "";
-        $tabla .= '<table id="example1" class="table table-bordered table-striped"  method="POST">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Nombre</th>
-                            <th>Apellidos</th>
-                            <th>Carnet</th>
-                            <th>Fecha Nac.</th>                   
-                            <th>Nro Camiseta</th>
-                            <th>Equipo</th>
-                            <th>Misión</th>
-                            <th>Año Misión</th>
-                            <th>Accion</th>	             
-                        </tr>
-                    </thead>
-                    <tbody > ';
-     
-        $cont = 0;
-        if ($resultado1) {
-            while ($listado = mysqli_fetch_array($resultado1)) {
-                $cont++;
-               
-                $tabla .= "<tr>";
-                $tabla .= "<td data-title=''>" .  $cont . "</td>";
-                $tabla .= "<td data-title=''>" . $listado['nombre'] . "</td>";
-                $tabla .= "<td data-title=''>" . $listado['apellidos'] . "</td>";
-                $tabla .= "<td data-title=''>" . $listado['ci'] . "</td>";
-                $tabla .= "<td data-title=''>" . $listado['fechaNacimiento'] . "</td>";
-                $tabla .= "<td data-title=''>" . $listado['nroCamiseta'] . "</td>";
-                $tabla .= "<td data-title=''>" . $listado['nombreEquipo'] . "</td>";
-                $tabla .= "<td data-title=''>" . $listado['nombreMision'] . "</td>";
-                $tabla .= "<td data-title=''>" . $listado['anoMision'] . "</td>";
-                $tabla .= "<td data-title=''><button type='button' class='btn btn-primary btn-sm checkbox-toggle' onclick='modalEditarJugador(".$listado['idJugador'].")'><i title= 'Editar' class='fas fa-pen'></i></button>";      
-                if($listado['estado'] == "Habilitado"){
-                    $tabla .= " <button type='button' class='btn btn-danger btn-sm checkbox-toggle' onclick='ConfirmarDeshabilitar(".$listado['idJugador'].")'>Deshabilitar</button>";                          
-                }else{
-                    $tabla .= " <button type='button' class='btn btn-success btn-sm checkbox-toggle' onclick='ConfirmarHabilitar(".$listado['idJugador'].")'>Habilitar</button>";                          
-                }
-                $tabla .= "</td>";
-                $tabla .= "</tr>";
-            }
-        }
-    
-        $tabla .= "</tbody>
-                
-                </table>";
-        echo  $tabla;   
-  
-}
 
 
 
