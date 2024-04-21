@@ -73,6 +73,7 @@ $cobros = $parametro->traerPrecio('Transferencias');
             </div>
 
             <!-- Transferencia -->
+            <?php if($parametro->verificarPermisos($_SESSION['idUsuario'],12) > 0){ ?>
             <section class="col-lg-12 col-md-12 pr-4 pl-4"> <br>
                 <div class="card info-box shadow-lg">
                     <div class="card-body">
@@ -172,7 +173,7 @@ $cobros = $parametro->traerPrecio('Transferencias');
                 </div>
                 <br>
             </section>
-
+            <?php } ?>
             <!-- Filtros -->
             <section class="col-lg-12 col-md-12 pr-4 pl-4">
                 <div id="accordion">

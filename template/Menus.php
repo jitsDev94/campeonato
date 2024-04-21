@@ -62,7 +62,7 @@
                                 </p>
                             </a>
                         </li>
-                        <?php if($parametro->verificarPermisos($_SESSION['idUsuario'],12) > 0){ ?>
+                       
                         <li class="nav-item">
                             <a href="../views/transferencia.php" class="nav-link">
                               <i class="nav-icon fas fa-random"></i>
@@ -71,7 +71,7 @@
                                 </p>
                             </a>
                         </li>
-                            <?php }
+                            <?php 
                             if($parametro->verificarPermisos($_SESSION['idUsuario'],7) > 0){ ?>
                         <li class="nav-item">
                             <a href="../views/equipos.php" class="nav-link">

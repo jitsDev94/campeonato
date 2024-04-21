@@ -29,6 +29,66 @@ if (!isset($_SESSION['idUsuario'])) {
     border-top-color: cornflowerblue;
     border-top-width: 3px;
   }
+
+
+  .uv-checkbox-wrapper {
+    display: inline-block;
+  }
+
+  .uv-checkbox {
+    display: none;
+  }
+
+  .uv-checkbox-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+  }
+
+  .uv-checkbox-icon {
+    position: relative;
+    width: 1em;
+    height: 1em;
+    border: 2px solid #ccc;
+    border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+    transition: border-color 0.3s ease, border-radius 0.3s ease;
+  }
+
+  .uv-checkmark {
+    position: absolute;
+    top: 0.1em;
+    left: 0.1em;
+    width: 1,7em;
+    height: 1,7em;
+    fill: none;
+    stroke: #fff;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 24;
+    stroke-dashoffset: 24;
+    transition: stroke-dashoffset 0.5s cubic-bezier(0.45, 0.05, 0.55, 0.95);
+  }
+
+  .uv-checkbox-text {
+    margin-left: 0.5em;
+    transition: color 0.3s ease;
+    font-weight: normal;
+  }
+
+  .uv-checkbox:checked + .uv-checkbox-label .uv-checkbox-icon {
+    border-color: cornflowerblue;
+    border-radius: 70% 30% 30% 70% / 70% 70% 30% 30%;
+    background-color: cornflowerblue;
+  }
+
+  .uv-checkbox:checked + .uv-checkbox-label .uv-checkmark {
+    stroke-dashoffset: 0;
+  }
+
+  .uv-checkbox:checked + .uv-checkbox-label .uv-checkbox-text {
+    color: black;
+  }
 </style>
 </head>
 <body class="hold-transition sidebar-mini layout-fixed sidebar-closed sidebar-collapse">
@@ -139,7 +199,7 @@ if (!isset($_SESSION['idUsuario'])) {
 
         <!-- Modal nuevo/editar jugador --> 
     <div class="modal fade" id="modalListarPermisos">
-        <div class="modal-dialog modal-md">
+        <div class="modal-dialog modal-lg">
           <div class="modal-content">
             <div class="modal-header">
               <h4 class="modal-title">Permisos</h4>
@@ -148,7 +208,7 @@ if (!isset($_SESSION['idUsuario'])) {
               </button>
             </div>
             <div class="modal-body">
-                <div class="table-responsive">
+                <!-- <div class="table-responsive">
                   <table id="example2" class="table table-bordered table-striped" sytle="width: 100%;" method="POST">
                     <thead>
                           <tr>
@@ -160,7 +220,8 @@ if (!isset($_SESSION['idUsuario'])) {
                           
                     </tbody>
                   </table>
-                </div>
+                </div> -->
+                <div id="contenerdor_tabla2"></div>
             </div>
             <div class="modal-footer col-md-12">               
                 <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cerrar</button>            
@@ -248,7 +309,7 @@ if (!isset($_SESSION['idUsuario'])) {
       $("#contenerdor_tabla2").html('<div class="col-md-5 loading"> <center><i class="fa fa-spinner fa-pulse fa-5x" style="color:#3c8dbc"></i><br/>Obteniendo Permisos...</center></div>');
 
       $.ajax({
-          url: '../clases/Cl_Permisos.php?op=ListarPermisos',
+          url: '../clases/Cl_Permisos.php?op=ListarPermisos2',
           type: 'POST', 
           data: {
               idRol: idRol
@@ -256,14 +317,14 @@ if (!isset($_SESSION['idUsuario'])) {
           success: function(data) {
           
               $("#contenerdor_tabla2").html('');
-              $('#example2').DataTable().destroy();
-              $("#contenerdor_tabla2").html(data);
-              $("#example2").DataTable({
-                  "responsive": true, 
-                  "lengthChange": false, 
-                  "autoWidth": false,
-                  "language": lenguaje_español
-              });            
+              // $('#example2').DataTable().destroy();
+               $("#contenerdor_tabla2").html(data);
+              // $("#example2").DataTable({
+              //     "responsive": true, 
+              //     "lengthChange": false, 
+              //     "autoWidth": false,
+              //     "language": lenguaje_español
+              // });            
           }          
       })         
     }

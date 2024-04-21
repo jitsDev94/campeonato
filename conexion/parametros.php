@@ -49,7 +49,7 @@ class parametros
         }
 
                                  
-        $consulta = "SELECT * FROM permisos";
+        $consulta = "SELECT * FROM permisos order by menu asc";
         if(!$db->Query($consulta)) {
             return 0;
         }      
