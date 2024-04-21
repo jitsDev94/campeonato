@@ -71,8 +71,7 @@
                                 </p>
                             </a>
                         </li>
-                            <?php 
-                            if($parametro->verificarPermisos($_SESSION['idUsuario'],7) > 0){ ?>
+                           
                         <li class="nav-item">
                             <a href="../views/equipos.php" class="nav-link">
                               <i class="nav-icon fas fa-users"></i>                                  
@@ -82,8 +81,7 @@
                                 </p>
                             </a>
                         </li>
-                            <?php }
-                            if($parametro->verificarPermisos($_SESSION['idUsuario'],8) > 0){ ?>
+                           
                         <li class="nav-item">
                             <a href="../views/inscripcion.php" class="nav-link">
                               <i class="nav-icon fas fa-file-signature"></i>                              
@@ -93,7 +91,7 @@
                                 </p>
                             </a>
                         </li>
-                        <?php }
+                        <?php
                             if($parametro->verificarPermisos($_SESSION['idUsuario'],10) > 0){ ?>
                         <li class="nav-item">
                             <a href="../views/campeonato.php" class="nav-link">
@@ -244,7 +242,7 @@
                         <?php if($idRol != 3){ ?>
                         <li class="nav-header">Configuraciones</li>
                         <?php } ?>
-                        <?php  if($parametro->verificarPermisos($_SESSION['idUsuario'],16) > 0){?>  
+                        <?php  if($parametro->verificarPermisos($_SESSION['idUsuario'],'16,18,19') > 0){?>  
                         <li class="nav-item">
                             <a href="../views/Usuarios.php" class="nav-link">
                               <i class="nav-icon fas fa-user"></i>
@@ -253,7 +251,7 @@
                                 </p>
                             </a>
                         </li>
-                        <?php } if($parametro->verificarPermisos($_SESSION['idUsuario'],17) > 0){?>  
+                        <?php } if($parametro->verificarPermisos($_SESSION['idUsuario'],'17,23,24,25') > 0){?>  
                         <li class="nav-item">
                             <a href="../views/permisos.php" class="nav-link">
                               <i class="nav-icon fas fa-user-check"></i>

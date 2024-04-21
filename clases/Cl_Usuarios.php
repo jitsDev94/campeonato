@@ -6,6 +6,7 @@ include("../conexion/parametros.php");
 
 $parametro = new parametros();
 
+
 $tipo = $_GET["op"];
 if($tipo == "EstadoUsario"){
 
@@ -25,6 +26,18 @@ if($tipo == "EstadoUsario"){
 
 }
 
+
+if($tipo == "EditarUsuario"){
+
+
+    $idRol = $_POST["idRol"];
+    $idEquipo = $_POST["idEquipo"];
+    $idUsuario = $_POST["idUsuario"];
+   
+    $resultado = $parametro->EditarUsuario( $idRol,$idEquipo,$idUsuario);
+    echo $resultado;
+  
+}
 
 if($tipo == "RegistrarUsuario"){
 
@@ -57,15 +70,20 @@ if($tipo == "ListarUsuarios"){
                $tabla .= "<td data-title=''>" . $row->nombreRol . "</td>";
                $tabla .= "<td data-title=''>" . $row->nombreEquipo . "</td>";
                $tabla .= "<td data-title=''>" . $row->usuario . "</td>";
-               $tabla .= "<td data-title=''>" . $row->estado . "</td>";
-               $tabla .= "<td data-title=''>";
-                if($row->estado == "Deshabilitado"){
-                 $tabla .= "<button type='button' class='btn btn-success btn-sm checkbox-toggle' onclick='ConfirmarHabilitar(".$row->idUsuario.")'>Habilitar</button>";                 
+               $tabla .= "<td data-title=''>" . $row->estado . "</td>";            
+                $tabla .= "<td data-title=''>";
+                if($parametro->verificarPermisos($_SESSION['idUsuario'],18) > 0){
+                    $tabla .= "<button type='button' title='Editar Usuario' class='btn btn-primary btn-sm checkbox-toggle' onclick='AbrirModalEditarUsuario(".chr(34).$row->idUsuario.chr(34).",".chr(34).$row->idRol.chr(34).",".chr(34).$row->idEquipo.chr(34).")'><i class='fas fa-user-edit'></i></button>";
                 }
-                else{                   
-                    $tabla .= "&nbsp <button type='button' class='btn btn-danger btn-sm checkbox-toggle' onclick='ConfirmarDeshabilitar(".$row->idUsuario.")'>Deshabilitar</button>";                     
+                if($parametro->verificarPermisos($_SESSION['idUsuario'],19) > 0){
+                    if($row->estado == "Deshabilitado"){
+                    $tabla .= "<button type='button' class='btn btn-success btn-sm checkbox-toggle' onclick='ConfirmarHabilitar(".$row->idUsuario.")'>Habilitar</button>";                 
+                    }
+                    else{                   
+                        $tabla .= "&nbsp <button type='button' class='btn btn-danger btn-sm checkbox-toggle' onclick='ConfirmarDeshabilitar(".$row->idUsuario.")'>Deshabilitar</button>";                     
+                    }
                 }
-              $tabla .= "</td>";
+                $tabla .= "</td>";                
                $tabla .= "</tr>";
            }
      

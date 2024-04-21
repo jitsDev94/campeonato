@@ -17,7 +17,7 @@ class parametros
         LEFT join rol r on r.id = rp.idRol
         LEFT join usuario u on u.idRol = r.id
         LEFT join permisos p on p.idPermiso = rp.idPermiso
-        where u.id = $idUsuario and rp.idPermiso = $idpermiso";
+        where u.id = $idUsuario and rp.idPermiso in ($idpermiso)";
 
         if (!$db->Query($consulta)) {
             $db->Kill();
@@ -123,6 +123,26 @@ class parametros
       
     }
 
+    public function EditarRol($idRol,$nombre)
+	{       
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return 'error';
+        }
+             
+
+        $consulta = "UPDATE rol set nombreRol = '$nombre' where id=$idRol";
+            
+        if (!$db->Query($consulta)) {
+            $db->Kill();
+            return 'Ha ocurrido un error al registrar el rol.';
+        }
+       
+        return 'ok';
+      
+    }
 
     public function RegistrarRol($nombre)
 	{       
@@ -144,6 +164,35 @@ class parametros
         if (!$db->Query($consulta)) {
             $db->Kill();
             return 'Ha ocurrido un error al registrar el rol.';
+        }
+       
+        return 'ok';
+      
+    }
+
+
+    public function EditarUsuario($idRol,$idEquipo,$idUsuario)
+	{       
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return 'error';
+        }
+     
+      
+        $update = '';
+        if($idEquipo != "" && $idEquipo != null){
+        
+            $update = ", idEquipo = $idEquipo";
+        }
+
+        $consulta = "UPDATE Usuario set idRol = $idRol $update where id = $idUsuario";
+      
+      
+        if (!$db->Query($consulta)) {
+            $db->Kill();
+            return 0;
         }
        
         return 'ok';
@@ -194,7 +243,7 @@ class parametros
         }
 
                                  
-        $consulta = "SELECT u.id as idUsuario,r.nombreRol,e.nombreEquipo,u.usuario,u.estado FROM Usuario as u
+        $consulta = "SELECT u.id as idUsuario,u.idRol,r.nombreRol,e.nombreEquipo,u.usuario,u.estado,u.idEquipo FROM Usuario as u
         LEFT JOIN Rol as r on r.id = u.idRol
       LEFT join Equipo as e on e.id = u.idEquipo";
         if(!$db->Query($consulta)) {

@@ -19,6 +19,17 @@ if($tipo == "EstadoRol"){
 }
 
 
+if($tipo == "EditarRol"){
+
+    $nombre = $_POST["nombre"];
+    $idRol = $_POST["idRol"];
+
+    $resultado = $parametro->EditarRol( $idRol,$nombre);
+    echo $resultado;
+  
+}
+
+
 if($tipo == "RegistrarRol"){
 
     $nombre = $_POST["nombre"];
@@ -50,12 +61,16 @@ if($tipo == "ListarRoles"){
                  $tabla .= "<button type='button' class='btn btn-success btn-sm checkbox-toggle' onclick='ConfirmarHabilitar(".$row->id.")'>Habilitar</button>";                 
                 }
                 else{
+                    if($parametro->verificarPermisos($_SESSION['idUsuario'],23) > 0){
+                        $tabla .= "&nbsp <button type='button' title='Editar Rol' class='btn btn-primary btn-sm checkbox-toggle' onclick='abrirModalEditarRol(".chr(34).$row->id.chr(34).",".chr(34).$row->nombreRol.chr(34).")'><i class='fas fa-user-edit'></i></button>";                     
+                    }
                     if($parametro->verificarPermisos($_SESSION['idUsuario'],25) > 0){
-                    $tabla .= "&nbsp <button type='button' title='Administrar Permisos' class='btn btn-primary btn-sm checkbox-toggle' onclick='modalListarPermisos(".$row->id.")'><i class='fas fa-list'></i></button>";
+                    $tabla .= "&nbsp <button type='button' title='Administrar Permisos' class='btn btn-secondary btn-sm checkbox-toggle' onclick='modalListarPermisos(".$row->id.")'><i class='fas fa-list'></i></button>";
                     }
                     if($parametro->verificarPermisos($_SESSION['idUsuario'],24) > 0){
                     $tabla .= "&nbsp <button type='button' class='btn btn-danger btn-sm checkbox-toggle' onclick='ConfirmarDeshabilitar(".$row->id.")'>Deshabilitar</button>";                     
                     }
+                  
                 }
               $tabla .= "</td>";
                $tabla .= "</tr>";

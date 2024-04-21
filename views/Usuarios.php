@@ -4,6 +4,8 @@ include '../conexion/conexion.php';
 require_once '../conexion/parametros.php';
 
 $parametro = new parametros();
+
+
 session_start();
 
 if (!isset($_SESSION['idUsuario'])) {
@@ -13,6 +15,11 @@ if (!isset($_SESSION['idUsuario'])) {
     $usuario = $_SESSION['usuario'];  
     $idEquipoDelegado = $_SESSION['idEquipo'];
     $nombreEquipoDelegado= $_SESSION['nombreEquipo'];
+}
+
+if($parametro->verificarPermisos($_SESSION['idUsuario'],'16,18,19') == 0){
+  echo "Su usuario no tiene permisos para entrar a esta pagina";
+  exit();
 }
 ?>
 
@@ -64,7 +71,9 @@ if (!isset($_SESSION['idUsuario'])) {
                         <label for=""><h4>Listado de Usuarios</h4></label>
                     </div>       
                     <div class="col-12 col-md-2">
+                      <?php if($parametro->verificarPermisos($_SESSION['idUsuario'],16) > 0){ ?>
                         <button type="button" class="btn btn-primary btn-block" onclick="modalNuevoUsuario();"><i class="fas fa-plus-circle"></i> Nuevo Usuario</button>                 
+                        <?php } ?>
                     </div>   
                 </div>
               </div>
@@ -78,8 +87,8 @@ if (!isset($_SESSION['idUsuario'])) {
                               <th>Rol</th>
                               <th>Equipo</th>
                               <th>Usuario</th> 
-                              <th>Estado</th>                 
-                              <th>Acción</th>          
+                              <th>Estado</th>                                          
+                              <th>Acción</th>                                       
                           </tr>
                     </thead>
                     <tbody id="contenerdor_tabla" > 
@@ -161,11 +170,62 @@ if (!isset($_SESSION['idUsuario'])) {
     </div>
       <!-- /.modal -->
 
+
+      <!-- Modal nuevo/editar jugador --> 
+    <div class="modal fade" id="modalEditarUsuario">
+        <div class="modal-dialog modal-md">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title"> Editar Usuario</h4>
+              <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" id="formEditarLote" class="row g-3">     
+                  <input type="hidden" id='idUsuarioEdit'>                         
+                    <div class="col-md-6 mt-3">                       
+                        <label for="" class="form-label">Rol(*)</label> 
+                        <select class="form-control input" id="idRolEdit">                           
+                            <?php 
+                              $parametro->DropDownListarRoles();                                                                                                
+                            ?>                              
+                        </select>                                              
+                    </div>
+                    <div class="col-md-6 mt-3">                                       
+                          <label for="" class="form-label">Equipo(*)</label> 
+                          <select class="form-control input" id="idEquipoEdit"> 
+                              <option value="0" selected disabled>Seleccionar Equipo...</option>
+                              <?php 
+                               $parametro->DropDownListarEquiposInscritos();                                                                                  
+                              ?>                              
+                          </select>                                             
+                    </div>                                        
+                </form>
+            </div>
+            <div class="modal-footer col-md-12">
+            <button type="button" class="btn btn-primary" onclick="Editar()">Editar</button>  
+              <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cerrar</button>            
+            </div>
+          </div>
+          <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+      <!-- /.modal -->
+
   <script>
   
     function modalNuevoUsuario(){
         $("#Equipos").hide();
         $("#modalNuevoUsuario").modal("show");
+    }
+
+    function AbrirModalEditarUsuario(idUsuario,idRol,idEquipo){
+        $("#idEquipoEdit").val(idEquipo);
+        $("#idRolEdit").val(idRol);  
+        $("#idUsuarioEdit").val(idUsuario);        
+        $("#modalEditarUsuario").modal("show");
     }
 
     function mostrarEquipos(){
@@ -264,6 +324,45 @@ if (!isset($_SESSION['idUsuario'])) {
     }
 
   
+    function Editar() {
+         
+         var idRol = $('#idRolEdit').val();
+         var idUsuario = $('#idUsuarioEdit').val();        
+         var idEquipo = $('#idEquipoEdit').val();                 
+ 
+         if(idEquipo == null || idEquipo == 0){
+           Swal.fire("Campos Vacios..!", "Debe seleccionar un equipo", "warning");
+           return false;
+         }
+ 
+         if(idRol == null || idRol == 0){
+           Swal.fire("Campos Vacios..!", "Debe seleccionar un rol", "warning");
+           return false;
+         }
+
+          $.ajax({
+          url: '../clases/Cl_Usuarios.php?op=EditarUsuario',
+          type: 'POST',
+          data: {
+             idRol: idRol,
+             idUsuario: idUsuario,           
+             idEquipo: idEquipo
+              }, 
+              success: function(vs) { 
+               $("#modalEditarUsuario").modal('hide');
+               Swal.fire('Exito!', 'Usuario modificado correctamente',  'success');
+                 ListarUsuarios();
+                 //  if (vs == 'ok') {   
+                 //     Swal.fire('Exito!', 'Usuario registrado correctamente',  'success');
+                     
+                                                                   
+                 //  }else{
+                 //     Swal.fire("Error..!", "Ha ocurrido un error al registrar el usuario. "+vs, "error");
+                 //  }                  
+              }
+          })         
+      }
+
 
      function Registrar() {
          

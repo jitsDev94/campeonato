@@ -12,6 +12,11 @@ if (!isset($_SESSION['idUsuario'])) {
     $idEquipoDelegado = $_SESSION['idEquipo'];
     $nombreEquipoDelegado= $_SESSION['nombreEquipo'];
 }
+
+if($parametro->verificarPermisos($_SESSION['idUsuario'],'17,23,24,25') == 0){
+  echo "Su usuario no tiene permisos para entrar a esta pagina";
+  exit();
+}
 ?>
 
 <!DOCTYPE html>
@@ -122,7 +127,9 @@ if (!isset($_SESSION['idUsuario'])) {
                         <label for=""><h4>Listado de Roles</h4></label>
                     </div>       
                     <div class="col-12 col-md-2">
+                      <?php  if($parametro->verificarPermisos($_SESSION['idUsuario'],17) > 0){ ?>
                         <button type="button" class="btn btn-primary btn-block" onclick="modalNuevoRol();"><i class="fas fa-plus-circle"></i> Nuevo Rol</button>                 
+                        <?php } ?>
                     </div>   
                 </div>
               </div>
@@ -149,8 +156,8 @@ if (!isset($_SESSION['idUsuario'])) {
         </section>
 
 
-  <!-- Control Sidebar -->
-  <aside class="control-sidebar control-sidebar-dark">
+      <!-- Control Sidebar -->
+      <aside class="control-sidebar control-sidebar-dark">
         <!-- Control sidebar content goes here -->
       </aside>
       <!-- /.control-sidebar -->
@@ -187,6 +194,37 @@ if (!isset($_SESSION['idUsuario'])) {
             </div>
             <div class="modal-footer col-md-12">
                 <button type="button" class="btn btn-primary" onclick="Registrar()">Registrar</button>  
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cerrar</button>            
+            </div>
+          </div>
+          <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+      <!-- /.modal -->
+
+
+       <!-- Modal nuevo/editar jugador --> 
+    <div class="modal fade" id="modalEditarRol">
+        <div class="modal-dialog modal-sm">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title"> Editar Rol</h4>
+              <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" id="formEditarLote" class="row g-3">    
+                  <input type="hidden" id='idRolEdit'>                                                       
+                    <div class="col-md-12">                   
+                        <label for="" class="form-label">Nombre Rol(*)</label>
+                        <input type="text" class="form-control input" id ="nombreRolEdit" placeholder="Ingresar Nombre Rol">                                                                  
+                    </div>                                                   
+                </form>
+            </div>
+            <div class="modal-footer col-md-12">
+                <button type="button" class="btn btn-primary" onclick="Editar()">Editar</button>  
                 <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cerrar</button>            
             </div>
           </div>
@@ -235,10 +273,14 @@ if (!isset($_SESSION['idUsuario'])) {
 
   <script>
   
-    function modalNuevoRol(){
-       
-     
+    function modalNuevoRol(){            
         $("#modalNuevoRol").modal("show");
+    }
+
+    function abrirModalEditarRol(idRol,nombreRol){    
+      $("#nombreRolEdit").val(nombreRol);   
+      $("#idRolEdit").val(idRol);       
+        $("#modalEditarRol").modal("show");
     }
 
     function ConfirmarDeshabilitar(id) {
@@ -405,6 +447,32 @@ if (!isset($_SESSION['idUsuario'])) {
          })         
      }
      
+     function Editar() {
+         
+         var nombre = $('#nombreRolEdit').val();
+         var idRol = $('#idRolEdit').val();
+
+         if(nombre == ""){
+           Swal.fire("Campos Vacios..!", "Debe ingresar un nombre para el rol", "warning");
+           return false;
+         }
+        
+          $.ajax({
+          url: '../clases/Cl_Permisos.php?op=EditarRol',
+          type: 'POST',
+          data: {
+             nombre: nombre,
+             idRol: idRol
+              }, 
+              success: function(vs) { 
+
+                $("#modalEditarRol").modal('hide');
+                Swal.fire('Exito!', 'Usuario modificado correctamente',  'success');
+                ListarRoles();
+                                   
+              }
+          })         
+      }
      </script>
 
     <?php
