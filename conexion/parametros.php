@@ -734,6 +734,124 @@ class parametros
       
     }
 
+    public function configuracionCobrosPendientes()
+	{       
+
+        $consulta = "SELECT * FROM configuracionCobros where precio is null";
+
+        $db = new MySQL();
+		if ($db->Error()) $db->Kill();
+		if (!$db->Query($consulta)) $db->Kill();
+		
+        return $db->RowCount();
+      
+    }
+
+    public function listarAnunciosVigentes()
+	{       
+
+        $consulta = "SELECT id,titulo,detalle,fechaPublicacion,fechaLimite FROM anuncios where fechaLimite >= sysdate() and estado = 'Habilitado'";
+
+        $db = new MySQL();
+		if ($db->Error()) $db->Kill();
+		if (!$db->Query($consulta)) $db->Kill();
+		
+        return $db;
+      
+    }
+
+    public function listarAnuncios()
+	{       
+
+        $consulta = "SELECT * FROM anuncios";
+
+        $db = new MySQL();
+		if ($db->Error()) $db->Kill();
+		if (!$db->Query($consulta)) $db->Kill();
+		
+        return $db;
+      
+    }
+
+    public function DeshabilitarAnunciosAntiguos()
+	{       
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return false;
+        }
+        
+        $consulta = "UPDATE anuncios SET estado = 'Deshabilitado' where fechaLimite < sysdate()";                            
+
+        if (!$db->Query($consulta)) {       
+            return 'error';
+        }
+
+
+        return 'ok';
+      
+    }
+
+
+    public function QuitarAnuncio($id)
+	{       
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return false;
+        }
+        
+        $consulta = "UPDATE anuncios SET estado = 'Deshabilitado' where id = $id";
+                      
+
+        if (!$db->Query($consulta)) {       
+            return 'error';
+        }
+
+
+        return 'ok';
+      
+    }
+
+    public function RegistrarAnuncio($titulo,$detalle,$fechaLimite)
+	{       
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return false;
+        }
+        
+        $consulta = "INSERT INTO anuncios(titulo,detalle,fechaPublicacion,fechaLimite,estado) VALUES('$titulo','$detalle',sysdate(),'$fechaLimite','Habilitado')";
+                      
+
+        if (!$db->Query($consulta)) {       
+            return 'error';
+        }
+
+
+        return 'ok';
+      
+    }
+
+    public function EditarAnuncio($id,$titulo,$detalle,$fechaLimite)
+	{       
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return false;
+        }
+        
+        $consulta = "UPDATE anuncios SET titulo ='$titulo', detalle = '$detalle', estado = 'Habilitado', fechaLimite= '$fechaLimite' where id = $id";
+                      
+        $db->Query($consulta);
+        
+        return 'ok';
+      
+    }
 
     public function RegistrarTransferencia($idJugador,$idEquipoOrigen,$idEquipoDestino,$fecha,$precio,$idCampeonato)
 	{       

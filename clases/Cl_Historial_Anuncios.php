@@ -1,55 +1,46 @@
 <?php
 
 session_start();
-include("conexion.php");
+require_once '../conexion/parametros.php';
+$parametro = new parametros();
 
 $tipo = $_GET["op"];
 
 
 if($tipo == "ListarAnuncios"){
-
-$consultar = "SELECT * from anuncios";
-$resultado1 = mysqli_query($conectar, $consultar);
+  
+    $resultado = $parametro->ListarAnuncios(); 
 
     $tabla = "";
-    $tabla .= '<table id="example1" class="table table-bordered table-striped"  method="POST">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Titulo</th>
-                        <th>Detalle</th>  
-                        <th width="70px;">Publicado</th>
-                        <th width="70px;">Limite</th>
-                        <th>Acción</th>   
-                    </tr>
-                </thead>
-                <tbody > ';
- 
+   
     $cont = 0;
-    if ($resultado1) {
-        while ($listado = mysqli_fetch_array($resultado1)) {
+    if ($resultado->RowCount() > 0) {
+        while (!$resultado->EndOfSeek()) {  
+            $resultado->MoveFirst();
+            $listado = $resultado->Row();
             $cont++;
             $tabla .= "<tr>";
             $tabla .= "<td data-title=''>" .  $cont . "</td>";
-            $tabla .= "<td data-title=''>" . $listado['titulo'] . "</td>";
-            $tabla .= "<td data-title=''>" . $listado['detalle'] . "</td>";
-            $tabla .= "<td data-title=''>" . $listado['fechaPublicacion'] . "</td>";
-            $tabla .= "<td data-title=''>" . $listado['fechaLimite'] . "</td>";  
-            if($listado['estado'] == 'Habilitado'){
-                $tabla .= "<td data-title=''><button type='button' class='btn btn-danger btn-sm' onclick='ConfirmarQuitarAnuncio(" . $listado['id'] . ")'>Deshabilitar</button></td>";
+            $tabla .= "<td data-title=''>" . $listado->titulo . "</td>";
+            $tabla .= "<td data-title=''>" . $listado->detalle . "</td>";
+            $tabla .= "<td data-title=''>" . $listado->fechaPublicacion . "</td>";
+            $tabla .= "<td data-title=''>" . $listado->fechaLimite . "</td>";  
+            $tabla .= "<td data-title=''>";  
+            if($listado->estado == 'Habilitado'){
+                if ($parametro->verificarPermisos($_SESSION['idUsuario'],27) > 0) { 
+                $tabla .= "<button type='button' class='btn btn-danger btn-sm' onclick='ConfirmarQuitarAnuncio(" . $listado->id . ")'>Deshabilitar</button>";
+                }
             } 
-            else{
-              
-                $tabla .= "<td data-title=''><button type='button' class='btn btn-primary btn-sm' onclick='ModalEditarAnuncio(" . $listado['id'] . ")'>Habilitar</button></td>";
+            else{     
+                if ($parametro->verificarPermisos($_SESSION['idUsuario'],26) > 0) {          
+                    $tabla .= "<button type='button' class='btn btn-primary btn-sm' onclick='ModalEditarAnuncio(".chr(34). $listado->id .chr(34).",".chr(34). $listado->titulo .chr(34)."," .chr(34). $listado->detalle .chr(34).",".chr(34). $listado->fechaLimite .chr(34).")'>Habilitar</button>";
+                }
             }
            
-            $tabla .= "</tr>";
+            $tabla .= "</td></tr>";
         }
     }
 
-    $tabla .= "</tbody>
-            
-            </table>";
     echo  $tabla;   
 }
 
@@ -59,15 +50,11 @@ if($tipo=="RegistrarAnuncio"){
     $detalle = $_POST["detalle"];
     $fechaLimite = $_POST["fechaLimite"];
 
-    $registrar = "INSERT INTO anuncios VALUES(null,'$titulo','$detalle',sysdate(),'$fechaLimite','Habilitado')";
-    $resultado = mysqli_query($conectar, $registrar);
 
-    if($resultado){
-        echo 1;
-    }
-    else{
-        echo 2;
-    }
+    $resultado = $parametro->RegistrarAnuncio($titulo,$detalle,$fechaLimite); 
+
+    echo $resultado;
+   
 
 }
 
@@ -78,15 +65,17 @@ if($tipo=="EditarAnuncio"){
     $detalle = $_POST["detalle"];
     $fechaLimite = $_POST["fechaLimite"];
 
-    $registrar = "UPDATE anuncios SET titulo ='$titulo', detalle = '$detalle', estado = 'Habilitado', fechaLimite= '$fechaLimite' where id = $id";
-    $resultado = mysqli_query($conectar, $registrar);
+    $resultado = $parametro->EditarAnuncio($id,$titulo,$detalle,$fechaLimite); 
 
-    if($resultado){
-        echo 1;
-    }
-    else{
-        echo 2;
-    }
+    echo $resultado;
+
+}
+
+if($tipo=="DeshabilitarAnunciosAntiguos"){
+
+    $resultado = $parametro->DeshabilitarAnunciosAntiguos(); 
+
+    echo $resultado;
 
 }
 
@@ -112,16 +101,9 @@ if($tipo=="QuitarAnuncio"){
 
     $id = $_POST["id"];
    
+    $resultado = $parametro->QuitarAnuncio($id); 
 
-    $registrar = "UPDATE anuncios SET estado = 'Deshabilitado' where id = $id";
-    $resultado = mysqli_query($conectar, $registrar);
-
-    if($resultado){
-        echo 1;
-    }
-    else{
-        echo 2;
-    }
+    echo $resultado;
 
 }
 

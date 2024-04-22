@@ -1,6 +1,6 @@
 <?php
-
-include 'clases/conexion.php';
+require_once '../conexion/parametros.php';
+$parametro = new parametros();
 session_start();
 
 if (!isset($_SESSION['idUsuario'])) {
@@ -11,6 +11,11 @@ if (!isset($_SESSION['idUsuario'])) {
     $idEquipoDelegado = $_SESSION['idEquipo'];
     $nombreEquipoDelegado= $_SESSION['nombreEquipo'];
 }
+
+if($parametro->verificarPermisos($_SESSION['idUsuario'],'27,26') == 0){
+  echo "Su usuario no tiene permisos para entrar a esta pagina";
+  exit();
+}
 ?>
 
 <!DOCTYPE html>
@@ -18,25 +23,11 @@ if (!isset($_SESSION['idUsuario'])) {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Historial Anuncios</title>
-  <link rel="icon" type="image/jpg" href="img/image.png">
-  <!-- Google Font: Source Sans Pro -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
-  <!-- Ionicons -->
-  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
-   <!-- DataTables -->
-   <link rel="stylesheet" href="plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
-  <link rel="stylesheet" href="plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
-  <link rel="stylesheet" href="plugins/datatables-buttons/css/buttons.bootstrap4.min.css">
-  <!-- Theme style -->
-  <link rel="stylesheet" href="dist/css/adminlte.min.css">
-   <!-- SweetAlert2 -->
-   <link rel="stylesheet" href="plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css">
-  <!-- Toastr -->
-  <link rel="stylesheet" href="plugins/toastr/toastr.min.css">
-  
+  <?php
+    require "../template/encabezado.php";
+    ?>
+
+
    <style>
     .card{
       border-top-color: cornflowerblue;
@@ -45,19 +36,15 @@ if (!isset($_SESSION['idUsuario'])) {
   </style>
 
 </head>
-<body class="hold-transition sidebar-mini layout-fixed sidebar-closed sidebar-collapse" onload="ListarAnuncios();" >
+<body class="hold-transition sidebar-mini layout-fixed sidebar-closed sidebar-collapse">
 <div class="wrapper">
 
-    <!-- Preloader
-    <div class="preloader flex-column justify-content-center align-items-center">
-        <img class="animation__shake" src="img/logo.png" alt="Software Bolivia" height="60" width="60">
-    </div> -->
     <?php  
-        require "Navegador.php";
+        require "../template/Navegador.php";
     ?>
 
     <?php  
-        require "Menus.php";
+        require "../template/Menus.php";
     ?>
 
 <div class="content-wrapper">
@@ -76,7 +63,7 @@ if (!isset($_SESSION['idUsuario'])) {
             <div class="card info-box shadow-lg">
             
               <div class="card-body">
-                <div id="contenerdor_tabla" class="table-responsive">
+                <div  class="table-responsive">
                   <table id="example1" class="table table-bordered table-striped">
                     <thead>
                     <tr>
@@ -88,7 +75,7 @@ if (!isset($_SESSION['idUsuario'])) {
                       <th>Acción</th>
                     </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="contenerdor_tabla">
                           
                     </tbody>
                   </table>
@@ -106,13 +93,9 @@ if (!isset($_SESSION['idUsuario'])) {
       <!-- /.control-sidebar -->
       </div>
 
-           <?php $año = date('Y'); ?>
-        <footer class="main-footer">
-            <div class="float-right d-none d-sm-block">
-            <b>Version</b> 1.0
-            </div>
-            <strong>Copyright &copy; Software Bolivia <?php echo $año ?></strong> Todos los derechos reservados.
-        </footer>
+      <?php
+    require "../template/footer.php";
+    ?>
     
     </div>
     <!-- ./wrapper -->
@@ -128,7 +111,7 @@ if (!isset($_SESSION['idUsuario'])) {
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h4 class="modal-title"> Editar Anuncio</h4>
+          <h4 class="modal-title"> Editar y Habilitar Anuncio</h4>
           <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -210,7 +193,7 @@ if (!isset($_SESSION['idUsuario'])) {
   
   function ModalHabilitarAnuncio(id){
     $.ajax({
-      url: 'clases/Cl_Historial_Anuncios.php?op=DatosAnuncio',
+      url: '../clases/Cl_Historial_Anuncios.php?op=DatosAnuncio',
       type: 'POST',
       data: {
       id:id
@@ -230,30 +213,34 @@ if (!isset($_SESSION['idUsuario'])) {
     })
   }
 
-  function ModalEditarAnuncio(id) {
+  function ModalEditarAnuncio(id,titulo,detalle,fechaLimite) {
 
-          
-    $.ajax({
-      url: 'clases/Cl_Historial_Anuncios.php?op=DatosAnuncio',
-      type: 'POST',
-      data: {
-      id:id
-      },
-      success: function(vs) {
-        if (vs == 'error') {
-          Swal.fire("Error..!", "ha ocurrido un error al crear el anuncio", "error");
-        } else {
+    $("#id").val(id); 
+    $("#titulo").val(titulo); 
+    $("#detalle").val(detalle); 
+    $("#fechaLimite").val(fechaLimite); 
+    $("#ModalRegistrarAnuncio").modal("show");    
+    // $.ajax({
+    //   url: '../clases/Cl_Historial_Anuncios.php?op=DatosAnuncio',
+    //   type: 'POST',
+    //   data: {
+    //   id:id
+    //   },
+    //   success: function(vs) {
+    //     if (vs == 'error') {
+    //       Swal.fire("Error..!", "ha ocurrido un error al crear el anuncio", "error");
+    //     } else {
         
-            var resp= $.parseJSON(vs);
-            $("#id").val(resp.id); 
-            $("#titulo").val(resp.titulo); 
-            $("#detalle").val(resp.detalle); 
-            $("#fechaLimite").val(resp.fechaLimite); 
-            $("#ModalRegistrarAnuncio").modal("show");
+    //         var resp= $.parseJSON(vs);
+    //         $("#id").val(resp.id); 
+    //         $("#titulo").val(resp.titulo); 
+    //         $("#detalle").val(resp.detalle); 
+    //         $("#fechaLimite").val(resp.fechaLimite); 
+    //         $("#ModalRegistrarAnuncio").modal("show");
           
-        }
-      }
-    })
+    //     }
+    //   }
+    // })
 
   }
 
@@ -265,7 +252,7 @@ if (!isset($_SESSION['idUsuario'])) {
     var detalle = $("#detalle").val();
     var fechaLimite = $("#fechaLimite").val();
     let hoy = new Date();
-    var fechaActual = hoy.toJSON().slice(0,10);
+    var fechaActual = '<?php date('Y-m-d') ?>'
 
     if(titulo == "" || detalle == "" || fechaLimite == ""){
       Swal.fire("Campos Vacios..!", "Debe ingresar todos los campos requeridos", "warning");
@@ -278,7 +265,7 @@ if (!isset($_SESSION['idUsuario'])) {
     }
 
     $.ajax({
-      url: 'clases/Cl_Historial_Anuncios.php?op=EditarAnuncio',
+      url: '../clases/Cl_Historial_Anuncios.php?op=EditarAnuncio',
       type: 'POST',
       data: {
       id:id,
@@ -287,21 +274,23 @@ if (!isset($_SESSION['idUsuario'])) {
       fechaLimite: fechaLimite,
       },
       success: function(vs) {
-        if (vs == 2) {
-          Swal.fire("Error..!", "ha ocurrido un error al actualizar el anuncio, intentar mas tarde", "error");
-        } else {
-          if (vs == 1) {
-            Swal.fire('Exito..!', 'Anuncio actualizado correctamente.', 'success');
-            location.reload();
-          }
-        }
+        // if (vs == 2) {
+        //   Swal.fire("Error..!", "ha ocurrido un error al actualizar el anuncio, intentar mas tarde", "error");
+        // } else {
+        //   if (vs == 1) {
+          $("#ModalRegistrarAnuncio").modal("hide"); 
+             Swal.fire('Exito..!', 'Anuncio actualizado correctamente.', 'success');
+             ListarAnuncios();
+        //     location.reload();
+        //   }
+        // }
       }
     })
   }
 
   function QuitarAnuncio(id){
       $.ajax({
-        url: 'clases/Cl_Historial_Anuncios.php?op=QuitarAnuncio',
+        url: '../clases/Cl_Historial_Anuncios.php?op=QuitarAnuncio',
         type: 'POST',
         data: {
           id: id
@@ -325,7 +314,7 @@ if (!isset($_SESSION['idUsuario'])) {
     var fechaLimite = $("#fechaLimite1").val();
 
       $.ajax({
-        url: 'clases/Cl_Historial_Anuncios.php?op=HabilitarAnuncio',
+        url: '../clases/Cl_Historial_Anuncios.php?op=HabilitarAnuncio',
         type: 'POST',
         data: {
           id: id,
@@ -368,7 +357,7 @@ if (!isset($_SESSION['idUsuario'])) {
      function ListarAnuncios(){
         
         $.ajax({
-            url: 'clases/Cl_Historial_Anuncios.php?op=ListarAnuncios',
+            url: '../clases/Cl_Historial_Anuncios.php?op=ListarAnuncios',
             type: 'POST', 
             success: function(data) {
             
@@ -376,9 +365,11 @@ if (!isset($_SESSION['idUsuario'])) {
                 $('#example1').DataTable().destroy();
                 $("#contenerdor_tabla").html(data);
                 $("#example1").DataTable({
-                     "responsive": true, "lengthChange": false, "autoWidth": false,
+                     "responsive": true, 
+                     "lengthChange": false, 
+                     "autoWidth": false,
                      "language": lenguaje_español
-                 }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');            
+                 });            
             }          
         })         
     }
@@ -390,34 +381,14 @@ if (!isset($_SESSION['idUsuario'])) {
 
 
 
-<!-- Option 1: Bootstrap Bundle with Popper -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-<!-- SweetAlert2 -->
-<script src="plugins/sweetalert2/sweetalert2.min.js"></script>
-<!-- Toastr -->
-<script src="plugins/toastr/toastr.min.js"></script>
-<!-- jQuery -->
-<script src="plugins/jquery/jquery.min.js"></script>
-<!-- Bootstrap 4 -->
-<script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-<!-- DataTables  & Plugins -->
-<script src="plugins/datatables/jquery.dataTables.min.js"></script>
-<script src="plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
-<script src="plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
-<script src="plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
-<script src="plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
-<script src="plugins/datatables-buttons/js/buttons.bootstrap4.min.js"></script>
-<!-- AdminLTE App -->
-<script src="dist/js/adminlte.min.js"></script>
-<!-- AdminLTE for demo purposes -->
-<script src="dist/js/demo.js"></script>
-<!-- Page specific script -->
+<?php
+    require "../template/piePagina.php";
+    ?>
+
 <script>
   $(function () {
-    $("#example1").DataTable({
-      "responsive": true, "lengthChange": false, "autoWidth": false,
-      "language": lenguaje_español
-    }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
+   
+    ListarAnuncios();
   })
 
   var lenguaje_español = 

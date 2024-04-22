@@ -1,6 +1,8 @@
 <?php
 
-include '../conexion/conexion.php';
+require_once '../conexion/parametros.php';
+$parametro = new parametros();
+
 session_start();
 
 if (!isset($_SESSION['idUsuario'])) {
@@ -11,6 +13,10 @@ if (!isset($_SESSION['idUsuario'])) {
   $idEquipoDelegado = $_SESSION['idEquipo'];
   $nombreEquipoDelegado = $_SESSION['nombreEquipo'];
 }
+
+
+$Pendientes = $parametro->configuracionCobrosPendientes(); 
+$anunciosVigentes = $parametro->listarAnunciosVigentes();  
 ?>
 
 <!DOCTYPE html>
@@ -50,7 +56,7 @@ if (!isset($_SESSION['idUsuario'])) {
             <div class="col-sm-10">
               <h1 class="m-0 pb-3">Noticias y Anuncios</h1>
             </div>
-            <?php if ($idRol == 1) { ?>
+            <?php if($parametro->verificarPermisos($_SESSION['idUsuario'],13) > 0){ ?>
               <div class="col-12 col-sm-2">
                 <button type="button" class="btn btn-primary btn-block shadow__btn" onclick="ModalRegistrarAnuncio()"><i class="fas fa-plus-circle"></i> Nuevo anuncio</button>
               </div>
@@ -61,7 +67,7 @@ if (!isset($_SESSION['idUsuario'])) {
 
       <?php
       
-       if ($idRol == 1) {
+       if ($parametro->verificarPermisos($_SESSION['idUsuario'],'13') > 0) {
        
        ?>
            <div class="alert alert-primary alert-dismissible fade show  ml-3 mr-3" role="alert">
@@ -71,11 +77,9 @@ if (!isset($_SESSION['idUsuario'])) {
            </div>
        <?php }
 
-      $Consultar = "SELECT * FROM configuracionCobros where precio is null";
-      $resultado = mysqli_query($conectar, $Consultar);
-      $rowcount = mysqli_num_rows($resultado);
-      if ($idRol == 1) {
-        if ($rowcount > 0) {
+     
+      if ($parametro->verificarPermisos($_SESSION['idUsuario'],3) > 0) {
+        if ($Pendientes > 0) {
       ?>
           <div class="alert alert-danger alert-dismissible fade show ml-3 mr-3" role="alert">
             <h4 class="alert-heading">Confirgurar Cobros!</h4>
@@ -85,40 +89,40 @@ if (!isset($_SESSION['idUsuario'])) {
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
           </div>
       <?php }
-      } 
-        $actualizar = "UPDATE anuncios SET estado = 'Deshabilitado' where fechaLimite < sysdate()";
-        $result = mysqli_query($conectar, $actualizar);
-
-        $registrar = "SELECT id,titulo,detalle,fechaPublicacion FROM anuncios where fechaLimite >= sysdate() and estado = 'Habilitado'";
-        $resultado1 = mysqli_query($conectar, $registrar);
-        $rowcount1 = mysqli_num_rows($resultado1);
-        if($rowcount1 > 0)
+      }       
+       
+        if($anunciosVigentes->RowCount() > 0)
         {
           ?>
           <div class="row ml-1 mr-1">
           <?php 
-          while ($listado = mysqli_fetch_array($resultado1)) {      
-      ?>
+           while (!$anunciosVigentes->EndOfSeek()) {    
+            $anunciosVigentes->MoveFirst();
+            $listado = $anunciosVigentes->Row();
+            ?>
       
-        <section class="col-lg-4 col-md-4">
-          <div class="card text-center shadow-lg">
-            <div class="card-header">
-              <b><?php echo $listado['titulo']; ?>   </b>
-            </div>
-            <div class="card-body">
-              <p class="card-text"><?php echo $listado['detalle']; ?>.</p>
-              <?php if ($idRol == 1) { ?>
-                <button type="button" class="btn btn-primary" onclick="ModalEditarAnuncio(<?php echo $listado['id']; ?>)">Editar</button>
-                <button type="button" class="btn btn-danger" onclick="ConfirmarQuitarAnuncio(<?php echo $listado['id']; ?>)">Quitar</button>             
-            <?php } ?>
-            </div>
-            <div class="card-footer text-muted">
-              Fecha Publicación: <?php echo $listado['fechaPublicacion']; ?>   
-            </div>
-          </div>
-        </section>
-      <?php 
-      } ?>    
+            <section class="col-lg-3 col-md-4">
+              <div class="card text-center shadow-lg">
+                <div class="card-header">
+                  <b><?php echo $listado->titulo; ?>   </b>
+                </div>
+                <div class="card-body">
+                  <p class="card-text"><?php echo $listado->detalle; ?>.</p>
+                  <?php if ($parametro->verificarPermisos($_SESSION['idUsuario'],26) > 0) { 
+                      echo "<button type='button' class='btn btn-primary' onclick='ModalEditarAnuncio(".chr(34). $listado->id .chr(34).",".chr(34). $listado->titulo .chr(34)."," .chr(34). $listado->detalle .chr(34).",".chr(34). $listado->fechaLimite .chr(34).")'>Editar</button>";
+                    ?>                   
+                    <?php } 
+                    if ($parametro->verificarPermisos($_SESSION['idUsuario'],27) > 0) { ?>
+                    <button type="button" class="btn btn-danger" onclick="ConfirmarQuitarAnuncio(<?php echo $listado->id; ?>)">Quitar</button>             
+                <?php } ?>
+                </div>
+                <div class="card-footer text-muted">
+                  Fecha Publicación: <?php echo $listado->fechaPublicacion; ?>   
+                </div>
+              </div>
+            </section>
+            <?php 
+          } ?>    
       </div>
       <?php 
       }
@@ -197,14 +201,16 @@ if (!isset($_SESSION['idUsuario'])) {
           id: id
         },
         success: function(vs) {
-          if (vs == 2) {
-            Swal.fire("Error..!", "ha ocurrido un error al crear el anuncio", "error");
-          } else {
-            if (vs == 1) {
+          // if (vs == 2) {
+          //   Swal.fire("Error..!", "ha ocurrido un error al crear el anuncio", "error");
+          // } else {
+          //   if (vs == 1) {
               Swal.fire('Exito..!', 'Anuncio quitado correctamente.', 'success');
-              location.reload();
-            }
-          }
+              setTimeout(() => {
+                location.reload();  
+              }, 1500);
+          //   }
+          // }
         }
       })
     }
@@ -218,32 +224,38 @@ if (!isset($_SESSION['idUsuario'])) {
       $("#ModalRegistrarAnuncio").modal("show");
     }
 
-    function ModalEditarAnuncio(id) {
+    function ModalEditarAnuncio(id,titulo,detalle,fechaLimite) {
 
+      $("#titulo").val(titulo); 
+      $("#detalle").val(detalle); 
+      $("#fechaLimite").val(fechaLimite); 
+      $("#tituloanuncio").html("Editar Anuncio");
+      $("#botonAccion").html("<button type=button' class='btn btn-primary shadow__btn' onclick='EditarAnuncio("+id+")'>Editar</button>");
+      $("#ModalRegistrarAnuncio").modal("show");
       
-      $.ajax({
-        url: '../clases/Cl_Historial_Anuncios.php?op=DatosAnuncio',
-        type: 'POST',
-        data: {
-         id:id
-        },
-        success: function(vs) {
-          if (vs == 'error') {
-            Swal.fire("Error..!", "ha ocurrido un error al crear el anuncio", "error");
-          } else {
+      // $.ajax({
+      //   url: '../clases/Cl_Historial_Anuncios.php?op=DatosAnuncio',
+      //   type: 'POST',
+      //   data: {
+      //    id:id
+      //   },
+      //   success: function(vs) {
+      //     if (vs == 'error') {
+      //       Swal.fire("Error..!", "ha ocurrido un error al crear el anuncio", "error");
+      //     } else {
           
-              var resp= $.parseJSON(vs);
+      //         var resp= $.parseJSON(vs);
           
-              $("#titulo").val(resp.titulo); 
-              $("#detalle").val(resp.detalle); 
-              $("#fechaLimite").val(resp.fechaLimite); 
-              $("#tituloanuncio").html("Editar Anuncio");
-              $("#botonAccion").html("<button type=button' class='btn btn-primary shadow__btn' onclick='EditarAnuncio("+id+")'>Editar</button>");
-              $("#ModalRegistrarAnuncio").modal("show");
+      //         $("#titulo").val(resp.titulo); 
+      //         $("#detalle").val(resp.detalle); 
+      //         $("#fechaLimite").val(resp.fechaLimite); 
+      //         $("#tituloanuncio").html("Editar Anuncio");
+      //         $("#botonAccion").html("<button type=button' class='btn btn-primary shadow__btn' onclick='EditarAnuncio("+id+")'>Editar</button>");
+      //         $("#ModalRegistrarAnuncio").modal("show");
             
-          }
-        }
-      })
+      //     }
+      //   }
+      // })
      
     }
 
@@ -263,14 +275,14 @@ if (!isset($_SESSION['idUsuario'])) {
          fechaLimite: fechaLimite,
         },
         success: function(vs) {
-          if (vs == 2) {
-            Swal.fire("Error..!", "ha ocurrido un error al actualizar el anuncio, intentar mas tarde", "error");
-          } else {
-            if (vs == 1) {
-              Swal.fire('Exito..!', 'Anuncio actualizado correctamente.', 'success');
-              location.reload();
-            }
-          }
+          // if (vs == 'ok') {
+            Swal.fire('Exito..!', 'Anuncio actualizado correctamente.', 'success');
+            setTimeout(() => {
+              location.reload();  
+            }, 1500);      
+          // } else {
+          //   Swal.fire("Error..!", "ha ocurrido un error al actualizar el anuncio, intentar mas tarde", "error");
+          // }
         }
       })
     }
@@ -307,14 +319,27 @@ if (!isset($_SESSION['idUsuario'])) {
           fechaLimite: fechaLimite
         },
         success: function(vs) {
-          if (vs == 2) {
-            Swal.fire("Error..!", "ha ocurrido un error al crear el anuncio", "error");
-          } else {
-            if (vs == 1) {
-              Swal.fire('Exito..!', 'Anuncio creado correctamente.', 'success');
-              location.reload();
-            }
-          }
+          // if (vs == 'ok') {
+             Swal.fire('Exito..!', 'Anuncio creado correctamente.', 'success');
+            setTimeout(() => {
+              location.reload();  
+            }, 1500);
+            
+          // } else {
+          //   Swal.fire("Error..!", "ha ocurrido un error al crear el anuncio", "error");           
+          // }
+        }
+      })
+    }
+
+
+    function DeshabilitarAnunciosAntiguos(){
+   
+      $.ajax({
+        url: '../clases/Cl_Historial_Anuncios.php?op=DeshabilitarAnunciosAntiguos',
+        type: 'POST',       
+        success: function(vs) {
+
         }
       })
     }
@@ -325,6 +350,17 @@ if (!isset($_SESSION['idUsuario'])) {
     <?php
     require "../template/piePagina.php";
     ?>
+
+
+<script>
+
+$(document).ready(function() {
+ 
+  DeshabilitarAnunciosAntiguos();
+  
+});
+
+</script>
 
 </body>
 

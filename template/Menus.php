@@ -269,7 +269,7 @@
                                 </p>
                             </a>
                         </li>
-                        <?php } if($parametro->verificarPermisos($_SESSION['idUsuario'],13) > 0){?>  
+                        <?php } if($parametro->verificarPermisos($_SESSION['idUsuario'],'26,27') > 0){?>  
                         <li class="nav-item">
                             <a href="../views/Historial_Anuncios.php" class="nav-link">
                               <i class="nav-icon fas fa-history"></i>
