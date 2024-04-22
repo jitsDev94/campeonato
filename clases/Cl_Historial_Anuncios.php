@@ -15,8 +15,9 @@ if($tipo == "ListarAnuncios"){
    
     $cont = 0;
     if ($resultado->RowCount() > 0) {
+        $resultado->MoveFirst();
         while (!$resultado->EndOfSeek()) {  
-            $resultado->MoveFirst();
+           
             $listado = $resultado->Row();
             $cont++;
             $tabla .= "<tr>";

@@ -737,13 +737,26 @@ class parametros
     public function configuracionCobrosPendientes()
 	{       
 
-        $consulta = "SELECT * FROM configuracionCobros where precio is null";
+        $consulta = "SELECT * FROM configuracionCobros where precio is null or precio = 0";
 
         $db = new MySQL();
 		if ($db->Error()) $db->Kill();
 		if (!$db->Query($consulta)) $db->Kill();
 		
         return $db->RowCount();
+      
+    }
+
+    public function ListarCobros()
+	{       
+
+        $consulta = "SELECT * from configuracionCobros order by motivo asc";
+
+        $db = new MySQL();
+		if ($db->Error()) $db->Kill();
+		if (!$db->Query($consulta)) $db->Kill();
+		
+        return $db;
       
     }
 

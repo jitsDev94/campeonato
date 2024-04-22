@@ -1,6 +1,8 @@
 <?php
 
-include 'clases/conexion.php';
+require_once '../conexion/parametros.php';
+$parametro = new parametros();
+
 session_start();
 
 if (!isset($_SESSION['idUsuario'])) {
@@ -11,6 +13,11 @@ if (!isset($_SESSION['idUsuario'])) {
     $idEquipoDelegado = $_SESSION['idEquipo'];
     $nombreEquipoDelegado= $_SESSION['nombreEquipo'];
 }
+
+if($parametro->verificarPermisos($_SESSION['idUsuario'],'3,28') == 0){
+  echo "Su usuario no tiene permisos para entrar a esta pagina";
+  exit();
+}
 ?>
 
 <!DOCTYPE html>
@@ -18,25 +25,11 @@ if (!isset($_SESSION['idUsuario'])) {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Configurar Cobros</title>
-  <link rel="icon" type="image/jpg" href="img/image.png">
-  <!-- Google Font: Source Sans Pro -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
-  <!-- Ionicons -->
-  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
-   <!-- DataTables -->
-   <link rel="stylesheet" href="plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
-  <link rel="stylesheet" href="plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
-  <link rel="stylesheet" href="plugins/datatables-buttons/css/buttons.bootstrap4.min.css">
-  <!-- Theme style -->
-  <link rel="stylesheet" href="dist/css/adminlte.min.css">
-   <!-- SweetAlert2 -->
-   <link rel="stylesheet" href="plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css">
-  <!-- Toastr -->
-  <link rel="stylesheet" href="plugins/toastr/toastr.min.css">
-  
+  <?php
+    require "../template/encabezado.php";
+    ?>
+
+
    <style>
     .card{
       border-top-color: cornflowerblue;
@@ -45,19 +38,16 @@ if (!isset($_SESSION['idUsuario'])) {
   </style>
 
 </head>
-<body class="hold-transition sidebar-mini layout-fixed sidebar-closed sidebar-collapse" onload="ListarCobros();" >
+<body class="hold-transition sidebar-mini layout-fixed sidebar-closed sidebar-collapse" >
 <div class="wrapper">
 
-    <!-- Preloader
-    <div class="preloader flex-column justify-content-center align-items-center">
-        <img class="animation__shake" src="img/logo.png" alt="Software Bolivia" height="60" width="60">
-    </div> -->
+
     <?php  
-        require "Navegador.php";
+        require "../template/Navegador.php";
     ?>
 
     <?php  
-        require "Menus.php";
+        require "../template/Menus.php";
     ?>
 
 <div class="content-wrapper">
@@ -75,7 +65,7 @@ if (!isset($_SESSION['idUsuario'])) {
         <section class="col-lg-12 col-md-12"> <br>  
             <div class="card info-box shadow-lg">
               <div class="card-body">
-                <div id="contenerdor_tabla" class="table-responsive">
+                <div class="table-responsive">
                   <table id="example1" class="table table-bordered table-striped">
                     <thead>
                     <tr>
@@ -85,7 +75,7 @@ if (!isset($_SESSION['idUsuario'])) {
                       <th>Accion</th>
                     </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="contenerdor_tabla" >
                           
                     </tbody>
                   </table>
@@ -103,14 +93,9 @@ if (!isset($_SESSION['idUsuario'])) {
       <!-- /.control-sidebar -->
       </div>
 
-           <?php $año = date('Y'); ?>
-        <footer class="main-footer">
-            <div class="float-right d-none d-sm-block">
-            <b>Version</b> 1.0
-            </div>
-            <strong>Copyright &copy; Software Bolivia <?php echo $año ?></strong> Todos los derechos reservados.
-        </footer>
-    
+      <?php
+    require "../template/footer.php";
+    ?>
     </div>
     <!-- ./wrapper -->
 
@@ -162,7 +147,7 @@ if (!isset($_SESSION['idUsuario'])) {
   
     function NombreMotivo(id){
         $.ajax({
-            url: 'clases/Cl_Configurar_Cobros.php?op=NombreMotivo',
+            url: '../clases/Cl_Configurar_Cobros.php?op=NombreMotivo',
             type: 'POST',
             data: {
                 id: id
@@ -195,7 +180,7 @@ if (!isset($_SESSION['idUsuario'])) {
 
 
          $.ajax({
-         url: 'clases/Cl_Configurar_Cobros.php?op=ActualizarPrecio',
+         url: '../clases/Cl_Configurar_Cobros.php?op=ActualizarPrecio',
          type: 'POST',
          data: {
              id: id,
@@ -216,17 +201,19 @@ if (!isset($_SESSION['idUsuario'])) {
      function ListarCobros(){
         
         $.ajax({
-            url: 'clases/Cl_Configurar_Cobros.php?op=ListarCobros',
+            url: '../clases/Cl_Configurar_Cobros.php?op=ListarCobros',
             type: 'POST', 
             success: function(data) {
             
                 $("#contenerdor_tabla").html('');
                 $('#example1').DataTable().destroy();
                 $("#contenerdor_tabla").html(data);
-                // $("#example1").DataTable({
-                //     "responsive": true, "lengthChange": false, "autoWidth": false,
-                //     "language": lenguaje_español
-                // }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');            
+                $("#example1").DataTable({
+                    "responsive": true, 
+                    "lengthChange": false, 
+                    "autoWidth": false,
+                    "language": lenguaje_español
+                });            
             }          
         })         
     }
@@ -236,36 +223,14 @@ if (!isset($_SESSION['idUsuario'])) {
      
       </script>
 
+  <?php
+    require "../template/piePagina.php";
+    ?>
 
 
-<!-- Option 1: Bootstrap Bundle with Popper -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-<!-- SweetAlert2 -->
-<script src="plugins/sweetalert2/sweetalert2.min.js"></script>
-<!-- Toastr -->
-<script src="plugins/toastr/toastr.min.js"></script>
-<!-- jQuery -->
-<script src="plugins/jquery/jquery.min.js"></script>
-<!-- Bootstrap 4 -->
-<script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-<!-- DataTables  & Plugins -->
-<script src="plugins/datatables/jquery.dataTables.min.js"></script>
-<script src="plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
-<script src="plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
-<script src="plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
-<script src="plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
-<script src="plugins/datatables-buttons/js/buttons.bootstrap4.min.js"></script>
-<!-- AdminLTE App -->
-<script src="dist/js/adminlte.min.js"></script>
-<!-- AdminLTE for demo purposes -->
-<script src="dist/js/demo.js"></script>
-<!-- Page specific script -->
 <script>
   $(function () {
-    $("#example1").DataTable({
-      "responsive": true, "lengthChange": false, "autoWidth": false,
-      "language": lenguaje_español
-    }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
+    ListarCobros();
   })
 
   var lenguaje_español = 
