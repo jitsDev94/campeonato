@@ -760,6 +760,76 @@ class parametros
       
     }
 
+
+    public function CrearPrecio($motivo,$precio)
+	{       
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return false;
+        }
+        
+
+        $consulta = "SELECT * from configuracionCobros where motivo = '$motivo'";      
+		if (!$db->Query($consulta)) $db->Kill();
+
+        if($db->RowCount() > 0){
+            return 'existe';
+        }
+
+        $consulta = "INSERT INTO configuracionCobros(motivo,precio,estado) values('$motivo',$precio,'Habilitado')";                            
+
+        if (!$db->Query($consulta)) {       
+            return 'error';
+        }
+
+
+        return 'ok';
+      
+    }
+
+    public function ActualizarPrecio($id,$precio)
+	{       
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return false;
+        }
+        
+        $consulta = "UPDATE configuracionCobros SET precio = $precio where id = $id";                            
+
+        if (!$db->Query($consulta)) {       
+            return 'error';
+        }
+
+
+        return 'ok';
+      
+    }
+
+
+    public function EstadoPrecio($id,$estado)
+	{       
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return false;
+        }
+        
+        $consulta = "UPDATE configuracionCobros SET estado = '$estado' where id = $id";                            
+
+        if (!$db->Query($consulta)) {       
+            return 'error';
+        }
+
+
+        return 'ok';
+      
+    }
+
     public function listarAnunciosVigentes()
 	{       
 

@@ -260,7 +260,7 @@
                                 </p>
                             </a>
                         </li>
-                        <?php } if($parametro->verificarPermisos($_SESSION['idUsuario'],3) > 0){?>  
+                        <?php } if($parametro->verificarPermisos($_SESSION['idUsuario'],'3,28,29') > 0){?>  
                         <li class="nav-item">
                             <a href="../views/configurar_Cobros.php" class="nav-link">
                               <i class="nav-icon fas fa-cogs"></i>

@@ -14,7 +14,7 @@ if (!isset($_SESSION['idUsuario'])) {
     $nombreEquipoDelegado= $_SESSION['nombreEquipo'];
 }
 
-if($parametro->verificarPermisos($_SESSION['idUsuario'],'3,28') == 0){
+if($parametro->verificarPermisos($_SESSION['idUsuario'],'3,28,29') == 0){
   echo "Su usuario no tiene permisos para entrar a esta pagina";
   exit();
 }
@@ -64,6 +64,18 @@ if($parametro->verificarPermisos($_SESSION['idUsuario'],'3,28') == 0){
 
         <section class="col-lg-12 col-md-12"> <br>  
             <div class="card info-box shadow-lg">
+
+                <div class="row"> 
+                    <div class="col-12 col-md-10">
+                        <label for=""><h4>Listado de Precios</h4></label>
+                    </div>       
+                    <div class="col-12 col-md-2">
+                      <?php  if($parametro->verificarPermisos($_SESSION['idUsuario'],3) > 0){ ?>
+                        <button type='button' class='btn btn-primary btn-block' onclick='AgregarPrecio()'><i class="fas fa-plus-circle"></i> &nbsp; Nuevo Precio</button>               
+                        <?php } ?>
+                    </div>   
+                </div>
+
               <div class="card-body">
                 <div class="table-responsive">
                   <table id="example1" class="table table-bordered table-striped">
@@ -115,21 +127,17 @@ if($parametro->verificarPermisos($_SESSION['idUsuario'],'3,28') == 0){
               </button>
             </div>
             <div class="modal-body">
-                <form method="POST">                              
-                    <div class="mb-3 row">
-                        <label for="inputPassword" class="col-sm-4 col-form-label">Motivo</label>
-                        <div class="col-sm-8">
-                            <input type="text" readonly class="form-control-plaintext" id="motivo" disabled>
-                        </div>
+                <div class="row">                             
+                    <div class="col-md-12">
+                        <label  class="form-label">Motivo Cobro</label>                      
+                        <input type="text" readonly class="form-control" id="motivo">                       
                     </div>
-                    <div class="mb-3 row">
-                        <label for="inputPassword" class="col-sm-4 col-form-label">Precio(*)</label>
-                        <div class="col-sm-8">
-                            <input type="text" class="form-control" id="precio" placeholder="Ingresar Precio">
-                        </div>
+                    <div class="col-md-12 mt-2">
+                        <label class="form-label">Precio(*)</label>                        
+                        <input type="number" class="form-control" id="precio" placeholder="Ingresar Precio">                        
                     </div>
                     <input type="hidden" class="form-control" id="id">
-                </form>
+                </div>
             </div>
             <div class="modal-footer col-md-12">
             <button type="button" class="btn btn-primary" onclick="ActualizarPrecio()">Actualizar</button>  
@@ -142,29 +150,88 @@ if($parametro->verificarPermisos($_SESSION['idUsuario'],'3,28') == 0){
     </div>
       <!-- /.modal -->
 
-
+    <!-- Modal para crear nuevo precio --> 
+    <div class="modal fade" id="modalCrearPrecio">
+        <div class="modal-dialog modal-sm">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title"> Nuevo Precio</h4>
+              <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">                             
+                    <div class="col-md-12">
+                        <label  class="form-label">Motivo Cobro (*)</label>                      
+                        <input type="text" class="form-control" id="txtmotivo" placeholder="Ingresar Motivo">                       
+                    </div>
+                    <div class="col-md-12 mt-2">
+                        <label class="form-label">Precio (*)</label>                        
+                        <input type="number" class="form-control" id="txtprecio" placeholder="Ingresar Precio">                        
+                    </div>                   
+                </div>
+            </div>
+            <div class="modal-footer col-md-12">
+            <button type="button" class="btn btn-primary" onclick="CrearPrecio()">Registrar</button>  
+              <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cerrar</button>            
+            </div>
+          </div>
+          <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+      <!-- /.modal -->
   <script>
   
-    function NombreMotivo(id){
-        $.ajax({
-            url: '../clases/Cl_Configurar_Cobros.php?op=NombreMotivo',
+  function AgregarPrecio(id,motivo){     
+      $("#modalCrearPrecio").modal("show");
+    }
+
+
+    function CrearPrecio() {
+         
+         var precio = $("#txtprecio").val();
+         var motivo = $("#txtmotivo").val();
+ 
+         if(motivo == ""){
+             Swal.fire("Campos Vacios..!", "Debe ingresar el motivo del cobro", "warning");                     
+             return false;
+         }
+ 
+         if(precio == ""){
+             Swal.fire("Campos Vacios..!", "Debe ingresar el precio", "warning");                     
+             return false;
+         }
+
+         
+          $.ajax({
+            url: '../clases/Cl_Configurar_Cobros.php?op=CrearPrecio',
             type: 'POST',
             data: {
-                id: id
-            },
-            success: function(data) {
-              if(data == "error"){
-                Swal.fire("Error..!", "Ha ocurrido un error al obtener el nombre del torneo actual", "error");      
-              }
-              else{
-                var resp= $.parseJSON(data);
-                $("#id").val(resp.id); 
-                $("#motivo").val(resp.motivo); 
-                $("#precio").val("");
-                $("#modalActualizarPrecio").modal("show");
-              }              
-            }            
-          })   
+              motivo: motivo,
+              precio: precio        
+            }, 
+            success: function(vs) {
+                $("#modalCrearPrecio").modal("hide");
+                 if (vs == 'existe') {
+                  Swal.fire("Alerta duplicidad..!", "Ya existe un cobro con ese nombre, favor intentar con otro nombre", "warning");                     
+                 }else{     
+                      $("#txtprecio").val('');
+                      $("#txtmotivo").val('');            
+                      Swal.fire('Exito..!','Precio creado correctamente.',  'success');
+                      ListarCobros()                     
+                 }                  
+            }
+          })         
+      }
+
+    function AbrirModalActualizarPrecio(id,motivo){
+     
+      $("#id").val(id); 
+      $("#motivo").val(motivo); 
+      $("#precio").val("");
+      $("#modalActualizarPrecio").modal("show");
     }
   
 
@@ -187,16 +254,75 @@ if($parametro->verificarPermisos($_SESSION['idUsuario'],'3,28') == 0){
              precio: precio        
              }, 
              success: function(vs) {
-                 if (vs == 2) {
-                  Swal.fire("Error..!", "ha ocurrido al actualizar el precio, favor intentar de nuevo mas tarde", "error");                     
-                 }else{                 
+                $("#modalActualizarPrecio").modal("hide");
+                //  if (vs == 2) {
+                //   Swal.fire("Error..!", "ha ocurrido al actualizar el precio, favor intentar de nuevo mas tarde", "error");                     
+                //  }else{                 
                       Swal.fire('Exito..!','Precio actualizado correctamente.',  'success');
-                      location.reload();                       
-                 }                  
+                      ListarCobros()                     
+                //  }                  
              }
          })         
      }
 
+
+     function ConfirmarDeshabilitar(id) {
+        Swal.fire({
+        title: 'Esta Seguro?',
+        text: "Al Deshabilitarlo ya no sera visible para realizar Cobros!",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Si, Deshabilitar!'
+        }).then((result) => {
+                if (result.isConfirmed) {
+                  EstadoPrecio(id,'Deshabilitado');                      
+                }
+        })
+    }
+
+    function ConfirmarHabilitar(id) {
+        Swal.fire({
+        title: 'Esta Seguro?',
+        text: "Al Habilitarlo estara visible nuevamente para realizar cobros!",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Si, Habilitar!'
+        }).then((result) => {
+                if (result.isConfirmed) {
+                  EstadoPrecio(id,'Habilitado');                      
+                }
+        })
+    }
+
+    function EstadoPrecio(id,estado) {
+         
+         $.ajax({
+         url: '../clases/Cl_Configurar_Cobros.php?op=EstadoPrecio',
+         type: 'POST',
+         data: {
+             id: id,
+             estado: estado        
+             }, 
+             success: function(vs) {
+                //  if (vs == 'error') {
+                //     Swal.fire("Error..!", "ha ocurrido un error al deshabilitar", "error"); 
+                //  }else{
+                    
+                    if(estado == 'Habilitado'){
+                      Swal.fire('Exito..!','Cobro habilitado correctamente.',  'success');                    
+                     }
+                     else{
+                      Swal.fire('Exito..!','Cobro deshabilitado correctamente.',  'success');                     
+                     }                                  
+                     ListarCobros();                      
+                // }
+             }
+         })         
+    }
 
      function ListarCobros(){
         
