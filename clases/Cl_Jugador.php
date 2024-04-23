@@ -17,21 +17,13 @@ if($tipo == "RegistrarJugador"){
     $apellidos = $_POST["apellidos"];
     $carnet = $_POST["carnet"];
     $nacimiento = $_POST["fecha"];
-    $nombreMision = $_POST["mision"];
-    $añoMision = $_POST["anoMision"];
+    // $nombreMision = $_POST["mision"];
+    // $añoMision = $_POST["anoMision"];
     $nroCamiseta = $_POST["nroCamiseta"];
     $idEquipo = $_POST["idEquipo"];
 
-    
-        $registrar = "INSERT INTO Jugador values(null,'$nombre','$apellidos','$carnet','$nacimiento','$nombreMision','$añoMision','$nroCamiseta',$idEquipo,'Habilitado')";
-        $resultado = mysqli_query($conectar, $registrar);
-    
-        if($resultado){
-            echo '1';
-        }
-        else{
-            echo '2';
-        }
+    $resultado = $parametro->RegistrarJugador($nombre,$apellidos,$carnet,$nacimiento,$nroCamiseta,$idEquipo); 
+     echo $resultado;
 }
 
 if($tipo == "EditarJugador"){
@@ -41,27 +33,22 @@ if($tipo == "EditarJugador"){
     $apellidos = $_POST["apellidos"];
     $carnet = $_POST["carnet"];
     $nacimiento = $_POST["fecha"];
-    $nombreMision = $_POST["mision"];
-    $añoMision = $_POST["anoMision"];
+    // $nombreMision = $_POST["mision"];
+    // $añoMision = $_POST["anoMision"];
     $nroCamiseta = $_POST["nroCamiseta"];
     $idEquipo = $_POST["idEquipo"];
     
-        $registrar = "UPDATE Jugador SET nombre = '$nombre', apellidos = '$apellidos', ci = '$carnet', fechaNacimiento = '$nacimiento', nombreMision ='$nombreMision', anoMision = '$añoMision', nroCamiseta = '$nroCamiseta' where id = $id";
-        $resultado = mysqli_query($conectar, $registrar);
-    
-        if($resultado){
-            echo '1';
-        }
-        else{
-            echo '2';
-        }
+    $resultado = $parametro->EditarJugador($id,$nombre,$apellidos,$carnet,$nacimiento,$nroCamiseta,$idEquipo);    
+
+    echo $resultado;
+     
 }
 
 
 if($tipo == "ListaJugadores"){
 
-    $nombre = $_POST["nombre"];
-    $idEquipo = $_POST["idEquipo"];
+    $nombre = @$_POST["nombre"];
+    $idEquipo = @$_POST["idEquipo"];
 
     $resultado1 = $parametro->ListaJugadores($idEquipoDelegado,$idRol,$nombre,$idEquipo);    
   
@@ -78,7 +65,7 @@ if($tipo == "ListaJugadores"){
                     <th>Fecha Nac.</th>                   
                     <th>Nro Camiseta</th>
                     <th>Equipo</th>';
-                    if($idRol != 3){
+                    if($parametro->verificarPermisos($_SESSION['idUsuario'],'30,31') > 0){
                         $tabla .= '<th>Acción</th>';
                     }                                 
                     $tabla .= '</tr>
@@ -86,7 +73,7 @@ if($tipo == "ListaJugadores"){
             <tbody > ';
       
         $cont = 0;
-        if ($resultado1) {
+        if ($resultado1->RowCount() > 0) {
             while (!$resultado1->EndOfSeek()) {
                 $listado = $resultado1->Row();
                 $cont++;
@@ -99,16 +86,20 @@ if($tipo == "ListaJugadores"){
                 $tabla .= "<td data-title=''>" . $listado->fechaNacimiento . "</td>";
                 $tabla .= "<td data-title=''>" . $listado->nroCamiseta . "</td>";
                 $tabla .= "<td data-title=''>" . $listado->nombreEquipo . "</td>";               
-                if($idRol != 3){
-                $tabla .= "<td data-title=''><button type='button' class='btn btn-primary btn-sm checkbox-toggle' onclick='modalEditarJugador(".chr(34).$listado->idJugador.chr(34).",".chr(34).$listado->nombre.chr(34).",".chr(34).$listado->apellidos.chr(34).",".chr(34).$listado->ci.chr(34).",".chr(34).$listado->fechaNacimiento.chr(34).",".chr(34).$listado->nroCamiseta.chr(34).")'><i title= 'Editar' class='fas fa-pen'></i></button>";      
-               
-                    if($listado->estado == "Habilitado"){
-                        $tabla .= " <button type='button' class='btn btn-danger btn-sm checkbox-toggle' onclick='ConfirmarDeshabilitar(".$listado->idJugador.")'>Deshabilitar</button>";                          
-                        $tabla .= "</td>";
-                    }else{
-                        $tabla .= " <button type='button' class='btn btn-success btn-sm checkbox-toggle' onclick='ConfirmarHabilitar(".$listado->idJugador.")'>Habilitar</button>";                          
-                        $tabla .= "</td>";
+                if($parametro->verificarPermisos($_SESSION['idUsuario'],'30,31') > 0){
+                    $tabla .= "<td data-title=''>";
+                    if($parametro->verificarPermisos($_SESSION['idUsuario'],30) > 0){
+                        $tabla .= "<button type='button' class='btn btn-primary btn-sm checkbox-toggle' onclick='modalEditarJugador(".chr(34).$listado->idJugador.chr(34).",".chr(34).$listado->nombre.chr(34).",".chr(34).$listado->apellidos.chr(34).",".chr(34).$listado->ci.chr(34).",".chr(34).$listado->fechaNacimiento.chr(34).",".chr(34).$listado->nroCamiseta.chr(34).",".chr(34).$listado->idEquipo.chr(34).")'><i title= 'Editar' class='fas fa-pen'></i></button>";      
                     }
+                    if($parametro->verificarPermisos($_SESSION['idUsuario'],31) > 0){
+                        if($listado->estado == "Habilitado"){                        
+                            $tabla .= " <button type='button' class='btn btn-danger btn-sm checkbox-toggle' onclick='ConfirmarDeshabilitar(".$listado->idJugador.")'>Deshabilitar</button>";
+                           
+                        }else{
+                            $tabla .= " <button type='button' class='btn btn-success btn-sm checkbox-toggle' onclick='ConfirmarHabilitar(".$listado->idJugador.")'>Habilitar</button>";                           
+                        }
+                    }
+                    $tabla .= "</td>";
                 }
                 
                 $tabla .= "</tr>";
@@ -147,14 +138,7 @@ if($tipo == "EstadoJugador"){
 
     $id = $_POST["id"];
     $estado = $_POST["estado"];
-
-    $Consultar = "UPDATE Jugador SET estado = '$estado' where id = $id";
-    $resultado = mysqli_query($conectar, $Consultar);
-
-    if($resultado){
-        echo  '1';
-    }
-    else{
-        echo '2';
-    }   
+ 
+    $resultado = $parametro->EstadoJugador($id,$estado);  
+    echo $resultado;
 }

@@ -71,7 +71,7 @@
                                 </p>
                             </a>
                         </li>
-                           
+                         
                         <li class="nav-item">
                             <a href="../views/equipos.php" class="nav-link">
                               <i class="nav-icon fas fa-users"></i>                                  
@@ -81,7 +81,7 @@
                                 </p>
                             </a>
                         </li>
-                           
+                        
                         <li class="nav-item">
                             <a href="../views/inscripcion.php" class="nav-link">
                               <i class="nav-icon fas fa-file-signature"></i>                              

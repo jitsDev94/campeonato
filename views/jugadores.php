@@ -13,6 +13,12 @@ if (!isset($_SESSION['idUsuario'])) {
     $idEquipoDelegado = $_SESSION['idEquipo'];
     $nombreEquipoDelegado= $_SESSION['nombreEquipo'];
 }
+
+// if($parametro->verificarPermisos($_SESSION['idUsuario'],'6,30,31') == 0){
+//   echo "Su usuario no tiene permisos para entrar a esta pagina";
+//   exit();
+// }
+
 ?>
 
 <!DOCTYPE html>
@@ -115,7 +121,7 @@ if (!isset($_SESSION['idUsuario'])) {
 
         <section class="col-lg-12 col-md-12"> <br>  
             <div class="card info-box shadow-lg">
-            <?php if($idRol != 3){ ?>
+            <?php if($parametro->verificarPermisos($_SESSION['idUsuario'],6) > 0){ ?>
               <div class="card-header">             
                 <div class="row"> 
                     <div class="col-12 col-md-10">
@@ -130,25 +136,7 @@ if (!isset($_SESSION['idUsuario'])) {
               <!-- /.card-header -->
               <div class="card-body">
                 <div id="contenerdor_tabla" class="table-responsive">
-                  <table id="example1" class="table table-bordered table-striped">
-                    <thead>
-                    <tr>
-                      <th>#</th>
-                      <th>Nombre</th>
-                      <th>Apellidos</th>
-                      <th>Carnet</th>
-                      <th>Fecha Nac.</th>                   
-                      <th>Nro Camiseta</th>
-                      <th>Equipo</th>
-                      <th>Misión</th>
-                      <th>Año Misión</th>
-                      <th>Accion</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                          
-                    </tbody>
-                  </table>
+
                 </div>
               </div>
               <!-- /.card-body -->
@@ -255,7 +243,7 @@ if (!isset($_SESSION['idUsuario'])) {
         }
 
 
-        function modalEditarJugador(id,nombre,apellidos,ci,fechaNacimiento,nroCamiseta) {       
+        function modalEditarJugador(id,nombre,apellidos,ci,fechaNacimiento,nroCamiseta,idEquipo) {       
 
           $("#tituloJugador").html("Editar Jugador");  
           $("#botonRegistro").html("<button type='button' class='btn btn-primary' id='botonRegistro' onclick='EditarJugador()'>Editar</button>");
@@ -265,6 +253,7 @@ if (!isset($_SESSION['idUsuario'])) {
           $("#carnet").val(ci);
           $("#fecha").val(fechaNacimiento);
           $("#nroCamiseta").val(nroCamiseta);
+          $('#idEquipo').val(idEquipo);
           $("#Equipos").hide();
           
           $('#ModalRegistrarJugador').modal('show');          
@@ -283,7 +272,7 @@ if (!isset($_SESSION['idUsuario'])) {
         var mision = $('#mision').val();
 
 
-        if(nombre == "" || apellidos == "" || carnet == "" || fecha == "" || idEquipo == "" || anoMision == "" || mision == ""){
+        if(nombre == "" || apellidos == "" || carnet == "" || fecha == "" || anoMision == "" || mision == ""){
           Swal.fire("Campos Vacios..!", "Debe completar todos los campos obligatorios", "warning");
           return false;
         }
@@ -303,12 +292,17 @@ if (!isset($_SESSION['idUsuario'])) {
             mision  : mision
              }, 
              success: function(vs) {              
-                 if (vs == 2) {                   
-                    Swal.fire("Error..!", "Ha ocurrido un error al editar al jugador", "error");                     
-                 }else{
-                    if (vs == 1) {
-                    Swal.fire('Exito!', 'Jugador editado correctamente',  'success');
-                    location.reload();
+              if (vs == 'nrocamiseta') {                   
+                  Swal.fire("Alerta Nro Camiseta..!", "Ya existe un jugador con ese numero de camiseta, intentar con otro numero", "warning");
+              }else{
+                  if (vs == 'carnet') {
+                  Swal.fire("Alerta Nro Carnet..!", "Ya existe un jugador con ese numero de carnet, intentar con otro numero", "warning");
+                  }
+                  else{
+                  $('#ModalRegistrarJugador').modal('hide');  
+                     Swal.fire('Exito!', 'Jugador editado correctamente',  'success');
+                     ListaJugadores();
+                //     location.reload();
                     }
                  }                  
              }
@@ -352,36 +346,33 @@ if (!isset($_SESSION['idUsuario'])) {
       function EstadoJugador(id,estado) {
          
          $.ajax({
-         url: '../clases/Cl_Jugador.php?op=EstadoJugador',
-         type: 'POST',
-         data: {
-             id: id,
-             estado: estado        
-             }, 
-             success: function(vs) {
-                 if (vs == 2) {
-                  Swal.fire("Error..!", "ha ocurrido un error al deshabilitar", "error");                     
-                 }else{
-                   if(vs== 1){
-                     if(estado == 'Habilitado'){
-                      Swal.fire('Exito..!','Jugador habilitado correctamente.',  'success');
-                      location.reload();
-                     }
-                     else{
-                      Swal.fire('Exito..!','Jugador deshabilitado correctamente.',  'success');
-                      location.reload();
-                     }
-                   }           
-                 }                  
-             }
+            url: '../clases/Cl_Jugador.php?op=EstadoJugador',
+            type: 'POST',
+            data: {
+                id: id,
+                estado: estado        
+            }, 
+            success: function(vs) {
+            
+                    if(estado == 'Habilitado'){
+                      Swal.fire('Exito..!','Jugador habilitado correctamente.',  'success');                       
+                    }
+                    else{
+                      Swal.fire('Exito..!','Jugador deshabilitado correctamente.',  'success');                     
+                    }
+                    ListaJugadores();
+                               
+            }
          })         
      }
 
 
-     function ListaJugadores(){
+    function ListaJugadores(){
         
       var nombre = $("#filNombre").val();    
       var idEquipo = $("#filEquipo").val();
+
+      $("#contenerdor_tabla").html('<div class="loading"> <center><i class="fa fa-spinner fa-pulse fa-5x" style="color:#3c8dbc"></i><br/>Cargando Jugadores ...</center></div>');
 
         $.ajax({
             url: '../clases/Cl_Jugador.php?op=ListaJugadores',
@@ -404,52 +395,10 @@ if (!isset($_SESSION['idUsuario'])) {
         })         
     }
 
-    function FiltrarJugadores(){
-        
-     
-
-      var nombre = $("#filNombre").val();    
-      var idEquipo = $("#filEquipo").val();
-
-      if(nombre== "" && idEquipo == 0){
-        
-        Swal.fire('Aviso..!','Debe seleccionar una opcion de filtro','warning');
-        return false;
-      }
-
-      $("#btnFiltrar").prop("disabled", true);
-      $("#cargando_add1").html('<div class="loading"> <center><i class="fa fa-spinner fa-pulse fa-5x" style="color:#3c8dbc"></i><br/>Procesando ...</center></div>');
-
-        $.ajax({
-            url: '../clases/Cl_Jugador.php?op=FiltrarJugadores',
-            type: 'POST', 
-            data:{
-              nombre: nombre,
-              idEquipo: idEquipo
-            },
-            success: function(data) {
-              $("#btnFiltrar").prop("disabled", false);
-              $("#cargando_add1").html('');
-                $("#contenerdor_tabla").html('');
-                $('#example1').DataTable().destroy();
-                $("#contenerdor_tabla").html(data);
-                $("#example1").DataTable({
-                    "responsive": true, "lengthChange": false, "autoWidth": false,
-                    "language": lenguaje_español
-                }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');            
-            },
-            error: function(){
-              $("#btnFiltrar").prop("disabled", false);
-              $("#cargando_add1").html('<div class="alert alert-danger" role="alert">Algo salio mal!, por favor intente nuevamente</div>');
-            }      
-        })         
-    }
+   
 
       function RegistrarJugador() {
-         
-      
-     
-    
+                        
         var nombre = $('#nombre').val();
         var apellidos = $('#apellidos').val();
         var carnet = $('#carnet').val();
@@ -460,7 +409,7 @@ if (!isset($_SESSION['idUsuario'])) {
         var mision = $('#mision').val();
 
 
-        if(nombre == "" || apellidos == "" || carnet == "" || fecha == "" || idEquipo == "" || anoMision == "" || mision == ""){
+        if(nombre == "" || apellidos == "" || carnet == "" || fecha == "" || idEquipo == ""){
          
           Swal.fire("Campos Vacios..!", "Debe completar todos los campos obligatorios", "warning");
           return false;
@@ -483,15 +432,19 @@ if (!isset($_SESSION['idUsuario'])) {
             mision  : mision
              }, 
              success: function(vs) {  
-                 if (vs == 2) {                   
-                    Swal.fire("Error..!", "Ha ocurrido un error al registrar al jugador", "error");                     
+              $("#cargando_add").html('');
+              $("#btnRegistro").prop("disabled", false);
+                 if (vs == 'nrocamiseta') {                   
+                    Swal.fire("Alerta Nro Camiseta..!", "Ya existe un jugador con ese numero de camiseta, intentar con otro numero", "warning");
                  }else{
-                    if (vs == 1) {
-                      $("#cargando_add").html('');
-                    Swal.fire('Exito!', 'Jugador registrado correctamente',  'success');
-                    location.reload();
-                    }
-                 }                  
+                     if (vs == 'carnet') {
+                      Swal.fire("Alerta Nro Carnet..!", "Ya existe un jugador con ese numero de carnet, intentar con otro numero", "warning");
+                     }else{
+                      $('#ModalRegistrarJugador').modal('hide');  
+                        Swal.fire('Exito!', 'Jugador registrado correctamente',  'success');
+                        ListaJugadores();
+                     }
+                  }                  
              },
              error: function(){
               $("#btnRegistro").prop("disabled", false);

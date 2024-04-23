@@ -609,6 +609,96 @@ class parametros
       
     }
 
+    public function RegistrarJugador($nombre,$apellidos,$carnet,$nacimiento,$nroCamiseta,$idEquipo)
+	{       
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return false;
+        }
+        
+        $consulta = "SELECT * from Jugador where nroCamiseta = $nroCamiseta and idEquipo = $idEquipo and estado = 'Habilitado'";
+        $db->Query($consulta);
+
+        if($db->RowCount() > 0){
+            return 'nrocamiseta';
+        }
+
+
+        $consulta = "SELECT * from Jugador where ci = '$carnet'";
+        $db->Query($consulta);
+
+        if($db->RowCount() > 0){
+            return 'carnet';
+        }
+
+
+        $consulta = "INSERT INTO Jugador(nombre,apellidos,ci,fechaNacimiento,nroCamiseta,idEquipo,estado) values('$nombre','$apellidos','$carnet','$nacimiento','$nroCamiseta',$idEquipo,'Habilitado')";                            
+
+        if (!$db->Query($consulta)) {       
+            return 'error';
+        }
+
+
+        return 'ok';
+      
+    }
+
+    public function EditarJugador($id,$nombre,$apellidos,$carnet,$nacimiento,$nroCamiseta,$idEquipo)
+	{       
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return false;
+        }
+        
+        $consulta = "SELECT * from Jugador where nroCamiseta = $nroCamiseta and idEquipo = $idEquipo and estado = 'Habilitado'";
+        $db->Query($consulta);
+
+        if($db->RowCount() > 0){
+            return 'nrocamiseta';
+        }
+
+        $consulta = "SELECT * from Jugador where ci = '$carnet' and id != $id";
+        $db->Query($consulta);
+
+        if($db->RowCount() > 0){
+            return 'carnet';
+        }
+
+        $consulta = "UPDATE Jugador SET nombre = '$nombre', apellidos = '$apellidos', ci = '$carnet', fechaNacimiento = '$nacimiento',  nroCamiseta = '$nroCamiseta' where id = $id";                            
+
+        if (!$db->Query($consulta)) {       
+            return 'error';
+        }
+
+
+        return 'ok';
+      
+    }
+
+
+    public function EstadoJugador($id,$estado)
+	{       
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return false;
+        }
+        
+        $consulta = "UPDATE Jugador SET estado = '$estado' where id = $id";                            
+
+        if (!$db->Query($consulta)) {       
+            return 'error';
+        }
+
+
+        return 'ok';
+      
+    }
 
     public function ListarTransferencias($nombreJugador,$idCampeonato,$idEquipoDestino)
 	{       
