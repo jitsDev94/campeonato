@@ -339,7 +339,7 @@ $anunciosVigentes = $parametro->listarAnunciosVigentes();
         url: '../clases/Cl_Historial_Anuncios.php?op=DeshabilitarAnunciosAntiguos',
         type: 'POST',       
         success: function(vs) {
-
+        
         }
       })
     }

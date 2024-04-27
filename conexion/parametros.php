@@ -955,8 +955,10 @@ class parametros
             return false;
         }
         
-        $consulta = "UPDATE anuncios SET estado = 'Deshabilitado' where fechaLimite < sysdate()";                            
+        $fechaActual = date('Y-m-d');
+        $consulta = "UPDATE anuncios SET estado = 'Deshabilitado' where fechaLimite < '$fechaActual'";                            
 
+    
         if (!$db->Query($consulta)) {       
             return 'error';
         }
