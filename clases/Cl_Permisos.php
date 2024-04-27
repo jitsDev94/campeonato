@@ -88,7 +88,7 @@ if($tipo == "ListarRoles"){
 if($tipo == "ListarPermisos2"){
 
     $idRol = $_POST['idRol'];
-    $resp = $parametro->ListarPermisos();
+    $resp = $parametro->ListarPermisos2();
     $count = $resp->RowCount();
     $contador = 0;
     $separacion = 0;
@@ -150,9 +150,8 @@ if($tipo == "ListarPermisos2"){
 }
 
 
-if($tipo == "ListarPermisos"){ //ya no se utiliza, se reemplazo por el ListarPermisos2
-
-    $idRol = $_POST['idRol'];
+if($tipo == "ListarPermisos"){ 
+  
     $resp = $parametro->ListarPermisos();
  
        $tabla = "";   
@@ -160,20 +159,33 @@ if($tipo == "ListarPermisos"){ //ya no se utiliza, se reemplazo por el ListarPer
        if ($resp->RowCount() > 0) {
         $resp->MoveFirst();
         while (!$resp->EndOfSeek()) {
-        $row = $resp->Row();            
+            $row = $resp->Row();            
             $cont++;        
-            $tabla .= "<tr>";
-            $checked = "";
-            if($parametro->PermisoAsignado($row->idPermiso,$idRol) > 0){
-                $checked = "checked";
-            }
-            $tabla .= "<td data-title=''>
-            <div class='form-check form-switch'>
-                <input class='form-check-input' type='checkbox' id='chekPermisos".$row->idPermiso."'  ".$checked." onclick='guardarPermisoRol($row->idPermiso,$idRol)'>
-                <label class='form-check-label' for='chekPermisos".$row->idPermiso."'></label>
-            </div>
-            </td>";
+            $tabla .= "<tr>";   
+            $tabla .= "<td data-title=''>" . $cont . "</td>";       
             $tabla .= "<td data-title=''>" . $row->nombrePermiso . "</td>";
+            $tabla .= "<td data-title=''>" . $row->menu . "</td>";
+            $estado = 'Habilitado';
+            if($row->baja == 1){
+                $estado = 'Deshabilitado';
+            }
+            $tabla .= "<td data-title=''>" . $estado . "</td>";
+            if($parametro->verificarPermisos($_SESSION['idUsuario'],'33,34') > 0){
+                $tabla .= "<td data-title=''>";
+                if($estado == "Deshabilitado" && $parametro->verificarPermisos($_SESSION['idUsuario'],34) > 0){
+                    $tabla .= "<button type='button' class='btn btn-success btn-sm checkbox-toggle' onclick='ConfirmarHabilitar(".$row->idPermiso.")'>Habilitar</button>";                 
+                }
+                else{
+                    if($parametro->verificarPermisos($_SESSION['idUsuario'],33) > 0){
+                        $tabla .= "&nbsp <button type='button' title='Editar Rol' class='btn btn-primary btn-sm checkbox-toggle' onclick='abrirModalEditarRol(".chr(34).$row->idPermiso.chr(34).",".chr(34).$row->nombrePermiso.chr(34).",".chr(34).$row->menu.chr(34).")'><i class='fas fa-user-edit'></i></button>";                     
+                    }              
+                    if($parametro->verificarPermisos($_SESSION['idUsuario'],34) > 0){
+                    $tabla .= "&nbsp <button type='button' class='btn btn-danger btn-sm checkbox-toggle' onclick='ConfirmarDeshabilitar(".$row->idPermiso.")'>Deshabilitar</button>";                     
+                    }
+                
+                }
+                $tabla .= "</td>";
+            }   
             $tabla .= "</tr>";
         }
      
@@ -184,6 +196,40 @@ if($tipo == "ListarPermisos"){ //ya no se utiliza, se reemplazo por el ListarPer
        }
    
        
+}
+
+if($tipo == "RegistrarPermiso"){
+
+    $nombre = $_POST["nombre"];
+    $menu = $_POST["menu"];
+    $nombreMenu = $_POST["nombreMenu"];
+
+    $resultado = $parametro->RegistrarPermiso( $nombre,$menu,$nombreMenu);
+    echo $resultado;
+  
+}
+
+if($tipo == "EditarPermiso"){
+
+    $nombre = $_POST["nombre"];
+    $menu = $_POST["menu"];
+    $nombreMenu = $_POST["nombreMenu"];
+    $id = $_POST["id"];
+
+    $resultado = $parametro->EditarPermiso( $id,$nombre,$menu,$nombreMenu);
+    echo $resultado;
+  
+}
+
+if($tipo == "EstadoPermiso"){
+
+
+    $id = $_POST["id"];
+    $estado = $_POST["estado"];
+
+    $resultado = $parametro->EstadoPermiso( $id,$estado);
+    echo $resultado;     
+
 }
 
 if($tipo == "guardarPermisoRol"){

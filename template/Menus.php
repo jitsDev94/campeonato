@@ -249,7 +249,7 @@
                             <a href="../views/Usuarios.php" class="nav-link">
                               <i class="nav-icon fas fa-user"></i>
                                 <p>
-                                   Crear Usuarios
+                                   Administrar Usuarios
                                 </p>
                             </a>
                         </li>
@@ -259,6 +259,15 @@
                               <i class="nav-icon fas fa-user-check"></i>
                                 <p>
                                    Administrar Roles
+                                </p>
+                            </a>
+                        </li>
+                        <?php } if($parametro->verificarPermisos($_SESSION['idUsuario'],'32,33,34') > 0){?>  
+                            <li class="nav-item">
+                            <a href="../views/admPermisos.php" class="nav-link">
+                              <i class="nav-icon fas fa-list"></i>
+                                <p>
+                                   Administrar Permisos
                                 </p>
                             </a>
                         </li>

@@ -17,7 +17,7 @@ class parametros
         LEFT join rol r on r.id = rp.idRol
         LEFT join usuario u on u.idRol = r.id
         LEFT join permisos p on p.idPermiso = rp.idPermiso
-        where u.id = $idUsuario and rp.idPermiso in ($idpermiso)";
+        where u.id = $idUsuario and rp.idPermiso in ($idpermiso) and p.baja=0";
 
         if (!$db->Query($consulta)) {
             $db->Kill();
@@ -38,23 +38,7 @@ class parametros
 		if (!$db->Query($consulta)) $db->Kill();
         return $db->RowCount();
       
-    }
-
-    public function ListarPermisos(){
-
-        $db = new MySQL();
-        if ($db->Error()) {
-            $db->Kill();
-            return false;
-        }
-
-                                 
-        $consulta = "SELECT * FROM permisos order by menu asc";
-        if(!$db->Query($consulta)) {
-            return 0;
-        }      
-        return $db;
-    }
+    }   
 
     public function ListarRoles(){
 
@@ -170,6 +154,118 @@ class parametros
       
     }
 
+    public function ListarPermisos2(){
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return false;
+        }
+
+                                 
+        $consulta = "SELECT * FROM permisos where baja = 0 order by menu asc";
+        if(!$db->Query($consulta)) {
+            return 0;
+        }      
+        return $db;
+    }
+
+    public function ListarPermisos(){
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return false;
+        }
+
+                                 
+        $consulta = "SELECT * FROM permisos order by menu asc";
+        if(!$db->Query($consulta)) {
+            return 0;
+        }      
+        return $db;
+    }
+
+    public function RegistrarPermiso($nombre,$menu,$nombreMenu)
+	{       
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return 'error';
+        }
+      
+        $nombreMenuFinal = $menu;
+        if($menu == 'otro'){
+            $nombreMenuFinal = $nombreMenu;
+        }
+        $consulta= "SELECT * from permisos where nombrePermiso = '$nombre' and menu = '$nombreMenuFinal'";
+        $db->Query($consulta);
+        if($db->RowCount() > 0){
+            return 'existe';
+        }
+
+        $consulta = "INSERT INTO permisos(nombrePermiso,menu,baja) values('$nombre','$nombreMenuFinal',0)";
+            
+        if (!$db->Query($consulta)) {
+            $db->Kill();
+            return 'Ha ocurrido un error al registrar el rol.';
+        }
+       
+        return 'ok';
+      
+    }
+
+    public function EditarPermiso($id,$nombre,$menu,$nombreMenu)
+	{       
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return 'error';
+        }
+      
+        $nombreMenuFinal = $menu;
+        if($menu == 'otro'){
+            $nombreMenuFinal = $nombreMenu;
+        }
+        $consulta= "SELECT * from permisos where nombrePermiso = '$nombre' and menu = '$nombreMenuFinal'";
+        $db->Query($consulta);
+        if($db->RowCount() > 0){
+            return 'existe';
+        }
+
+        $consulta = "UPDATE permisos set nombrePermiso = '$nombre' , menu = '$nombreMenuFinal' where idPermiso = $id";
+            
+        if (!$db->Query($consulta)) {
+            $db->Kill();
+            return 'Ha ocurrido un error al registrar el rol.';
+        }
+       
+        return 'ok';
+      
+    }
+
+
+    public function EstadoPermiso($id, $estado)
+	{       
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return 'error';
+        }           
+
+        $consulta = "UPDATE permisos SET baja = '$estado' where idPermiso=$id";
+            
+        if (!$db->Query($consulta)) {
+            $db->Kill();
+            return 'error';
+        }
+       
+        return 'ok';
+      
+    }
 
     public function EditarUsuario($idRol,$idEquipo,$idUsuario)
 	{       
@@ -439,6 +535,24 @@ class parametros
 			$row = $db->Row();		
 			echo "<option value='" . $row->id . "'>" . $row->nombreEquipo . "</option>";
 		}
+    }
+
+    public function listadoMenus()
+	{      
+
+        $consulta = "select DISTINCT menu from permisos order by menu asc";
+
+       
+        $db = new MySQL();
+		if ($db->Error()) $db->Kill();
+		if (!$db->Query($consulta)) $db->Kill();
+		$db->MoveFirst();
+		echo "<option value=''>Seleccionar.. </option>";
+		while (!$db->EndOfSeek()) {
+			$row = $db->Row();		
+			echo "<option value='" . $row->menu . "'>" . $row->menu . "</option>";
+		}
+        echo "<option value='otro'>Otro</option>";
     }
 
 
