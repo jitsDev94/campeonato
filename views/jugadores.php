@@ -158,11 +158,7 @@ if (!isset($_SESSION['idUsuario'])) {
     </div>
     <!-- ./wrapper -->
 
-
-
-
-<!--        MODAL         -->
-
+    
    <!-- Modal nuevo/editar jugador --> 
       <div class="modal fade" id="ModalRegistrarJugador">
         <div class="modal-dialog">

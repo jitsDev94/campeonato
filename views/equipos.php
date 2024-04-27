@@ -1,6 +1,8 @@
 <?php
 
-include 'clases/conexion.php';
+require_once '../conexion/parametros.php';
+$parametro = new parametros();
+
 session_start();
 
 if (!isset($_SESSION['idUsuario'])) {
@@ -11,6 +13,12 @@ if (!isset($_SESSION['idUsuario'])) {
     $idEquipoDelegado = $_SESSION['idEquipo'];
     $nombreEquipoDelegado= $_SESSION['nombreEquipo'];
 }
+
+if($parametro->verificarPermisos($_SESSION['idUsuario'],'7,20,21') == 0){
+  echo "Su usuario no tiene permisos para entrar a esta pagina";
+  exit();
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -18,24 +26,9 @@ if (!isset($_SESSION['idUsuario'])) {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Equipos</title>
-  <link rel="icon" type="image/jpg" href="img/image.png">
-  <!-- Google Font: Source Sans Pro -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
-  <!-- Ionicons -->
-  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
-   <!-- DataTables -->
-   <link rel="stylesheet" href="plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
-  <link rel="stylesheet" href="plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
-  <link rel="stylesheet" href="plugins/datatables-buttons/css/buttons.bootstrap4.min.css">
-  <!-- Theme style -->
-  <link rel="stylesheet" href="dist/css/adminlte.min.css">
-   <!-- SweetAlert2 -->
-   <link rel="stylesheet" href="plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css">
-  <!-- Toastr -->
-  <link rel="stylesheet" href="plugins/toastr/toastr.min.css">
+  <?php
+    require "../template/encabezado.php";
+    ?>
   
    <style>
     .card{
@@ -45,15 +38,15 @@ if (!isset($_SESSION['idUsuario'])) {
   </style>
 
 </head>
-<body class="hold-transition sidebar-mini layout-fixed sidebar-closed sidebar-collapse" onload="ListaEquipos();" >
+<body class="hold-transition sidebar-mini layout-fixed sidebar-closed sidebar-collapse">
 <div class="wrapper">
 
-    <?php  
-        require "Navegador.php";
+  <?php  
+        require "../template/Navegador.php";
     ?>
 
     <?php  
-        require "Menus.php";
+        require "../template/Menus.php";
     ?>
 
   <div class="content-wrapper">
@@ -65,7 +58,9 @@ if (!isset($_SESSION['idUsuario'])) {
             <h1 class="m-0">Equipos</h1>
           </div>
           <div class="col-12 col-md-2">
-              <button type="button" class="btn btn-primary btn-block" onclick="modalRegistrarEquipo()"><i class="fas fa-plus-circle"></i> Registrar Equipo</button>                 
+              <?php if($parametro->verificarPermisos($_SESSION['idUsuario'],7) > 0){ ?>
+                <button type="button" class="btn btn-primary btn-block" onclick="modalRegistrarEquipo()"><i class="fas fa-plus-circle"></i> Registrar Equipo</button>                 
+              <?php }?>
           </div>  
           <!-- /.col
           <div class="col-sm-6">
@@ -78,25 +73,12 @@ if (!isset($_SESSION['idUsuario'])) {
       </div><!-- /.container-fluid -->
     </div>
 
-        <section class="col-lg-12 col-md-12">
+        <section class="col-lg-12 col-md-12 pl-3 pr-3">
             <div class="card info-box shadow-lg">
             
               <div class="card-body">
                 <div id="contenerdor_tabla" class="table-responsive">
-                  <table id="example1" class="table table-bordered table-striped">
-                    <thead>
-                    <tr>
-                      <th>#</th>
-                      <th>Equipo</th>
-                      <th>Fecha Registro</th>
-                      <th>Estado</th>
-                      <th>Accion</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                           
-                    </tbody>
-                  </table>
+                
                 </div>
               </div>
               <!-- /.card-body -->
@@ -112,13 +94,10 @@ if (!isset($_SESSION['idUsuario'])) {
       <!-- /.control-sidebar -->
       </div>
 
-           <?php $año = date('Y'); ?>
-        <footer class="main-footer">
-            <div class="float-right d-none d-sm-block">
-            <b>Version</b> 1.0
-            </div>
-            <strong>Copyright &copy; Software Bolivia <?php echo $año ?></strong> Todos los derechos reservados.
-        </footer>
+
+      <?php
+      require "../template/footer.php";
+      ?>
     
     </div>
     <!-- ./wrapper -->
@@ -133,38 +112,23 @@ if (!isset($_SESSION['idUsuario'])) {
         <div class="modal-dialog">
           <div class="modal-content">
             <div class="modal-header">
-              <h4 class="modal-title" id="tituloJugador"><i class="nav-icon fas fa-users"></i> Nuevo Equipo</h4>
+              <h4 class="modal-title" id="tituloJugador">Nuevo Equipo</h4>
               <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
               </button>
             </div>
             <div class="modal-body">
-              <form method="POST" id="formEditarLote" class="row g-3">                              
-                    <div class="col-md-6">
-                      <br>
-                        <label for="inputName" class="form-label"><b>Nombre Equipo(*)</b></label>
-                        <div class="input-group">
-                            <div class="input-group-prepend">
-                            <span class="input-group-text"><i class="fas fa-users"></i></span>
-                            </div>
-                            <input type="text" class="form-control" id ="nombre" placeholder="Ingresar Nombre">                          
-                        </div>                 
+              <form method="POST" id="formEditarLote" class="row g-3">     
+                  <input type="hidden" class="form-control" id ="id">                            
+                    <div class="col-md-12">                      
+                        <label for="inputName" class="form-label"><b>Nombre Equipo(*)</b></label>                     
+                        <input type="text" class="form-control" id ="nombre" placeholder="Ingresar Nombre">                                                                 
                     </div>             
-                    <div class="col-md-6">
-                    <br>
-                        <label for="inputName" class="form-label"><b>Fecha Nacimiento(*)</b></label>
-                        <div class="input-group">                 
-                            <input type="date" class="form-control" id ="fecha">                          
-                        </div>                 
-                    </div>
-                                                    
-                <div class="col-md-6">               
-                    <input type="hidden" class="form-control" id ="id">                                          
-                </div> 
+                                                                                
               </form>
               <br>
-                    <div id="cargando_add"></div>
-                    <br> 
+              <div id="cargando_add"></div>
+              <br> 
             </div>
             <div class="modal-footer col-md-12">
               <div id="botonRegistro"></div>
@@ -182,72 +146,64 @@ if (!isset($_SESSION['idUsuario'])) {
 
     
         function modalRegistrarEquipo() {    
-          $("#tituloJugador").html("<i class='nav-icon fas fa-users'></i> Nuevo Equipo");  
+          $("#tituloJugador").html("Nuevo");  
           $("#botonRegistro").html("<button type='button' class='btn btn-primary' id='botonRegistro' onclick='RegistrarEquipo()'>Registrar</button>");
           $("#id").val("");           
           $("#nombre").val("");
-          $("#fecha").val("");
+          
           $("#Equipos").show();
           $('#ModalRegistrarEquipo').modal('show');
         }
 
 
-        function modalEditarEquipo(id) {       
+        function modalEditarEquipo(id,nombreEquipo) {       
             
-          $.ajax({
-            url: 'clases/Cl_Equipo.php?op=DatosEquipo',
-            type: 'POST',
-            data: {
-                id: id
-            }, 
-            success: function(data) {
-              if(data == "error"){
-                Swal.fire("Error..!", "Ha ocurrido un error al obtener los datos del Equipo", "error");      
-              }
-              else{
-                var resp= $.parseJSON(data);
-                $("#tituloJugador").html("<i class='nav-icon fas fa-edit'></i> Editar Equipo");  
-                $("#botonRegistro").html("<button type='button' class='btn btn-primary' id='botonRegistro' onclick='EditarEquipo()'>Editar</button>");
-                $("#id").val(resp.id);           
-                $("#nombre").val(resp.nombreEquipo);
-                $("#fecha").val(resp.fechaRegistro);
-                $('#ModalRegistrarEquipo').modal('show');
-              }              
-            }            
-          })               
+          $("#tituloJugador").html("Editar");  
+          $("#botonRegistro").html("<button type='button' class='btn btn-primary' id='botonRegistro' onclick='EditarEquipo()'>Editar</button>");
+          $("#nombre").val(nombreEquipo);
+          $("#id").val(id);
+          $('#ModalRegistrarEquipo').modal('show');
+       
         }
 
         function EditarEquipo(){
 
-        var id = $('#id').val();
-        var nombre = $('#nombre').val();
-        var fecha = $('#fecha').val();
+          var id = $('#id').val();
+          var nombre = $('#nombre').val();
+        
+          if(nombre == ""){
+            Swal.fire("Campos Vacios..!", "Debe completar todos los campos obligatorios", "warning");
+            return false;
+          }
 
-        if(nombre == "" || fecha == ""){
-          Swal.fire("Campos Vacios..!", "Debe completar todos los campos obligatorios", "warning");
-          return false;
-        }
+          $("#botonRegistro").prop("disabled", true);
+          $("#cargando_add").html('<div class="loading"> <center><i class="fa fa-spinner fa-pulse fa-5x" style="color:#3c8dbc"></i><br/>Procesando ...</center></div>');
 
-         $.ajax({
-         url: 'clases/Cl_Equipo.php?op=EditarEquipo',
-         type: 'POST',
-         data: {
-            id: id,
-            nombre: nombre,
-            fecha: fecha
-             }, 
-             success: function(vs) {  
-                
-                 if (vs == 2) {                   
-                    Swal.fire("Error..!", "Ha ocurrido un error al editar los datos del equipo", "error");                     
-                 }else{
-                    if (vs == 1) {
+          $.ajax({
+          url: '../clases/Cl_Equipo.php?op=EditarEquipo',
+          type: 'POST',
+          data: {
+              id: id,
+              nombre: nombre
+            
+              }, 
+              success: function(vs) {  
+                setTimeout(() => {
+                  $("#botonRegistro").prop("disabled", false);
+                  $("#cargando_add").html('');
+                }, 2000);
+              
+                  if (vs == 'nombre') {                   
+                      Swal.fire("Oops..!", "El nombre que esta ingresando ya esta registrado en otro equipo", "warning");                     
+                  }else{
+                    
+                    $('#ModalRegistrarEquipo').modal('hide');
                     Swal.fire('Exito!', 'Equipo editado correctamente',  'success');
-                    location.reload();
-                    }
-                 }                  
-             }
-         })         
+                    ListaEquipos();
+                      
+                  }                  
+              }
+          })         
         }
   
          //funcion que pide confirmacion al usuario para desabilitar un producto
@@ -287,27 +243,23 @@ if (!isset($_SESSION['idUsuario'])) {
       function EstadoEquipo(id,estado) {
          
          $.ajax({
-         url: 'clases/Cl_Equipo.php?op=EstadoEquipo',
+         url: '../clases/Cl_Equipo.php?op=EstadoEquipo',
          type: 'POST',
          data: {
              id: id,
              estado: estado        
              }, 
              success: function(vs) {
-                 if (vs == 2) {
-                  Swal.fire("Error..!", "ha ocurrido un error al deshabilitar al equipo", "error");                     
-                 }else{
-                   if(vs== 1){
-                     if(estado == 'Habilitado'){
-                      Swal.fire('Exito..!','Equipo habilitado correctamente.',  'success');
-                      location.reload();
-                     }
-                     else{
-                      Swal.fire('Exito..!','Equipo deshabilitado correctamente.',  'success');
-                      location.reload();
-                     }
-                   }           
-                 }                  
+                
+                if(estado == 'Habilitado'){
+                Swal.fire('Exito..!','Equipo habilitado correctamente.',  'success');
+                ListaEquipos();
+                }
+                else{
+                Swal.fire('Exito..!','Equipo deshabilitado correctamente.',  'success');
+                ListaEquipos();
+                }
+                            
              }
          })         
      }
@@ -316,16 +268,18 @@ if (!isset($_SESSION['idUsuario'])) {
       $("#contenerdor_tabla").html('<div class="loading"> <center><i class="fa fa-spinner fa-pulse fa-5x" style="color:#3c8dbc"></i><br/>Cargando Equipos ...</center></div>');
 
         $.ajax({
-            url: 'clases/Cl_Equipo.php?op=ListaEquipos',
+            url: '../clases/Cl_Equipo.php?op=ListaEquipos',
             type: 'POST', 
             success: function(data) {
                 $("#contenerdor_tabla").html('');
                 $('#example1').DataTable().destroy();
                 $("#contenerdor_tabla").html(data);
                 $("#example1").DataTable({
-                    "responsive": true, "lengthChange": false, "autoWidth": false,
+                    "responsive": true, 
+                    "lengthChange": false, 
+                    "autoWidth": false,
                     "language": lenguaje_español
-                }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');            
+                });            
             }          
         })         
     }
@@ -333,9 +287,8 @@ if (!isset($_SESSION['idUsuario'])) {
      function RegistrarEquipo() {
          
         var nombre = $('#nombre').val();
-        var fecha = $('#fecha').val();
-
-        if(nombre == "" || fecha == ""){
+     
+        if(nombre == ""){
           Swal.fire("Campos Vacios..!", "Debe completar todos los campos obligatorios", "warning");
           return false;
         }
@@ -344,62 +297,39 @@ if (!isset($_SESSION['idUsuario'])) {
         $("#cargando_add").html('<div class="loading"> <center><i class="fa fa-spinner fa-pulse fa-5x" style="color:#3c8dbc"></i><br/>Procesando ...</center></div>');
 
          $.ajax({
-         url: 'clases/Cl_Equipo.php?op=RegistrarEquipo',
+         url: '../clases/Cl_Equipo.php?op=RegistrarEquipo',
          type: 'POST',
          data: {
-            nombre: nombre,
-            fecha: fecha
+            nombre: nombre
+           
              }, 
              success: function(vs) {   
               $("#botonRegistro").prop("disabled", false);
-                    $("#cargando_add").html('');           
-                 if (vs == 2) {                   
-                    Swal.fire("Error..!", "Ha ocurrido un error al registrar al equipo", "error");                     
+                $("#cargando_add").html('');           
+                 if (vs == 'nombre') {                   
+                    Swal.fire("Oops..!", "Ya existe un equipo registrado con ese nombre", "warning");                     
                  }else{
-                    if (vs == 1) {
+                  $('#ModalRegistrarEquipo').modal('hide');
                     Swal.fire('Exito!', 'Equipo registrado correctamente',  'success');
-                    location.reload();
-                    }
+                    ListaEquipos();                   
                  }                  
              },
              error: function(vs){
                 $("#botonRegistro").prop("disabled", false);
                 $("#cargando_add").html('');
+                Swal.fire("Error..!", "Error inesperado", "error");     
              }
          })         
      }
       </script>
 
+<?php
+      require "../template/piePagina.php";
+      ?>
+       <script>
 
-
-<!-- Option 1: Bootstrap Bundle with Popper -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-<!-- SweetAlert2 -->
-<script src="plugins/sweetalert2/sweetalert2.min.js"></script>
-<!-- Toastr -->
-<script src="plugins/toastr/toastr.min.js"></script>
-<!-- jQuery -->
-<script src="plugins/jquery/jquery.min.js"></script>
-<!-- Bootstrap 4 -->
-<script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-<!-- DataTables  & Plugins -->
-<script src="plugins/datatables/jquery.dataTables.min.js"></script>
-<script src="plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
-<script src="plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
-<script src="plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
-<script src="plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
-<script src="plugins/datatables-buttons/js/buttons.bootstrap4.min.js"></script>
-<!-- AdminLTE App -->
-<script src="dist/js/adminlte.min.js"></script>
-<!-- AdminLTE for demo purposes -->
-<script src="dist/js/demo.js"></script>
-<!-- Page specific script -->
-<script>
   $(function () {
-    $("#example1").DataTable({
-      "responsive": true, "lengthChange": false, "autoWidth": false,
-      "language": lenguaje_español
-    }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
+    ListaEquipos();
   })
 
   var lenguaje_español = 

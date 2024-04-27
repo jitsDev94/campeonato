@@ -1,7 +1,8 @@
 <?php
 
 session_start();
-include("conexion.php");
+require_once '../conexion/parametros.php';
+$parametro = new parametros();
 
 $tipo = $_GET["op"];
 
@@ -9,41 +10,25 @@ $tipo = $_GET["op"];
 if($tipo == "RegistrarEquipo"){
 
     $nombre  = $_POST["nombre"];
-    $fecha = $_POST["fecha"];
-    
-        $registrar = "INSERT INTO Equipo values(null,'$nombre','$fecha','Habilitado')";
-        $resultado = mysqli_query($conectar, $registrar);
-    
-        if($resultado){
-            echo '1';
-        }
-        else{
-            echo '2';
-        }
+ 
+    $resultado = $parametro->RegistrarEquipo($nombre); 
+
+    echo $resultado;
 }
 
 if($tipo == "EditarEquipo"){
 
     $id  = $_POST["id"];
     $nombre  = $_POST["nombre"];
-    $fechaRegistro = $_POST["fecha"];
-    
-        $registrar = "UPDATE Equipo SET nombreEquipo = '$nombre', fechaRegistro = '$fechaRegistro'  where id = $id";
-        $resultado = mysqli_query($conectar, $registrar);
-    
-        if($resultado){
-            echo '1';
-        }
-        else{
-            echo '2';
-        }
+   
+    $resultado = $parametro->EditarEquipo($id,$nombre); 
+    echo $resultado;
 }
 
 
 if($tipo == "ListaEquipos"){
-
-    $registrarInventario = "SELECT * FROM Equipo order by nombreEquipo asc";
-    $resultado1 = mysqli_query($conectar, $registrarInventario);
+   
+    $resultado1 = $parametro->ListaEquipos(); 
 
         $tabla = "";
         $tabla .= '<table id="example1" class="table table-bordered table-striped"  method="POST">
@@ -52,29 +37,40 @@ if($tipo == "ListaEquipos"){
                             <th>#</th>
                             <th>Equipo</th>
                             <th>Fecha Registro</th>
-                            <th>Estado</th>
-                            <th width="150px;">Acción</th>   
-                        </tr>
+                            <th>Estado</th>';
+                            if($parametro->verificarPermisos($_SESSION['idUsuario'],'20,21') > 0){
+                $tabla .= '<th width="200px;">Acción</th>';
+                            }
+               $tabla .= ' </tr>
                     </thead>
                     <tbody > ';
      
         $cont = 0;
-        if ($resultado1) {
-            while ($listado = mysqli_fetch_array($resultado1)) {
+        if ($resultado1->RowCount() > 0) {
+            $resultado1->MoveFirst();
+            while (!$resultado1->EndOfSeek()) {
+                $listado = $resultado1->Row();
                 $cont++;
-                $nombre= utf8_encode($listado['nombreEquipo']);
+              
                 $tabla .= "<tr>";
                 $tabla .= "<td data-title=''>" .  $cont . "</td>";
-                $tabla .= "<td data-title=''>".$listado['nombreEquipo']."</td>";
-                $tabla .= "<td data-title=''>" . $listado['fechaRegistro'] . "</td>";
-                $tabla .= "<td data-title=''>" . $listado['estado'] . "</td>";
-                $tabla .= "<td data-title=''><button type='button' class='btn btn-primary btn-sm checkbox-toggle' onclick='modalEditarEquipo(".$listado['id'].")'><i title= 'Editar' class='fas fa-pen'></i></button>";      
-                if($listado['estado'] == "Habilitado"){
-                    $tabla .= " <button type='button' class='btn btn-danger btn-sm checkbox-toggle' onclick='ConfirmarDeshabilitar(".$listado['id'].")'>Deshabilitar</button>";                          
-                }else{
-                    $tabla .= " <button type='button' class='btn btn-success btn-sm checkbox-toggle' onclick='ConfirmarHabilitar(".$listado['id'].")'>Habilitar</button>";                          
+                $tabla .= "<td data-title=''>".$listado->nombreEquipo."</td>";
+                $tabla .= "<td data-title=''>" . $listado->fechaRegistro . "</td>";
+                $tabla .= "<td data-title=''>" . $listado->estado . "</td>";
+                if($parametro->verificarPermisos($_SESSION['idUsuario'],'20,21') > 0){
+                    $tabla .= "<td data-title=''>";
+                    if($parametro->verificarPermisos($_SESSION['idUsuario'],20) > 0){
+                        $tabla .= " <button type='button' class='btn btn-primary btn-sm checkbox-toggle' onclick='modalEditarEquipo(".chr(34).$listado->id.chr(34).",".chr(34).$listado->nombreEquipo.chr(34).")'><i title= 'Editar' class='fas fa-pen'></i></button>";      
+                    }
+                    if($parametro->verificarPermisos($_SESSION['idUsuario'],21) > 0){
+                        if($listado->estado == "Habilitado"){
+                            $tabla .= " <button type='button' class='btn btn-danger btn-sm checkbox-toggle' onclick='ConfirmarDeshabilitar(".$listado->id.")'>Deshabilitar</button>";                          
+                        }else{
+                            $tabla .= " <button type='button' class='btn btn-success btn-sm checkbox-toggle' onclick='ConfirmarHabilitar(".$listado->id.")'>Habilitar</button>";                          
+                        }
+                    }
+                    $tabla .= "</td>";
                 }
-                $tabla .= "</td>";
                 $tabla .= "</tr>";
             }
         }
@@ -87,36 +83,13 @@ if($tipo == "ListaEquipos"){
 
 
 
-
-if($tipo == "DatosEquipo"){
-
-    $id = $_POST["id"];
-    $datos = array();
-    $Consultar = "SELECT * FROM Equipo where id = $id";
-    $resultado = mysqli_query($conectar, $Consultar);
-    $datos = mysqli_fetch_assoc($resultado);
-
-    if($resultado){
-        echo json_encode($datos,JSON_UNESCAPED_UNICODE);
-    }
-    else{
-        echo 'error';
-    }   
-}
-
-
 if($tipo == "EstadoEquipo"){
 
     $id = $_POST["id"];
     $estado = $_POST["estado"];
 
-    $Consultar = "UPDATE Equipo SET estado = '$estado' where id = $id";
-    $resultado = mysqli_query($conectar, $Consultar);
+    $resultado = $parametro->EstadoEquipo($id,$estado); 
+    echo $resultado;
 
-    if($resultado){
-        echo  '1';
-    }
-    else{
-        echo '2';
-    }   
+  
 }

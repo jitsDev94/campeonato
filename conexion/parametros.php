@@ -576,6 +576,98 @@ class parametros
       
     }
 
+
+    public function ListaEquipos()
+	{       
+
+        $db = new MySQL();
+		if ($db->Error()) $db->Kill();
+        
+      
+        $consulta="SELECT * FROM Equipo order by nombreEquipo asc";
+
+      
+		if (!$db->Query($consulta)) $db->Kill();
+		
+        return $db;
+      
+    }
+
+    public function RegistrarEquipo($nombre)
+	{       
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return false;
+        }
+        
+        $consulta = "SELECT * from Equipo where nombreEquipo = '$nombre'";
+        $db->Query($consulta);
+
+        if($db->RowCount() > 0){
+            return 'nombre';
+        }      
+
+        $consulta = "INSERT INTO Equipo(nombreEquipo,fechaRegistro,estado) values('$nombre',sysdate(),'Habilitado')";                            
+
+        if (!$db->Query($consulta)) {       
+            return 'error';
+        }
+
+
+        return 'ok';
+      
+    }
+
+
+    public function EditarEquipo($id,$nombre)
+	{       
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return false;
+        }
+        
+        $consulta = "SELECT * from Equipo where nombreEquipo = '$nombre'";
+        $db->Query($consulta);
+
+        if($db->RowCount() > 0){
+            return 'nombre';
+        }      
+
+        $consulta = "UPDATE Equipo SET nombreEquipo = '$nombre', fechaRegistro = sysdate() where id = $id";                            
+
+        if (!$db->Query($consulta)) {       
+            return 'error';
+        }
+
+
+        return 'ok';
+      
+    }
+
+    public function EstadoEquipo($id,$estado)
+	{       
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return false;
+        }
+        
+      
+        $consulta = "UPDATE Equipo SET estado = '$estado' where id = $id";                            
+
+        if (!$db->Query($consulta)) {       
+            return 'error';
+        }
+
+        return 'ok';
+      
+    }
+
     public function ListaJugadores($idEquipoDelegado,$idRol,$nombreJugadorFiltro,$idEquipoFiltro)
 	{       
 
@@ -609,6 +701,8 @@ class parametros
       
     }
 
+
+    
     public function RegistrarJugador($nombre,$apellidos,$carnet,$nacimiento,$nroCamiseta,$idEquipo)
 	{       
 
