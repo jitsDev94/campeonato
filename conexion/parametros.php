@@ -628,6 +628,7 @@ class parametros
 		if ($db->Error()) $db->Kill();
 		if (!$db->Query($consulta)) $db->Kill();
 		$db->MoveFirst();		
+        echo "<option value='0'>Seleccionar..</option>";
 		while (!$db->EndOfSeek()) {
 			$row = $db->Row();		
 			echo "<option value='" . $row->id . "'>" . $row->nombreEquipo . "</option>";
@@ -697,7 +698,7 @@ class parametros
         $consulta = "SELECT e.id as idEquipo,e.nombreEquipo FROM Inscripcion as i
         LEFT join Equipo as e on e.id = i.idEquipo
         LEFT join Campeonato as c on c.id = i.idCampeonato
-        where c.estado= 'En Curso' $condicion order by e.nombreEquipo asc";
+        where c.estado= 'En Curso' $condicion";
 
 
         $db = new MySQL();
@@ -719,13 +720,13 @@ class parametros
 
         $db = new MySQL();
 		if ($db->Error()) $db->Kill();
-		if (!$db->Query("SELECT * FROM Hechos")) $db->Kill();
+		if (!$db->Query("SELECT * FROM acontecimiento")) $db->Kill();
 		$db->MoveFirst();
 		echo "<option value='0'>Seleccionar</option>";
 		while (!$db->EndOfSeek()) {
 			$row = $db->Row();
 		
-			echo "<option value='" . $row->id . "'>" . $row->nombreHecho . "</option>";
+			echo "<option value='" . $row->id . "'>" . $row->nombreAcontecimiento . "</option>";
 		}      
     }
 
@@ -766,17 +767,23 @@ class parametros
         $db = new MySQL();
 		if ($db->Error()) $db->Kill();
 		if (!$db->Query($consulta)) $db->Kill();
-		$db->MoveFirst();
-		$row = $db->Row();
-        $ultimoPartido = $row->id +1;
-        return $ultimoPartido;
+        if($db->RowCount() > 0){
+            $db->MoveFirst();
+            $row = $db->Row();
+            $ultimoPartido = $row->id +1;
+            return $ultimoPartido;
+        }
+        else{
+            return 1 ;
+        }
+	
       
     }
 
     function TraerUltimoSede()
 	{       
 
-        $consulta = "SELECT * FROM Sede where estado = 'Habilitado'";
+        $consulta = "SELECT * FROM sede";
 
         $db = new MySQL();
 		if ($db->Error()) $db->Kill();
@@ -1090,8 +1097,11 @@ class parametros
     public function TraerCodEquipo($nombreEquipo)
 	{       
 
-        $consulta = "SELECT * FROM Equipo where nombreEquipo = '$nombreEquipo'";
-
+        //$consulta = "SELECT * FROM Equipo where nombreEquipo = '$nombreEquipo'";
+        $consulta="SELECT i.id,e.nombreEquipo FROM inscripcion i 
+        LEFT join equipo e on e.id = i.idEquipo
+        LEFT join campeonato ca on ca.id = i.idCampeonato
+        where ca.estado = 'en curso' and e.nombreEquipo = '$nombreEquipo'";
         $db = new MySQL();
 		if ($db->Error()) $db->Kill();
 		if (!$db->Query($consulta)) $db->Kill();
@@ -1104,14 +1114,21 @@ class parametros
     public function TraerEquipoTablaPosicion($CodEquipo,$codCampeonato)
 	{       
 
-        $consulta = "SELECT * FROM TablaPosicion where idEquipo = $CodEquipo and idCampeonato = $codCampeonato";
-
+       // $consulta = "SELECT * FROM TablaPosicion where idEquipo = $CodEquipo and idCampeonato = $codCampeonato";
+        $consulta = "SELECT t.* FROM TablaPosicion t 
+        LEFT join inscripcion i on i.id = t.idEquipo
+        where i.id = $CodEquipo and i.idCampeonato = $codCampeonato;";
         $db = new MySQL();
 		if ($db->Error()) $db->Kill();
 		if (!$db->Query($consulta)) $db->Kill();
-		$db->MoveFirst();
-		$row = $db->Row();
-        return $row;
+        if($db->RowCount() > 0){
+            $db->MoveFirst();
+            $row = $db->Row();
+            return $row->id;
+        }
+		else{
+            return '';
+        }
       
     }
 
@@ -1419,7 +1436,7 @@ class parametros
     public function ActualizarTablaPosicionWalkover($equipoGanadorWalkover,$codCampeonato)
 	{       
 
-        $consulta = "UPDATE TablaPosicion SET puntos = puntos + 3, partidosGanados = partidosGanados + 1 where id = $equipoGanadorWalkover and idCampeonato = $codCampeonato";
+        $consulta = "UPDATE TablaPosicion SET puntos = puntos + 3, partidosGanados = partidosGanados + 1 where id = $equipoGanadorWalkover";
 
         $db = new MySQL();
         if ($db->Error()) {
@@ -1440,7 +1457,7 @@ class parametros
     public function ActualizarTablaPosicionWalkoverPerdedor($equipoPerdedorWalkover,$codCampeonato)
 	{       
 
-        $consulta = "UPDATE TablaPosicion SET  partidosPerdidos = partidosPerdidos + 1 where id = $equipoPerdedorWalkover and idCampeonato = $codCampeonato";
+        $consulta = "UPDATE TablaPosicion SET  partidosPerdidos = partidosPerdidos + 1 where id = $equipoPerdedorWalkover";
 
         $db = new MySQL();
         if ($db->Error()) {
@@ -1461,7 +1478,7 @@ class parametros
     public function InsertarPartido($idPartido,$equipo1,$equipo2,$idSede,$fecha,$idCampeonato,$modo,$observacion,$estadoObservacion,$idEquipoObservado,$PrecioObservacion)
 	{       
 
-        $consulta = "INSERT INTO Partido VALUES($idPartido,$equipo1,$equipo2,$idSede,'$fecha',$idCampeonato,'$modo','$observacion','$estadoObservacion','',$idEquipoObservado,$PrecioObservacion)";
+        $consulta = "INSERT INTO Partido(`id`,`idEquipoLocal`, `idEquipoVisitante`, `idSede`, `fechaPartido`, `idCampeonato`, `Modo`, `Observacion`, `estadoObservacion`, `idEquipoObservado`, `precioObservacion`) VALUES($idPartido,$equipo1,$equipo2,$idSede,'$fecha',$idCampeonato,'$modo','$observacion','$estadoObservacion',$idEquipoObservado,$PrecioObservacion)";
 
         $db = new MySQL();
         if ($db->Error()) {
@@ -1479,10 +1496,10 @@ class parametros
       
     }
 
-    public function InsertarHechoPartido($idHecho,$idJugador,$equipo,$idPartido)
+    public function InsertarHechoPartido($idAcontecimiento,$idJugador,$equipo,$idPartido)
 	{       
 
-        $consulta = "INSERT INTO HechosPartido values(null,$idHecho,$idJugador,'$equipo',$idPartido,0,'Pendiente')";
+        $consulta = "INSERT INTO acontecimientopartido( `idAcontecimiento`, `idJugador`, `Equipo`, `idPartido`, `precio`, `estado`) values($idAcontecimiento,$idJugador,'$equipo',$idPartido,0,'Pendiente')";
 
         $db = new MySQL();
         if ($db->Error()) {

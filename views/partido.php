@@ -1,7 +1,8 @@
 <?php
 
-include 'clases/conexion.php';
-require_once 'clases/parametros.php';
+//require_once '../conexion/conexion.php';
+require_once '../conexion/parametros.php';
+$parametro = new parametros();
 
 session_start();
 
@@ -15,8 +16,10 @@ if (!isset($_SESSION['idUsuario'])) {
    
 }
 
-$parametro = new parametros();
-
+if($parametro->verificarPermisos($_SESSION['idUsuario'],1) == 0){
+  echo "Su usuario no tiene permisos para entrar a esta pagina";
+  exit();
+}
 
 $cobros = $parametro->traerPrecio('Observaciones');
  $ultimoPartido = $parametro->TraerUltimoPartido();
@@ -29,29 +32,97 @@ $torneo = $parametro->TraerUltimoTorneo();
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Partido</title>
-  <link rel="icon" type="image/jpg" href="img/image.png">
-  <!-- Google Font: Source Sans Pro -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
-  <!-- Ionicons -->
-  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
-   <!-- DataTables -->
-   <link rel="stylesheet" href="plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
-  <link rel="stylesheet" href="plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
-  <link rel="stylesheet" href="plugins/datatables-buttons/css/buttons.bootstrap4.min.css">
-  <!-- Theme style -->
-  <link rel="stylesheet" href="dist/css/adminlte.min.css">
-   <!-- SweetAlert2 -->
-   <link rel="stylesheet" href="plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css">
-  <!-- Toastr -->
-  <link rel="stylesheet" href="plugins/toastr/toastr.min.css">
-  
+  <?php
+    require "../template/encabezado.php";
+    ?>
    <style>
     .card{
       border-top-color: cornflowerblue;
       border-top-width: 3px;
+    }
+
+    .cbx {
+      position: relative;
+      top: 1px;
+      width: 27px;
+      height: 27px;
+      border: 1px solid #475569;
+      border-radius: 10px;
+      transition: background 0.2s ease;
+      cursor: pointer;
+      display: block;
+      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .cbx:after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 8px;
+      width: 7px;
+      height: 14px;
+      opacity: 0;
+      transform: rotate(45deg) scale(0);
+      border-right: 2px solid #fff;
+      border-bottom: 2px solid #fff;
+      transition: all 0.3s ease;
+      transition-delay: 0.15s;
+    }
+
+    #cbx:checked ~ .cbx {
+      border-color: transparent;
+      background: #0000ff;
+      animation: jelly 0.4s ease;
+    }
+
+    #cbx:checked ~ .cbx:after {
+      opacity: 1;
+      transform: rotate(45deg) scale(1);
+    }
+
+    #cbx2:checked ~ .cbx {
+      border-color: transparent;
+      background: #0000ff;
+      animation: jelly 0.4s ease;
+    }
+
+    #cbx2:checked ~ .cbx:after {
+      opacity: 1;
+      transform: rotate(45deg) scale(1);
+    }
+
+    .cntr {
+      position: relative;
+    }
+
+    @keyframes jelly {
+      from {
+        transform: scale(1, 1);
+      }
+
+      20% {
+        transform: scale(1.3, 0.7);
+      }
+
+      40% {
+        transform: scale(0.7, 1.3);
+      }
+
+      60% {
+        transform: scale(1.1, 0.9);
+      }
+
+      80% {
+        transform: scale(0.9, 1.1);
+      }
+
+      to {
+        transform: scale(1, 1);
+      }
+    }
+
+    .hidden-xs-up {
+      display: none!important;
     }
   </style>
 
@@ -59,12 +130,12 @@ $torneo = $parametro->TraerUltimoTorneo();
 <body class="hold-transition sidebar-mini layout-fixed sidebar-closed sidebar-collapse">
 <div class="wrapper">
 
-    <?php  
-        require "Navegador.php";
+<?php  
+        require "../template/Navegador.php";
     ?>
 
     <?php  
-        require "Menus.php";
+        require "../template/Menus.php";
     ?>
 
 <div class="content-wrapper">
@@ -95,7 +166,7 @@ $torneo = $parametro->TraerUltimoTorneo();
 
         <section class="col-lg-12 col-md-12">
             <div class="row">        
-                <section class="col-lg-5 col-md-5">
+                <section class="col-lg-5 col-md-5  pl-3">
                     <div class="card info-box shadow-lg">
                         <div class="card-header">             
                             <div class="row"> 
@@ -140,13 +211,16 @@ $torneo = $parametro->TraerUltimoTorneo();
                                 <div class="mb-3 row">
                                     <label for="inputPassword" class="col-sm-4 col-form-label">Fecha(*)</label>
                                     <div class="col-sm-8">
-                                        <input type="date" class="form-control" id ="fecha">            
+                                        <input type="date" class="form-control" id ="fecha" value="<?php echo date('Y-m-d'); ?>">            
                                     </div>
                                 </div> 
                                 <div class="mb-3 row">
                                     <label for="inputPassword" class="col-sm-5 col-form-label">Walkover</label>
-                                    <div class="col-sm-7">
-                                      <input class="form-check-input" type="checkbox" value="" id="walkover" onchange="ActivarWalkover()">
+                                    <div class="col-sm-7 text-left">
+                                      <div class="cntr">
+                                        <input class="hidden-xs-up" id="cbx" type="checkbox" onchange="ActivarWalkover()">
+                                        <label class="cbx" for="cbx"></label>
+                                      </div>                                   
                                     </div>
                                 </div>  
                                 <div class="mb-3 row" id="walkoverActivado">
@@ -154,7 +228,7 @@ $torneo = $parametro->TraerUltimoTorneo();
                                     <div class="col-sm-8">
                                         <select class="form-control" id="idEquipo3"> 
                                             <?php 
-                                                $parametro->DropDownBuscarEquipos2($_GET["idEquipo2"],$_GET["idEquipo1"]);
+                                                $parametro->DropDownBuscarEquipos2(@$_GET["idEquipo2"],@$_GET["idEquipo1"]);
                                             ?>
                                         </select>       
                                     </div>
@@ -187,7 +261,11 @@ $torneo = $parametro->TraerUltimoTorneo();
                                 <div class="mb-3 row">
                                     <label for="inputPassword" class="col-sm-5 col-form-label">Observar Partido</label>
                                     <div class="col-sm-7">
-                                      <h2><input class="form-check-input" type="checkbox" value="" id="observarPartido" onchange="observar()"></h2>
+                                      <div class="cntr">
+                                        <input class="hidden-xs-up" id="cbx2" type="checkbox" onchange="observar()">
+                                        <label class="cbx" for="cbx2"></label>
+                                      </div>
+                                    
                                     </div>
                                 </div>   
                                 <div id="EquipoObservado">
@@ -202,7 +280,7 @@ $torneo = $parametro->TraerUltimoTorneo();
                                       <div class="col-sm-8">
                                           <select class="form-control" id="idEquipoObservado">                                          
                                           <?php 
-                                                $parametro->DropDownBuscarEquipos2($_GET["idEquipo2"],$_GET["idEquipo1"]);
+                                                $parametro->DropDownBuscarEquipos2(@$_GET["idEquipo2"],@$_GET["idEquipo1"]);
                                             ?>
                                           </select>  
                                       </div>
@@ -225,14 +303,14 @@ $torneo = $parametro->TraerUltimoTorneo();
                         </div>
                         <!-- /.card-body -->
                     </div>
-        </section>
+                </section>
 
-        <section class="col-lg-7 col-md-7">
+                <section class="col-lg-7 col-md-7  pr-3">
                     <div class="card info-box shadow-lg">
                         <div class="card-header">             
                             <div class="row"> 
                                 <div class="col-12 col-md-8">
-                                    <label for=""><h4>Hechos del Partido</h4></label>
+                                    <label for=""><h4>Acontecimientos del Partido</h4></label>
                                 </div>       
                             </div>
                         </div>
@@ -241,7 +319,7 @@ $torneo = $parametro->TraerUltimoTorneo();
                              <div class="row">                   
                                 <div class="col-12 col-md-5" id="Equipos">
                                     <div class="form-group">                            
-                                        <label for="inputCasa" class="form-label"><b>Hecho(*)</b></label> 
+                                        <label for="inputCasa" class="form-label"><b>Acontecimiento(*)</b></label> 
                                         <select class="form-control" id="Hecho"> 
                                           <?php 
                                                 $parametro->DropDownHechosPartido();
@@ -277,7 +355,7 @@ $torneo = $parametro->TraerUltimoTorneo();
                                 <table id="example" class="table table-bordered table-striped" >
                                     <thead>
                                     <tr>                                     
-                                        <th class="table-secondary">Hecho</th>
+                                        <th class="table-secondary">Acontecimientos</th>
                                         <th class="table-secondary">Jugador</th>
                                         <th class="table-secondary">Equipo</th>
                                         <th class="table-secondary">Acción</th>
@@ -307,14 +385,9 @@ $torneo = $parametro->TraerUltimoTorneo();
       <!-- /.control-sidebar -->
       </div>
 
-           <?php $año = date('Y'); ?>
-        <footer class="main-footer">
-            <div class="float-right d-none d-sm-block">
-            <b>Version</b> 1.0
-            </div>
-            <strong>Copyright &copy; Software Bolivia <?php echo $año ?></strong> Todos los derechos reservados.
-        </footer>
-    
+      <?php
+      require "../template/footer.php";
+      ?>
     </div>
     <!-- ./wrapper -->
 
@@ -361,14 +434,14 @@ $torneo = $parametro->TraerUltimoTorneo();
 
     function ActivarWalkover(){
       
-      var walkover = $("#walkover").prop("checked");
+      var walkover = $("#cbx").prop("checked");
      
       if(!walkover){
-        $("#walkoverActivado").hide();
+        $("#walkoverActivado").hide('slow');
        // $("#Hecho").prop(disabled,false);
       
       }else{
-        $("#walkoverActivado").show();
+        $("#walkoverActivado").show('slow');
        // $("#Hecho").prop(disabled,true);
       }
      
@@ -376,14 +449,14 @@ $torneo = $parametro->TraerUltimoTorneo();
 
     function observar(){
       
-      var observacion = $("#observarPartido").prop("checked");
+      var observacion = $("#cbx2").prop("checked");
      
       if(!observacion){
-        $("#EquipoObservado").hide();
-        $("#precio").hide();
+        $("#EquipoObservado").hide('slow');
+        $("#precio").hide('slow');
       }else{
-        $("#EquipoObservado").show();
-        $("#precio").hide();
+        $("#EquipoObservado").show('slow');
+        $("#precio").hide('slow');
       }
      
     }
@@ -394,8 +467,9 @@ $torneo = $parametro->TraerUltimoTorneo();
       var equipo1 =$("#idEquipo1").val();
       var equipo2 = $("#idEquipo2").val();
       var equipo3 = $("#idEquipo3").val();
-      var walkover = $("#walkover").prop("checked");
-      var codProgramacion = '<?php echo $_GET["codProgramacion"]; ?>';
+      var walkover = $("#cbx").prop("checked");
+      var codProgramacion = "<?php echo @$_GET["codProgramacion"]; ?>";
+      var eswalkover = 'no';
 
       if(!walkover){
         let count = 0;
@@ -407,6 +481,9 @@ $torneo = $parametro->TraerUltimoTorneo();
             swal.fire('Sin Hechos..!','No ha ingresado ningun hecho del partido','warning')
             return false;
           }
+      }
+      else{
+        eswalkover = 'si';
       }
 
         let arreglo_idHecho = [];
@@ -422,7 +499,7 @@ $torneo = $parametro->TraerUltimoTorneo();
 
         
         $.ajax({
-            url: 'clases/Cl_Partido.php?op=ActualizarTablaPosiciones',
+            url: '../clases/Cl_Partido.php?op=ActualizarTablaPosiciones',
             type: 'POST',
             data:{
               idCampeonato: idCampeonato,
@@ -431,7 +508,7 @@ $torneo = $parametro->TraerUltimoTorneo();
               equipo3: equipo3,
               idHecho: idHecho,
               equipo: equipo,
-              walkover: walkover
+              walkover: eswalkover
             },
             success: function(data) {
               if(data == "ok"){
@@ -479,9 +556,10 @@ $torneo = $parametro->TraerUltimoTorneo();
         var observacion = $("#observacion").val();
         var idEquipoObservado = $("#idEquipoObservado").val();
         var precioObservacion = $("#precioObservacion").val();
-        var walkover = $("#walkover").prop("checked");
-        var codProgramacion = '<?php echo $_GET["codProgramacion"]; ?>';
-       
+        var walkover = $("#cbx").prop("checked");
+        var codProgramacion = '<?php echo @$_GET["codProgramacion"]; ?>';
+        var eswalkover = 'no';
+
         if(equipo1 == "" || equipo2 == "" || fecha == "" || modo == ""){
             swal.fire("Campos Vacios..!","Debe completar todos los datos del Partido","warning");
             $("#btn_nuevo_add1").prop("disabled", false);
@@ -497,6 +575,7 @@ $torneo = $parametro->TraerUltimoTorneo();
         }
 
         if(!walkover){
+
           let count = 0;
           $("#example tbody#RellenarTabla tr").each(function() {
             count++;
@@ -510,6 +589,7 @@ $torneo = $parametro->TraerUltimoTorneo();
           }
         }
         else{
+          eswalkover = 'si';
           if(equipo3 == ""){
             swal.fire("Campos Vacios..!","Debe seleccionar al equipo ganador del walkover","warning");
             $("#btn_nuevo_add1").prop("disabled", false);
@@ -534,7 +614,7 @@ $torneo = $parametro->TraerUltimoTorneo();
         let equipo = arreglo_equipo.toString();
 
         $.ajax({                
-                 url:'clases/Cl_Partido.php?op=RegistrarPartido',
+                 url:'../clases/Cl_Partido.php?op=RegistrarPartido',
                  type:'POST',
                  data:{
                     idPartido: idPartido,
@@ -547,7 +627,7 @@ $torneo = $parametro->TraerUltimoTorneo();
                     observacion: observacion, 
                     idEquipoObservado: idEquipoObservado,
                     precioObservacion: precioObservacion,
-                    walkover: walkover,
+                    walkover: eswalkover,
 
                     idHecho: idHecho,
                     idJugador: idJugador,
@@ -674,7 +754,7 @@ $torneo = $parametro->TraerUltimoTorneo();
         }
         
         $.ajax({
-            url: 'clases/Cl_Partido.php?op=FiltroJugadoresEquipos',
+            url: '../clases/Cl_Partido.php?op=FiltroJugadoresEquipos',
             type: 'POST',
             data:{
               idequipo1: idequipo1,
@@ -703,7 +783,7 @@ $torneo = $parametro->TraerUltimoTorneo();
     function DatosJugador(id){
 
       $.ajax({
-            url: 'clases/Cl_Partido.php?op=DatosJugador',
+            url: '../clases/Cl_Partido.php?op=DatosJugador',
             type: 'POST',
             data:{
               idJugador : id
@@ -727,7 +807,7 @@ $torneo = $parametro->TraerUltimoTorneo();
 
     function TorneoFinalizado(){
         $.ajax({
-            url: 'clases/Cl_Partido.php?op=TorneoFinalizado',
+            url: '../clases/Cl_Partido.php?op=TorneoFinalizado',
             type: 'POST',
             success: function(data) {
               if(data == "error"){
@@ -747,120 +827,59 @@ $torneo = $parametro->TraerUltimoTorneo();
           })   
     }
 
-
-    function CargarCampeonato(){
-        // $.ajax({
-        //     url: 'clases/Cl_Partido.php?op=UltimoTorneo',
-        //     type: 'POST',
-        //     success: function(data) {
-        //       if(data == "error"){
-        //         Swal.fire("Error..!", "Ha ocurrido un error al obtener el nombre del torneo actual", "error");      
-        //       }
-        //       else{
-        //         var resp= $.parseJSON(data);
-        //         $("#idCampeonato").val(resp.id); 
-        //         $("#torneo").val(resp.nombre); 
-        //       }              
-        //     }            
-        //   })   
-    }
-
-    function CargarSede(){
-        // $.ajax({
-        //     url: 'clases/Cl_Partido.php?op=UltimoSede',
-        //     type: 'POST',
-        //     success: function(data) {
-        //       if(data == "error"){
-        //         Swal.fire("Error..!", "Ha ocurrido un error al obtener el nombre de la sede actual", "error");      
-        //       }
-        //       else{
-        //         var resp= $.parseJSON(data);
-        //         $("#idSede").val(resp.id);
-        //         $("#sede").val(resp.nombreSede);
-        //       }              
-        //     }            
-        //   })   
-    }
-     
       </script>
 
+<?php
+      require "../template/piePagina.php";
+      ?>
 
-
-<!-- Option 1: Bootstrap Bundle with Popper -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-<!-- SweetAlert2 -->
-<script src="plugins/sweetalert2/sweetalert2.min.js"></script>
-<!-- Toastr -->
-<script src="plugins/toastr/toastr.min.js"></script>
-<!-- jQuery -->
-<script src="plugins/jquery/jquery.min.js"></script>
-<!-- Bootstrap 4 -->
-<script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-<!-- DataTables  & Plugins -->
-<script src="plugins/datatables/jquery.dataTables.min.js"></script>
-<script src="plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
-<script src="plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
-<script src="plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
-<script src="plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
-<script src="plugins/datatables-buttons/js/buttons.bootstrap4.min.js"></script>
-<!-- AdminLTE App -->
-<script src="dist/js/adminlte.min.js"></script>
-<!-- AdminLTE for demo purposes -->
-<script src="dist/js/demo.js"></script>
-<!-- Page specific script -->
-
-<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.0-alpha14/js/tempusdominus-bootstrap-4.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.0-alpha14/css/tempusdominus-bootstrap-4.min.css" /> -->
-    
 <script>
-
-$(function () {
-    $("#example1").DataTable({
-      "responsive": true, "lengthChange": false, "autoWidth": false,
-      "language": lenguaje_español
-    }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
-  })
-
   $(function () {
 
     $("#EquipoObservado").hide();
     $("#walkoverActivado").hide();
     $("#precio").hide();
 
+    $("#example1").DataTable({
+      "responsive": true, 
+      "lengthChange": false, 
+      "autoWidth": false,
+      "language": lenguaje_español
+    });
+
     <?php 
     if(isset($_GET["idEquipo1"])) {?>
       
-      $("#idEquipo1").val(<?php echo $_GET["idEquipo1"] ?>);
+      $("#idEquipo1").val(<?php echo @$_GET["idEquipo1"] ?>);
       $("#idEquipo1").prop("disabled",true);
-      $("#idEquipo2").val(<?php echo $_GET["idEquipo2"] ?>);
+      $("#idEquipo2").val(<?php echo @$_GET["idEquipo2"] ?>);
       $("#idEquipo2").prop("disabled",true);
       <?php 
-      if($_GET["modo"] == "Octavos"){ ?>
+      if(@$_GET["modo"] == "Octavos"){ ?>
         $("#Modo").val("8vo de Final");      
         $("#Modo").prop("disabled",true);
       <?php 
       }
       else{
-        if($_GET["modo"] == "Cuartos"){?>
+        if(@$_GET["modo"] == "Cuartos"){?>
           $("#Modo").val("4to de Final");      
           $("#Modo").prop("disabled",true);
         <?php 
         } 
         else{
-          if($_GET["modo"] == "Semifinal"){?>
+          if(@$_GET["modo"] == "Semifinal"){?>
             $("#Modo").val("Semifinal");      
             $("#Modo").prop("disabled",true);
           <?php 
           } 
           else{
-            if($_GET["modo"] == "Final"){?>
+            if(@$_GET["modo"] == "Final"){?>
               $("#Modo").val("Final");      
               $("#Modo").prop("disabled",true);
           <?php 
             }
             else{
-              if($_GET["modo"] == "Final2"){ ?>
+              if(@$_GET["modo"] == "Final2"){ ?>
               $("#Modo").val("3er y 4to Lugar");      
               $("#Modo").prop("disabled",true);
               <?php 
@@ -871,19 +890,14 @@ $(function () {
       }
     }?>
    
-      var fecha = '<?php echo $_GET['fecha'] ?>';
-      if(fecha ==''){
-        let hoy = new Date();
-        document.getElementById("fecha").value = hoy.toJSON().slice(0,10);
-      }
-      else{
+      var fecha = '<?php echo @$_GET['fecha'] ?>';
+      if(fecha !=''){
         $("#fecha").prop('disabled',true);
-        $("#fecha").val(fecha);     
-       
+        $("#fecha").val(fecha);  
       }
-         
     
-})
+    
+  })
 
   var lenguaje_español = 
     {

@@ -1,9 +1,9 @@
 <?php
 
 session_start();
-include_once("conexion.php");
-require_once 'parametros.php';
-
+include("../conexion/conexion.php");
+include("../conexion/parametros.php");
+$parametro = new parametros();
 $tipo = $_GET["op"];
 
 ini_set('display_errors', 1);
@@ -13,7 +13,7 @@ error_reporting(E_ALL);
 if($tipo=="ActualizarTablaPosiciones"){
    
 
-    $parametro = new parametros();
+    
     $equipo1 = $_POST["equipo1"];
     $equipo2 = $_POST["equipo2"];
     $equipo3 = $_POST["equipo3"];
@@ -21,7 +21,7 @@ if($tipo=="ActualizarTablaPosiciones"){
     $idCampeonato =$_POST["idCampeonato"];
     $idHecho = $_POST["idHecho"];
     
-    if($idHecho != "" || $idHecho != null || $idHecho != 0){
+    if($walkover == "no"){
         $array_idHecho = explode(",",$_POST["idHecho"]);
         $array_equipo = explode(",",$_POST["equipo"]);
 
@@ -35,12 +35,7 @@ if($tipo=="ActualizarTablaPosiciones"){
             //obtengo el id del equipo
             $consultarEquipo = $parametro->TraerCodEquipo($array_equipo[$j]); 
             $idEquipo = $consultarEquipo->id;
-            // $consultarEquipo = "SELECT id FROM Equipo where nombreEquipo = '$array_equipo[$j]'";
-            // $resultado2 = mysqli_query($conectar, $consultarEquipo);
-            // $row = $resultado2->fetch_assoc();
-            // $idEquipo = $row['id'];
-
-
+          
             if($array_idHecho[$j] == 1){
                 if( $idEquipo == $equipo1){
                     $goles1++;
@@ -59,15 +54,6 @@ if($tipo=="ActualizarTablaPosiciones"){
                 $equipoGanador = $equipo2;
             }
         }
-
-         //obtengo el id del equipo
-        //  $consultarEquipo2 = $parametro->TraerCodEquipo($array_equipo[$i]); 
-        //  $idEquipo = $consultarEquipo2->id;
-        //  $consultarEquipo = "SELECT id FROM Equipo where nombreEquipo = '$array_equipo[$i]'";
-        //  $resultado2 = mysqli_query($conectar, $consultarEquipo);
-        //  $row = $resultado2->fetch_assoc();
-        //  $idEquipo = $row['id'];
-
 
          $puntos1 = 0;
          $PartidosGanados1= 0;
@@ -125,47 +111,37 @@ if($tipo=="ActualizarTablaPosiciones"){
             }
         }
 
-
          //validar equipo1 en la tabla
-         $validarEquipo1 = $parametro->TraerEquipoTablaPosicion($equipo1,$idCampeonato); 
-         $idValidacionEquipo1 = $validarEquipo1->id;
-        //  $validarEquipo1 = "SELECT * FROM TablaPosicion where idEquipo = $equipo1 and idCampeonato = $idCampeonato ";
-        //  $resultado3 = mysqli_query($conectar, $validarEquipo1);
-        //  $row1 = $resultado3->fetch_assoc();
-        //  $idValidacionEquipo1 = $row1['id'];
-
+         $idValidacionEquipo1 = $parametro->TraerEquipoTablaPosicion($equipo1,$idCampeonato); 
+        // $idValidacionEquipo1 = $validarEquipo1->id;
+     
           //validar equipo2 en la tabla
-          $validarEquipo2 = $parametro->TraerEquipoTablaPosicion($equipo2,$idCampeonato); 
-          $idValidacionEquipo2 = $validarEquipo2->id;
-        //   $validarEquipo2 = "SELECT * FROM TablaPosicion where idEquipo = $equipo2 and idCampeonato = $idCampeonato";
-        //   $resultado4 = mysqli_query($conectar, $validarEquipo2);
-        //   $row2 = $resultado4->fetch_assoc();
-        //   $idValidacionEquipo2 = $row2['id'];
-
+          $idValidacionEquipo2 = $parametro->TraerEquipoTablaPosicion($equipo2,$idCampeonato); 
+          //$idValidacionEquipo2 = $validarEquipo2->id;
+      
 
           if($idValidacionEquipo1 != "" || $idValidacionEquipo1 != null){
-            $resultado = $parametro->ActualizarTablaPosicion($puntos1, $PartidosGanados1, $PartidosEmpatados1, $PartidosPerdidos1, $golFavor1, $golContra1, $idValidacionEquipo1); 
-           
-            // $insertarEquipo1 = "UPDATE TablaPosicion SET puntos = puntos + $puntos1, partidosGanados = partidosGanados + $PartidosGanados1, partidosEmpatados = partidosEmpatados + $PartidosEmpatados1, partidosPerdidos  = partidosPerdidos + $PartidosPerdidos1, golFavor = golFavor + $golFavor1,golContra = golContra + $golContra1 where id = $idValidacionEquipo1";
-            // $resultado = mysqli_query($conectar, $insertarEquipo1);
+       //     $resultado = $parametro->ActualizarTablaPosicion($puntos1, $PartidosGanados1, $PartidosEmpatados1, $PartidosPerdidos1, $golFavor1, $golContra1, $idValidacionEquipo1);             
+            $insertarEquipo1 = "UPDATE TablaPosicion SET puntos = puntos + $puntos1, partidosGanados = partidosGanados + $PartidosGanados1, partidosEmpatados = partidosEmpatados + $PartidosEmpatados1, partidosPerdidos  = partidosPerdidos + $PartidosPerdidos1, golFavor = golFavor + $golFavor1,golContra = golContra + $golContra1 where id = $idValidacionEquipo1";
+            $resultado = mysqli_query($conectar, $insertarEquipo1);
           }
           else{
-            $resultado = $parametro->AgregarTablaPosicion($equipo1,$idCampeonato,$puntos1,$PartidosGanados1,$PartidosEmpatados1,$PartidosPerdidos1,$golFavor1,$golContra1); 
-            // $insertarEquipo1 = "INSERT INTO TablaPosicion values(null,$equipo1,$idCampeonato,$puntos1,$PartidosGanados1,$PartidosEmpatados1,$PartidosPerdidos1,$golFavor1,$golContra1,null)";
-            // $resultado = mysqli_query($conectar, $insertarEquipo1);
+           // $resultado = $parametro->AgregarTablaPosicion($equipo1,$idCampeonato,$puntos1,$PartidosGanados1,$PartidosEmpatados1,$PartidosPerdidos1,$golFavor1,$golContra1); 
+            $insertarEquipo1 = "INSERT INTO TablaPosicion(`idEquipo`, `puntos`, `partidosGanados`, `partidosEmpatados`, `partidosPerdidos`, `golFavor`, `golContra`) values($equipo1,$puntos1,$PartidosGanados1,$PartidosEmpatados1,$PartidosPerdidos1,$golFavor1,$golContra1)";
+            $resultado = mysqli_query($conectar, $insertarEquipo1);
           }
         
 
           if($resultado){
             if($idValidacionEquipo2 != "" || $idValidacionEquipo2 != null){
-                $resultado2 = $parametro->ActualizarTablaPosicion($puntos2, $PartidosGanados2, $PartidosEmpatados2, $PartidosPerdidos2, $golFavor2, $golContra2, $idValidacionEquipo2); 
-                // $insertarEquipo2 = "UPDATE TablaPosicion SET puntos = puntos + $puntos2, partidosGanados = partidosGanados + $PartidosGanados2, partidosEmpatados = partidosEmpatados + $PartidosEmpatados2, partidosPerdidos  = partidosPerdidos + $PartidosPerdidos2, golFavor = golFavor + $golFavor2,golContra = golContra + $golContra2 where id = $idValidacionEquipo2";
-                // $resultado2 = mysqli_query($conectar, $insertarEquipo2);
+                //$resultado2 = $parametro->ActualizarTablaPosicion($puntos2, $PartidosGanados2, $PartidosEmpatados2, $PartidosPerdidos2, $golFavor2, $golContra2, $idValidacionEquipo2); 
+                $insertarEquipo2 = "UPDATE TablaPosicion SET puntos = puntos + $puntos2, partidosGanados = partidosGanados + $PartidosGanados2, partidosEmpatados = partidosEmpatados + $PartidosEmpatados2, partidosPerdidos  = partidosPerdidos + $PartidosPerdidos2, golFavor = golFavor + $golFavor2,golContra = golContra + $golContra2 where id = $idValidacionEquipo2";
+                $resultado2 = mysqli_query($conectar, $insertarEquipo2);
               }
               else{
-                $resultado2 = $parametro->AgregarTablaPosicion($equipo2,$idCampeonato,$puntos2,$PartidosGanados2,$PartidosEmpatados2,$PartidosPerdidos2,$golFavor2,$golContra2); 
-                // $insertarEquipo2 = "INSERT INTO TablaPosicion values(null,$equipo2,$idCampeonato,$puntos2,$PartidosGanados2,$PartidosEmpatados2,$PartidosPerdidos2,$golFavor2,$golContra2,null)";
-                // $resultado2 = mysqli_query($conectar, $insertarEquipo2);
+                //$resultado2 = $parametro->AgregarTablaPosicion($equipo2,$idCampeonato,$puntos2,$PartidosGanados2,$PartidosEmpatados2,$PartidosPerdidos2,$golFavor2,$golContra2); 
+                $insertarEquipo2 = "INSERT INTO TablaPosicion(`idEquipo`, `puntos`, `partidosGanados`, `partidosEmpatados`, `partidosPerdidos`, `golFavor`, `golContra`) values($equipo2,$puntos2,$PartidosGanados2,$PartidosEmpatados2,$PartidosPerdidos2,$golFavor2,$golContra2)";
+                $resultado2 = mysqli_query($conectar, $insertarEquipo2);
               }
 
               if($resultado2){
@@ -184,43 +160,43 @@ if($tipo=="ActualizarTablaPosiciones"){
         $equipoGanadorWalkover = "";
         $equipoPerdedorWalkover = "";
 
-      
-            if( $equipo3 == $equipo1){
-                $equipoGanadorWalkover = $equipo1;
-                $equipoPerdedorWalkover = $equipo2;
-            }
-            else{
-                $equipoGanadorWalkover = $equipo2;
-                $equipoPerdedorWalkover = $equipo1;
-            }
-      
-    
+        if( $equipo3 == $equipo1){
+            $equipoGanadorWalkover = $equipo1;
+            $equipoPerdedorWalkover = $equipo2;
+        }
+        else{
+            $equipoGanadorWalkover = $equipo2;
+            $equipoPerdedorWalkover = $equipo1;
+        }
 
          //validar si se encuentra el equipo ganador en la tabla
-         $validarEquipo2 = $parametro->TraerEquipoTablaPosicion($equipoGanadorWalkover,$idCampeonato); 
-         $equipoGanadorWalkover = $validarEquipo2->id;
-        //  $validarEquipo2 = "SELECT * FROM TablaPosicion where idEquipo = $equipoGanadorWalkover and idCampeonato = $idCampeonato";
-        //  $resultado4 = mysqli_query($conectar, $validarEquipo2);
-        //  $row2 = $resultado4->fetch_assoc();
-        //  $equipoGanadorWalkover = $row2['id'];
-
-        $resultado = $parametro->ActualizarTablaPosicionWalkover($equipoGanadorWalkover,$idCampeonato); 
-        // $insertarEquipo1 = "UPDATE TablaPosicion SET puntos = puntos + 3, partidosGanados = partidosGanados + 1 where id = $equipoGanadorWalkover";
-        // $resultado = mysqli_query($conectar, $insertarEquipo1);
+         $idTablaPosicionEquipoGanadorWalkover = $parametro->TraerEquipoTablaPosicion($equipoGanadorWalkover,$idCampeonato); 
+        // $equipoGanadorWalkover = $validarEquipo2->id;
+       
+        if($idTablaPosicionEquipoGanadorWalkover != "" || $idTablaPosicionEquipoGanadorWalkover != null){
+        // $resultado = $parametro->ActualizarTablaPosicionWalkover($equipoGanadorWalkover,$idCampeonato); 
+            $insertarEquipo1 = "UPDATE TablaPosicion SET puntos = puntos + 3, partidosGanados = partidosGanados + 1, golFavor = golFavor + 2 where id = $idTablaPosicionEquipoGanadorWalkover";
+            $resultado = mysqli_query($conectar, $insertarEquipo1);
+        }
+        else{
+            $insertarEquipo1 = "INSERT INTO TablaPosicion(`idEquipo`, `puntos`, `partidosGanados`, `partidosEmpatados`, `partidosPerdidos`, `golFavor`, `golContra`) values($equipoGanadorWalkover,3,1,0,0,2,0)";
+            $resultado = mysqli_query($conectar, $insertarEquipo1);
+        }
 
         if($resultado){
           //validar si se encuentra el equipo perdedor en la tabla
-          $validarEquipo2 = $parametro->TraerEquipoTablaPosicion($equipoPerdedorWalkover,$idCampeonato); 
-          $equipoPerdedorWalkover = $validarEquipo2->id;
-        //   $validarEquipo2 = "SELECT * FROM TablaPosicion where idEquipo = $equipoPerdedorWalkover and idCampeonato = $idCampeonato";
-        //   $resultado4 = mysqli_query($conectar, $validarEquipo2);
-        //   $row2 = $resultado4->fetch_assoc();
-        //   $equipoPerdedorWalkover = $row2['id'];
-
-            $resultado2 = $resultado = $parametro->ActualizarTablaPosicionWalkoverPerdedor($equipoPerdedorWalkover,$idCampeonato); 
-        //   $insertarEquipo2 = "UPDATE TablaPosicion SET  partidosPerdidos = partidosPerdidos + 1 where id = $equipoPerdedorWalkover";
-        //   $resultado2 = mysqli_query($conectar, $insertarEquipo2);
-
+          $idTablaPosicionEquipoPerdedorWalkover = $parametro->TraerEquipoTablaPosicion($equipoPerdedorWalkover,$idCampeonato); 
+         //$equipoPerdedorWalkover = $validarEquipo2->id;
+      
+         if($idTablaPosicionEquipoPerdedorWalkover != "" || $idTablaPosicionEquipoPerdedorWalkover != null){
+          //  $resultado2 = $resultado = $parametro->ActualizarTablaPosicionWalkoverPerdedor($equipoPerdedorWalkover,$idCampeonato); 
+          $insertarEquipo2 = "UPDATE TablaPosicion SET  partidosPerdidos = partidosPerdidos + 1,golContra = golContra + 2 where id = $idTablaPosicionEquipoPerdedorWalkover";
+          $resultado2 = mysqli_query($conectar, $insertarEquipo2);
+         }
+         else{
+            $insertarEquipo1 = "INSERT INTO TablaPosicion(`idEquipo`, `puntos`, `partidosGanados`, `partidosEmpatados`, `partidosPerdidos`, `golFavor`, `golContra`) values($equipoPerdedorWalkover,0,0,0,1,0,2)";
+            $resultado2 = mysqli_query($conectar, $insertarEquipo1);
+         }
           if($resultado2){
               echo 'ok';
           }
@@ -239,7 +215,7 @@ if($tipo=="ActualizarTablaPosiciones"){
 if($tipo== "RegistrarPartido"){
    
 
-    $parametro = new parametros();
+    
     $idPartido = $_POST["idPartido"];
     $idCampeonato =$_POST["idCampeonato"];
     $idSede = $_POST["idSede"];
@@ -255,25 +231,23 @@ if($tipo== "RegistrarPartido"){
     $idHecho = $_POST["idHecho"];
     $idJugador =$_POST["idJugador"];
     $equipo = $_POST["equipo"];
-    $walkover = $_POST["walkover"];
-
+    $eswalkover = $_POST["walkover"];
+    // $eswalkover='no';
+    // if (isset($walkover) && ($walkover == 'on' || $walkover == 1 || $walkover == '1' || $walkover == true)) {
+    //     $eswalkover = 'si';
+    // }
     $codProgramacion = $_POST["codProgramacion"];
 
     $array_idHecho = explode(",",$idHecho);
     $array_idJugador = explode(",",$idJugador);
     $array_equipo = explode(",",$equipo);
 
-    $Consultar = $parametro->TraerEquipoCampeon($idCampeonato); 
-    //$idCampeon = $Consultar->id;
-    // $Consultar = "SELECT * FROM EquipoCampeon where idCampeonato = $idCampeonato";
-    // $resultado3 = mysqli_query($conectar, $Consultar);
-    // $row = $resultado3->fetch_assoc();
-    // $idCampeon = $row['id'];
+    // $Consultar = $parametro->TraerEquipoCampeon($idCampeonato); 
 
-    if($Consultar > 0){
-        echo 4;
-        return false;
-    }
+    // if($Consultar > 0){
+    //     echo 4;
+    //     return false;
+    // }
  
 
     if($observacion != "" || $observacion != null){
@@ -282,42 +256,35 @@ if($tipo== "RegistrarPartido"){
         $PrecioObservacion = $_POST["precioObservacion"];
     }
 
-    $resultado = $parametro->InsertarPartido($idPartido,$equipo1,$equipo2,$idSede,$fecha,$idCampeonato,$modo,$observacion,$estadoObservacion,$idEquipoObservado,$PrecioObservacion); 
-    // $insertar = "INSERT INTO Partido VALUES($idPartido,$equipo1,$equipo2,$idSede,'$fecha',$idCampeonato,'$modo','$observacion','$estadoObservacion','',$idEquipoObservado,$PrecioObservacion)";
-    // $resultado = mysqli_query($conectar, $insertar);
-
-
-    if($resultado){
-        if($idHecho != "" || $idHecho != null || $idHecho != 0){
+   // $resultado = $parametro->InsertarPartido($idPartido,$equipo1,$equipo2,$idSede,$fecha,$idCampeonato,$modo,$observacion,$estadoObservacion,$idEquipoObservado,$PrecioObservacion); 
+    $insertarHechos = "INSERT INTO Partido(`id`,`idEquipoLocal`, `idEquipoVisitante`, `idSede`, `fechaPartido`, `idCampeonato`, `Modo`, `Observacion`, `estadoObservacion`, `idEquipoObservado`, `precioObservacion`,`walkover`) VALUES($idPartido,$equipo1,$equipo2,$idSede,'$fecha',$idCampeonato,'$modo','$observacion','$estadoObservacion',$idEquipoObservado,$PrecioObservacion,'$eswalkover')";
+    $resultado2 = mysqli_query($conectar, $insertarHechos);
+   // if($resultado){
+        if($idHecho != ""){
             $insertarHechos = "";
             for ($i=0; $i < count($array_idHecho); $i++){
-                $resultado2 = $parametro->InsertarHechoPartido($array_idHecho[$i],$array_idJugador[$i],$array_equipo[$i],$idPartido);
-                // $insertarHechos = "INSERT INTO HechosPartido values(null,$array_idHecho[$i],$array_idJugador[$i],'$array_equipo[$i]',$idPartido,0,'Pendiente')";
-                // $resultado2 = mysqli_query($conectar, $insertarHechos);
+             //   $resultado2 = $parametro->InsertarHechoPartido($array_idHecho[$i],$array_idJugador[$i],$array_equipo[$i],$idPartido);
+                $insertarHechos = "INSERT INTO acontecimientopartido( `idAcontecimiento`, `idJugador`, `Equipo`, `idPartido`, `precio`, `estado`) values($array_idHecho[$i],$array_idJugador[$i],'$array_equipo[$i]',$idPartido,0,'Pendiente')";
+                $resultado2 = mysqli_query($conectar, $insertarHechos);
             }
     
-            if($resultado2){
-
-                $parametro->actualizarProgramacionPartidos($codProgramacion);
-                // $insertar = "UPDATE programacionPartidos SET estado ='Completado' where codProgramacion = $codProgramacion ";
-                // $resultado = mysqli_query($conectar, $insertar);
-                echo 1;
+            if($codProgramacion != ''){
+                $parametro->actualizarProgramacionPartidos($codProgramacion);            
             }
-            else{
-                $parametro->eliminarPartido($idPartido);
-                // $eliminar = "DELETE FROM Partido where id = $idPartido";
-                // $resultado = mysqli_query($conectar, $eliminar);
-                echo 2;
-            }
+            //else{
+               // $parametro->eliminarPartido($idPartido);             
+               // echo 2;
+            //}
+            echo 1;
         }
         else{
             echo 1;
         }
-    }
-    else
-    {
-        echo 3;
-    }
+    // }
+    // else
+    // {
+    //     echo 3;
+    // }
 }
 
 
@@ -356,17 +323,6 @@ if($tipo== "RegistrarPartido"){
 if($tipo == "TorneoFinalizado"){
     
 
-    // $Consultar = "SELECT * FROM Campeonato where estado = 'En Curso'";
-    // $resultado = mysqli_query($conectar, $Consultar);
-    // $row = $resultado->fetch_assoc();
-    // $idCampeonato = $row['id'];
-
-    // $Consultar = "SELECT * FROM EquipoCampeon where idCampeonato = $idCampeonato";
-    // $resultado3 = mysqli_query($conectar, $Consultar);
-    // $row = $resultado3->fetch_assoc();
-    // $idCampeon = $row['id'];
- 
-    $parametro = new parametros();
     $resultado = $parametro->VerificarTorneoFinalizado(); 
     $idCampeon = $resultado->id;
 
@@ -419,15 +375,6 @@ if($tipo == "FiltroJugadoresEquipos"){
 
     $idEquipo1 = $_POST["idequipo1"];
     $idEquipo2 = $_POST["idequipo2"];
-
-
-        // $registrar = "SELECT j.id as idJugador,j.nombre,j.apellidos,j.nroCamiseta,e.nombreEquipo FROM Jugador as j 
-        // left join Equipo as e on e.id = j.idEquipo 
-        // where e.id = $idEquipo1 or e.id = $idEquipo2
-        // order by e.nombreEquipo,j.nombre ASC";
-        // $resultado1 = mysqli_query($conectar, $registrar);
-      
-        $parametro = new parametros();
       
         $resultado = $parametro->TraerJugadoresEquipos($idEquipo1,$idEquipo2); 
         $resultado->MoveFirst();
