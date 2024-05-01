@@ -1,39 +1,156 @@
 <?php
 
-use JetBrains\PhpStorm\Internal\ReturnTypeContract;
-
 session_start();
-include("conexion.php");
-
+include("../conexion/conexion.php");
+include("../conexion/parametros.php");
+$parametro = new parametros();
 $tipo = $_GET["op"];
 $idRol = $_SESSION['idRol'];   
+
+
+if($tipo == "DetallePartidosEquipos2"){
+
+    $idEquipo = $_POST["idEquipo"];
+    $modo = $_POST["modo"];
+    $nombreEquipo = $_POST["nombreEquipo"];    
+
+    if($modo == "" || $modo == null){      
+
+        $resultado1 = $parametro->DetallePartidosEquipos($idEquipo);          
+    }
+    else{
+        $faseActual="";
+        if($nombreClasificacion == 'Octavos'){
+            $faseActual = '8vo de Final';
+        }
+        else{
+            if($nombreClasificacion == 'Cuartos'){
+                $faseActual = '4to de Final';
+            }
+            else{
+                if($nombreClasificacion == 'Semifinal'){
+                    $faseActual = 'Semifinal';
+                }
+                else{
+                    if($nombreClasificacion == 'Final'){
+                        $faseActual = 'Final';
+                    }
+                    else{
+                        if($nombreClasificacion == 'Final2'){
+                            $faseActual = '3er y 4to Lugar';
+                        }
+                    }
+                }
+            }
+        }
+        $consultar="SELECT * from Campeonato as c
+        left join (select p.idCampeonato,p.fechaPartido,e1.id as idEquipo1,e1.nombreEquipo as EquipoLocal,e2.id as idEquipo2, e2.nombreEquipo as EquipoVisitante,p.Modo from Partido as p
+            LEFT JOIN Equipo as e1 on e1.id = p.idEquipoLocal
+            LEFT JOIN Equipo as e2 on e2.id = p.idEquipoVisitante
+            WHERE e1.nombreEquipo = '$nombreEquipo' OR e2.nombreEquipo = '$nombreEquipo'
+            GROUP by p.idCampeonato,p.fechaPartido,e1.id,e1.nombreEquipo,e2.id,e2.nombreEquipo,p.Modo
+            order by p.fechaPartido ASC) as pa on pa.idCampeonato = c.id 
+            where c.estado = 'En Curso' and pa.Modo='$faseActual'";
+    }
+    
+    $tabla = "";
+    $tabla .= '    <div class="row text-center">';
+    if ($resultado1->RowCount() > 0) {
+        while (!$resultado1->EndOfSeek()) {
+            $listado = $resultado1->Row();
+            $colorCard = '';
+            $totalObservaciones = $parametro->verificarObservaciones($idEquipo,$listado->fechaPartido);
+            if($totalObservaciones > 0){
+                $colorCard = "style='border-top-color: red;'";
+            }
+    $tabla .= '        <div class="col-md-4">';
+    $tabla .= '            <div class="card info-box shadow-lg" '.$colorCard.'>';
+    $tabla .= '                <div class="card-body">';  
+           
+            $goles1 = $parametro->obtenerGolesEquipo($listado->EquipoLocal,$listado->fechaPartido,$listado->idEquipo1,$listado->idEquipo2);             
+            $goles2 = $parametro->obtenerGolesEquipo($listado->EquipoVisitante,$listado->fechaPartido,$listado->idEquipo1,$listado->idEquipo2);
+                $tabla .= '        <div class="row">';
+                $tabla .= '            <div class="col-md-12 text-center mb-3"><b>Fecha Partido: </b> '.date('d-m-Y',strtotime($listado->fechaPartido)).'</div><br>';
+                $tabla .= '            <div class="col-md-5 col-5">';
+                $estilo='';
+                if($listado->EquipoLocal == $nombreEquipo){
+                    $estilo = "style='font-weight: bold;'";
+                }
+                $tabla .= '                <img src="../img/logoEquipo.png" alt="Sin Logo" width="100%"><br><span '.$estilo.'>'.$listado->EquipoLocal.'</span>';
+                $tabla .= '            </div>';
+                $tabla .= '            <div class="col-md-2  col-2 text-center pt-4">vs<br>'.$goles1.'-'.$goles2.'</div>';
+                $tabla .= '            <div class="col-md-5  col-5">';
+                $estilo2='';
+                if($listado->EquipoVisitante == $nombreEquipo){
+                    $estilo2 = "style='font-weight: bold;'";
+                }
+                $tabla .= '                <img src="../img/logoEquipo.png" alt="Sin Logo"  width="100%"><br><span '.$estilo2.'>'.$listado->EquipoVisitante.'';
+                $tabla .= '            </div>';
+                $tabla .= '        </div>';
+      
+    $tabla .= '                </div>';
+    $tabla .= '            </div>';
+    $tabla .= '        </div>';
+    }
+}
+    $tabla .= '    </div>';
+       
+        // $tabla .= '<table id="example2" class="table table-bordered table-striped"  method="POST">
+        //             <thead>
+        //                 <tr>
+        //                     <th>#</th>
+        //                     <th>Fecha Partido</th>
+        //                     <th>Equipo Local</th>
+        //                     <th width="50px;">Resultados</th>
+        //                     <th>Equipo Visitante</th>        
+        //                 </tr>
+        //             </thead>
+        //             <tbody > ';
+     
+        // $cont = 0;
+        // if ($resultado1->RowCount() > 0) {
+        //     while (!$resultado1->EndOfSeek()) {
+        //         $listado = $resultado1->Row();
+        //         $goles1 = $parametro->obtenerGolesEquipo($listado->EquipoLocal,$listado->fechaPartido,$listado->idEquipo1,$listado->idEquipo2);             
+        //         $goles2 = $parametro->obtenerGolesEquipo($listado->EquipoVisitante,$listado->fechaPartido,$listado->idEquipo1,$listado->idEquipo2);
+                              
+        //         $cont++;
+        //         $tabla .= "<tr>";
+        //         $tabla .= "<td data-title=''>" .  $cont . "</td>";
+        //         $tabla .= "<td data-title=''>" . $listado->fechaPartido . "</td>";
+        //         if($listado->EquipoLocal == $nombreEquipo){
+        //             $tabla .= "<td data-title=''><b>" . $listado->EquipoLocal . "</b></td>";
+        //         }
+        //         else{
+        //             $tabla .= "<td data-title=''>" . $listado->EquipoLocal . "</td>";
+        //         }
+                
+        //         $tabla .= "<td data-title=''>".$goles1." - ".$goles2."</td>";
+        //         if($listado->EquipoVisitante == $nombreEquipo){
+        //             $tabla .= "<td data-title=''><b>" . $listado->EquipoVisitante . "</b></td>";
+        //         }
+        //         else{
+        //             $tabla .= "<td data-title=''>" . $listado->EquipoVisitante . "</td>";
+        //         }
+        //         $tabla .= "</tr>";
+        //     }
+        // }
+    
+        // $tabla .= "</tbody>
+                
+        //         </table>";
+        echo  $tabla;   
+}
 
 if($tipo == "DetallePartidosEquipos"){
 
     $idEquipo = $_POST["idEquipo"];
     $modo = $_POST["modo"];
+    $nombreEquipo = $_POST["nombreEquipo"];    
 
-    //devuelve la fase actual que se esta jugando
-    $consultarFase = "SELECT nombreClasificacion FROM Clasificacion where idEquipo1 = $idEquipo OR idEquipo2 = $idEquipo order by id DESC ";
-    $resultado = mysqli_query($conectar, $consultarFase);
-    $row1 = $resultado->fetch_assoc();
-    $nombreClasificacion = $row1['nombreClasificacion'];
+    if($modo == "" || $modo == null){      
 
-
-    $consultarEquipo = "SELECT * FROM Equipo where id = $idEquipo";
-    $resultado2 = mysqli_query($conectar, $consultarEquipo);
-    $row = $resultado2->fetch_assoc();
-    $nombreEquipo = $row['nombreEquipo'];
-
-    if($modo == "" || $modo == null){
-        $consultar = "SELECT * from Campeonato as c
-        left join (select p.idCampeonato,p.fechaPartido,e1.id as idEquipo1,e1.nombreEquipo as EquipoLocal,e2.id as idEquipo2, e2.nombreEquipo as EquipoVisitante from Partido as p
-            LEFT JOIN Equipo as e1 on e1.id = p.idEquipoLocal
-            LEFT JOIN Equipo as e2 on e2.id = p.idEquipoVisitante
-            WHERE e1.nombreEquipo = '$nombreEquipo' OR e2.nombreEquipo = '$nombreEquipo' 
-            GROUP by p.idCampeonato,p.fechaPartido,e1.id,e1.nombreEquipo,e2.id,e2.nombreEquipo
-            order by p.fechaPartido ASC) as pa on pa.idCampeonato = c.id 
-            where c.estado = 'En Curso'";
+        $resultado1 = $parametro->DetallePartidosEquipos($idEquipo);          
     }
     else{
         $faseActual="";
@@ -70,8 +187,7 @@ if($tipo == "DetallePartidosEquipos"){
             where c.estado = 'En Curso' and pa.Modo='$faseActual'";
     }
    
-    $resultado1 = mysqli_query($conectar, $consultar);
-
+    //$resultado1 = mysqli_query($conectar, $consultar);
         $tabla = "";
         $tabla .= '<table id="example2" class="table table-bordered table-striped"  method="POST">
                     <thead>
@@ -86,42 +202,29 @@ if($tipo == "DetallePartidosEquipos"){
                     <tbody > ';
      
         $cont = 0;
-        if ($resultado1) {
-            while ($listado = mysqli_fetch_array($resultado1)) {
-
-                $consultargoles1 = "SELECT count(hp.Equipo) as goles from HechosPartido as hp 
-                LEFT JOIN Partido as p on p.id = hp.idPartido
-                where hp.Equipo = '".$listado['EquipoLocal']."' and p.fechaPartido = '".$listado['fechaPartido']."' and hp.idHecho = 1  and p.idEquipoLocal =  ".$listado['idEquipo1']." and p.idEquipoVisitante = ".$listado['idEquipo2']."";
-                $resultado2 = mysqli_query($conectar, $consultargoles1);
-                $row = $resultado2->fetch_assoc();
-                $goles1 = $row['goles'];
-        
-
-                $consultargoles2 = "SELECT count(hp.Equipo) as goles from HechosPartido as hp 
-                LEFT JOIN Partido as p on p.id = hp.idPartido
-                where hp.Equipo = '".$listado['EquipoVisitante']."' and p.fechaPartido = '".$listado['fechaPartido']."' and hp.idHecho = 1 and p.idEquipoLocal =  ".$listado['idEquipo1']." and p.idEquipoVisitante = ".$listado['idEquipo2']."";
-                $resultado3 = mysqli_query($conectar, $consultargoles2);
-                $row = $resultado3->fetch_assoc();
-                $goles2 = $row['goles'];
-
-                
+        if ($resultado1->RowCount() > 0) {
+            while (!$resultado1->EndOfSeek()) {
+                $listado = $resultado1->Row();
+                $goles1 = $parametro->obtenerGolesEquipo($listado->EquipoLocal,$listado->fechaPartido,$listado->idEquipo1,$listado->idEquipo2);             
+                $goles2 = $parametro->obtenerGolesEquipo($listado->EquipoVisitante,$listado->fechaPartido,$listado->idEquipo1,$listado->idEquipo2);
+                              
                 $cont++;
                 $tabla .= "<tr>";
                 $tabla .= "<td data-title=''>" .  $cont . "</td>";
-                $tabla .= "<td data-title=''>" . $listado['fechaPartido'] . "</td>";
-                if($listado['EquipoLocal'] == $nombreEquipo){
-                    $tabla .= "<td data-title=''><b>" . $listado['EquipoLocal'] . "</b></td>";
+                $tabla .= "<td data-title=''>" . $listado->fechaPartido . "</td>";
+                if($listado->EquipoLocal == $nombreEquipo){
+                    $tabla .= "<td data-title=''><b>" . $listado->EquipoLocal . "</b></td>";
                 }
                 else{
-                    $tabla .= "<td data-title=''>" . $listado['EquipoLocal'] . "</td>";
+                    $tabla .= "<td data-title=''>" . $listado->EquipoLocal . "</td>";
                 }
                 
                 $tabla .= "<td data-title=''>".$goles1." - ".$goles2."</td>";
-                if($listado['EquipoVisitante'] == $nombreEquipo){
-                    $tabla .= "<td data-title=''><b>" . $listado['EquipoVisitante'] . "</b></td>";
+                if($listado->EquipoVisitante == $nombreEquipo){
+                    $tabla .= "<td data-title=''><b>" . $listado->EquipoVisitante . "</b></td>";
                 }
                 else{
-                    $tabla .= "<td data-title=''>" . $listado['EquipoVisitante'] . "</td>";
+                    $tabla .= "<td data-title=''>" . $listado->EquipoVisitante . "</td>";
                 }
                 $tabla .= "</tr>";
             }
@@ -666,12 +769,7 @@ if($tipo == "TablaPosiciones"){
      $row = $resultado2->fetch_assoc();
      $idCampeonato = $row['id'];
 
-
-    $registrarInventario = "SELECT tp.id,e.id as idEquipo,e.nombreEquipo,tp.puntos,tp.partidosGanados,tp.partidosEmpatados,tp.partidosPerdidos,tp.golFavor,tp.golContra, sum(tp.golFavor - tp.golContra) as diferencia FROM TablaPosicion as tp 
-    LEFT join Equipo as e on e.id = tp.idEquipo where tp.idCampeonato = $idCampeonato and tp.grupo is null
-    GROUP by tp.id,e.id,e.nombreEquipo,tp.puntos,tp.partidosGanados,tp.partidosEmpatados,tp.partidosPerdidos,tp.golFavor,tp.golContra
-    ORDER by tp.puntos desc, diferencia desc";
-    $resultado1 = mysqli_query($conectar, $registrarInventario);
+     $resultado1 = $parametro->TablaPosiciones();
 
         $tabla = "";
         $tabla .= '<table id="example1" class="table table-bordered table-striped"  method="POST">
@@ -687,38 +785,36 @@ if($tipo == "TablaPosiciones"){
                             <th>GF</th>
                             <th>GC</th>
                             <th>GD</th>
-                            <th width="70px">ACCIÓN</th>	             
+                            <th width="120px">ACCIÓN</th>	             
                         </tr>
                     </thead>
                     <tbody id="RellenarTabla"> ';
      
         $cont = 0;
-        if ($resultado1) {
-            while ($listado = mysqli_fetch_array($resultado1)) {
-                $partidosJugados = $listado['partidosGanados'] + $listado['partidosEmpatados'] + $listado['partidosPerdidos'];
-                $golDiferencia = $listado['golFavor'] - $listado['golContra'];
-                $idEquipoObservado = $listado['idEquipo'];
-                $observaciones = "SELECT * FROM Partido where equipoObservado = $idEquipoObservado and idCampeonato = $idCampeonato and estadoObservacion = 'Aceptado'";
-                $resultado = mysqli_query($conectar, $observaciones);
-                $num_filas = mysqli_num_rows($resultado);
-
-                $cont++;
-                //$nombre= utf8_encode($listado['nombreEquipo']);
+        if ($resultado1->RowCount() > 0 ) {
+            while (!$resultado1->EndOfSeek()) {
+                $listado = $resultado1->Row();
+                $partidosJugados = $listado->partidosGanados + $listado->partidosEmpatados + $listado->partidosPerdidos;
+                $golDiferencia = $listado->golFavor - $listado->golContra;
+             
+                //$totalObservaciones = $parametro->verificarObservaciones($listado->idEquipo);
+             
+                $cont++;              
                 $tabla .= "<tr>";
                 $tabla .= "<td data-title=''>" .  $cont . "</td>";
-                $tabla .= "<td data-title=''>" . $listado['nombreEquipo'] . "</td>";
-                $tabla .= "<td data-title=''>" . $listado['puntos'] . "</td>";
+                $tabla .= "<td data-title=''>" . $listado->nombreEquipo . "</td>";
+                $tabla .= "<td data-title=''>" . $listado->puntos . "</td>";
                 $tabla .= "<td data-title=''>" . $partidosJugados . "</td>";
-                $tabla .= "<td data-title=''>" . $listado['partidosGanados'] . "</td>";
-                $tabla .= "<td data-title=''>" . $listado['partidosEmpatados'] . "</td>";
-                $tabla .= "<td data-title=''>" . $listado['partidosPerdidos'] . "</td>";
-                $tabla .= "<td data-title=''>" . $listado['golFavor'] . "</td>";
-                $tabla .= "<td data-title=''>" . $listado['golContra'] . "</td>";
+                $tabla .= "<td data-title=''>" . $listado->partidosGanados . "</td>";
+                $tabla .= "<td data-title=''>" . $listado->partidosEmpatados . "</td>";
+                $tabla .= "<td data-title=''>" . $listado->partidosPerdidos . "</td>";
+                $tabla .= "<td data-title=''>" . $listado->golFavor . "</td>";
+                $tabla .= "<td data-title=''>" . $listado->golContra . "</td>";
                 $tabla .= "<td data-title=''>" . $golDiferencia . "</td>";
-                $tabla .= "<td data-title=''><button type='button' class='btn btn-success btn-sm checkbox-toggle' onclick='verDetallesPartidos(".$listado['idEquipo'].")'><i title= 'Ver Partidos' class='fas fa-search'></i></button>";      
-                if($num_filas > 0){
-                    $tabla .= "&nbsp<button type='button' class='btn btn-danger btn-sm checkbox-toggle' onclick='verDetallesPartidos(".$listado['idEquipo'].")'><i title= 'Ver Obervación' class='fas fa-comments'></i></button>";                    
-                }
+                $tabla .= "<td data-title=''><button type='button' class='btn btn-success btn-sm checkbox-toggle' onclick='verDetallesPartidos(".chr(34).$listado->idEquipo.chr(34).",".chr(34).$listado->nombreEquipo.chr(34).")'><i title= 'Ver Partidos' class='fas fa-search'></i></button>";      
+                // if($totalObservaciones > 0){
+                //     $tabla .= "&nbsp<button type='button' class='btn btn-warning btn-sm checkbox-toggle' onclick='verDetallesPartidos(".chr(34).$listado->idEquipo.chr(34).",".chr(34).$listado->nombreEquipo.chr(34).")'><i title= 'Ver Obervación' class='fas fa-comments'></i></button>";                    
+                // }
                 $tabla .= "</td>";
                 $tabla .= "</tr>";
             }
@@ -1208,7 +1304,7 @@ if($tipo == "ListadoEquiposDisponibles"){
            while ($listado = mysqli_fetch_array($resultado1)) {
               
                $cont++;
-               $nombre= utf8_encode($listado['nombreEquipo']);
+           
                $tabla .= "<tr>";
                $tabla .= "<td data-title=''>" .  $cont . "</td>";
                $tabla .= "<td data-title=''>" . $listado['nombreEquipo'] . "</td>";
@@ -1233,17 +1329,15 @@ if($tipo == "ListadoEquiposDisponibles"){
 
 if($tipo == "TablaPosicionesGrupo1"){
 
-    //obtengo el id del campeonato
-    $consultarEquipo = "SELECT id FROM Campeonato where estado = 'En Curso'";
-    $resultado2 = mysqli_query($conectar, $consultarEquipo);
-    $row = $resultado2->fetch_assoc();
-    $idCampeonato = $row['id'];
-
-
-   $registrarInventario = "SELECT tp.id,e.id as idEquipo,e.nombreEquipo,tp.puntos,tp.partidosGanados,tp.partidosEmpatados,tp.partidosPerdidos,tp.golFavor,tp.golContra, sum(tp.golFavor - tp.golContra) as diferencia FROM TablaPosicion as tp 
-   LEFT join Equipo as e on e.id = tp.idEquipo where tp.idCampeonato = $idCampeonato and grupo = 1
-   GROUP by tp.id,e.id,e.nombreEquipo,tp.puntos,tp.partidosGanados,tp.partidosEmpatados,tp.partidosPerdidos,tp.golFavor,tp.golContra
-   ORDER by tp.puntos desc, diferencia desc";
+  
+   $registrarInventario = "SELECT tp.id,e.id as idEquipo,e.nombreEquipo,tp.puntos,tp.partidosGanados,tp.partidosEmpatados,tp.partidosPerdidos,tp.golFavor,tp.golContra, sum(tp.golFavor - tp.golContra) as diferencia 
+   FROM TablaPosicion as tp 
+   left join inscripcion i on i.id = tp.idEquipo
+      LEFT join Equipo as e on e.id = i.idEquipo 
+   LEFT join campeonato ca on ca.id = i.idCampeonato
+   where ca.estado = 'en curso' and grupo = 1
+      GROUP by tp.id,e.id,e.nombreEquipo,tp.puntos,tp.partidosGanados,tp.partidosEmpatados,tp.partidosPerdidos,tp.golFavor,tp.golContra
+      ORDER by tp.puntos desc, diferencia desc";
    $resultado1 = mysqli_query($conectar, $registrarInventario);
 
        $tabla = "";
@@ -1277,7 +1371,7 @@ if($tipo == "TablaPosicionesGrupo1"){
                $num_filas = mysqli_num_rows($resultado);
 
                $cont++;
-               $nombre= utf8_encode($listado['nombreEquipo']);
+            
                $tabla .= "<tr>";
                $tabla .= "<td data-title=''>" .  $cont . "</td>";
                $tabla .= "<td data-title=''>" . $listado['nombreEquipo'] . "</td>";
@@ -1289,9 +1383,9 @@ if($tipo == "TablaPosicionesGrupo1"){
                $tabla .= "<td data-title=''>" . $listado['golFavor'] . "</td>";
                $tabla .= "<td data-title=''>" . $listado['golContra'] . "</td>";
                $tabla .= "<td data-title=''>" . $golDiferencia . "</td>";
-               $tabla .= "<td data-title=''><button type='button' class='btn btn-success btn-sm checkbox-toggle' onclick='verDetallesPartidos(".$listado['idEquipo'].")'><i title= 'Ver Partidos' class='fas fa-search'></i></button>";      
+               $tabla .= "<td data-title=''><button type='button' class='btn btn-success btn-sm checkbox-toggle' onclick='verDetallesPartidos(".chr(34).$listado['idEquipo'].chr(34).",".chr(34).$listado['nombreEquipo'].chr(34).")'><i title= 'Ver Partidos' class='fas fa-search'></i></button>";      
                if($num_filas > 0){
-                    $tabla .= "&nbsp<button type='button' class='btn btn-danger btn-sm checkbox-toggle' onclick='verDetallesPartidos(".$listado['idEquipo'].")'><i title= 'Ver Obervación' class='fas fa-comments'></i></button>";                    
+                    $tabla .= "&nbsp<button type='button' class='btn btn-danger btn-sm checkbox-toggle' onclick='verDetallesPartidos(".chr(34).$listado['idEquipo'].chr(34).",".chr(34).$listado['nombreEquipo'].chr(34).")'><i title= 'Ver Obervación' class='fas fa-comments'></i></button>";                    
                 }
 
                $tabla .= "</td>";
@@ -1308,17 +1402,14 @@ if($tipo == "TablaPosicionesGrupo1"){
 
 if($tipo == "TablaPosicionesGrupo2"){
 
-    //obtengo el id del campeonato
-    $consultarEquipo = "SELECT id FROM Campeonato where estado = 'En Curso'";
-    $resultado2 = mysqli_query($conectar, $consultarEquipo);
-    $row = $resultado2->fetch_assoc();
-    $idCampeonato = $row['id'];
-
-
-   $registrarInventario = "SELECT tp.id,e.id as idEquipo,e.nombreEquipo,tp.puntos,tp.partidosGanados,tp.partidosEmpatados,tp.partidosPerdidos,tp.golFavor,tp.golContra, sum(tp.golFavor - tp.golContra) as diferencia FROM TablaPosicion as tp 
-   LEFT join Equipo as e on e.id = tp.idEquipo where tp.idCampeonato = $idCampeonato and grupo = 2
-   GROUP by tp.id,e.id,e.nombreEquipo,tp.puntos,tp.partidosGanados,tp.partidosEmpatados,tp.partidosPerdidos,tp.golFavor,tp.golContra
-   ORDER by tp.puntos desc, diferencia desc";
+   $registrarInventario = "SELECT tp.id,e.id as idEquipo,e.nombreEquipo,tp.puntos,tp.partidosGanados,tp.partidosEmpatados,tp.partidosPerdidos,tp.golFavor,tp.golContra, sum(tp.golFavor - tp.golContra) as diferencia 
+   FROM TablaPosicion as tp 
+   left join inscripcion i on i.id = tp.idEquipo
+      LEFT join Equipo as e on e.id = i.idEquipo 
+   LEFT join campeonato ca on ca.id = i.idCampeonato
+   where ca.estado = 'en curso' and grupo = 2
+      GROUP by tp.id,e.id,e.nombreEquipo,tp.puntos,tp.partidosGanados,tp.partidosEmpatados,tp.partidosPerdidos,tp.golFavor,tp.golContra
+      ORDER by tp.puntos desc, diferencia desc";
    $resultado1 = mysqli_query($conectar, $registrarInventario);
 
        $tabla = "";
@@ -1352,7 +1443,7 @@ if($tipo == "TablaPosicionesGrupo2"){
                $num_filas = mysqli_num_rows($resultado);
 
                $cont++;
-               $nombre= utf8_encode($listado['nombreEquipo']);
+           
                $tabla .= "<tr>";
                $tabla .= "<td data-title=''>" .  $cont . "</td>";
                $tabla .= "<td data-title=''>" . $listado['nombreEquipo'] . "</td>";
@@ -1364,9 +1455,9 @@ if($tipo == "TablaPosicionesGrupo2"){
                $tabla .= "<td data-title=''>" . $listado['golFavor'] . "</td>";
                $tabla .= "<td data-title=''>" . $listado['golContra'] . "</td>";
                $tabla .= "<td data-title=''>" . $golDiferencia . "</td>";
-               $tabla .= "<td data-title=''><button type='button' class='btn btn-success btn-sm checkbox-toggle' onclick='verDetallesPartidos(".$listado['idEquipo'].")'><i title= 'Ver Partidos' class='fas fa-search'></i></button>";      
+               $tabla .= "<td data-title=''><button type='button' class='btn btn-success btn-sm checkbox-toggle' onclick='verDetallesPartidos(".chr(34).$listado['idEquipo'].chr(34).",".chr(34).$listado['nombreEquipo'].chr(34).")'><i title= 'Ver Partidos' class='fas fa-search'></i></button>";      
                if($num_filas > 0){
-                    $tabla .= "&nbsp<button type='button' class='btn btn-danger btn-sm checkbox-toggle' onclick='verDetallesPartidos(".$listado['idEquipo'].")'><i title= 'Ver Obervación' class='fas fa-comments'></i></button>";                    
+                    $tabla .= "&nbsp<button type='button' class='btn btn-danger btn-sm checkbox-toggle' onclick='verDetallesPartidos(".chr(34).$listado['idEquipo'].chr(34).",".chr(34).$listado['nombreEquipo'].chr(34).")'><i title= 'Ver Obervación' class='fas fa-comments'></i></button>";                    
                 }
                $tabla .= "</td>";
                $tabla .= "</tr>";

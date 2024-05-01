@@ -1,6 +1,7 @@
 <?php
 
-include 'clases/conexion.php';
+require_once '../conexion/parametros.php';
+$parametro = new parametros();
 session_start();
 
 if (!isset($_SESSION['idUsuario'])) {
@@ -19,25 +20,9 @@ if (!isset($_SESSION['idUsuario'])) {
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Tabla</title>
-    <link rel="icon" type="image/jpg" href="img/image.png">
-    <!-- Google Font: Source Sans Pro -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
-    <!-- Ionicons -->
-    <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
-    <!-- DataTables -->
-    <link rel="stylesheet" href="plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
-    <link rel="stylesheet" href="plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
-    <link rel="stylesheet" href="plugins/datatables-buttons/css/buttons.bootstrap4.min.css">
-    <!-- Theme style -->
-    <link rel="stylesheet" href="dist/css/adminlte.min.css">
-    <!-- SweetAlert2 -->
-    <link rel="stylesheet" href="plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css">
-    <!-- Toastr -->
-    <link rel="stylesheet" href="plugins/toastr/toastr.min.css">
-
+    <?php
+    require "../template/encabezado.php";
+    ?>
     <style>
         .card {
             border-top-color: cornflowerblue;
@@ -47,16 +32,16 @@ if (!isset($_SESSION['idUsuario'])) {
 
 </head>
 
-<body class="hold-transition sidebar-mini layout-fixed sidebar-closed sidebar-collapse" onload="cargarDatos()">
+<body class="hold-transition sidebar-mini layout-fixed sidebar-closed sidebar-collapse">
     <div class="wrapper">
 
-        <?php
-        require "Navegador.php";
-        ?>
+    <?php  
+        require "../template/Navegador.php";
+    ?>
 
-        <?php
-        require "Menus.php";
-        ?>
+    <?php  
+        require "../template/Menus.php";
+    ?>
 
         <div class="content-wrapper">
             <!-- Content Header (Page header) -->
@@ -67,7 +52,7 @@ if (!isset($_SESSION['idUsuario'])) {
                             <h1 class="m-0">Tabla de Posiciones: <?php echo $_SESSION["tipoCampeonato"]; ?></h1>
                         </div>
                                 <?php   
-                                if($idRol == 1 ) {
+                                if($parametro->verificarPermisos($_SESSION['idUsuario'],39) > 0){
                                     if($_SESSION["tipoCampeonato"] == "Liguilla"){
                                     ?>
                                         <div class="col-12 col-md-2">
@@ -88,10 +73,10 @@ if (!isset($_SESSION['idUsuario'])) {
             </div>
 
             <?php if($_SESSION["tipoCampeonato"] == 'Liguilla'){ ?>
-            <section class="col-lg-12 col-md-12">
-                <div class="card info-box shadow-lg">
+            <section class="col-lg-12 col-md-12 pr-3 pl-3">
+                <div class="card info-box  shadow-lg">
                     <div class="card-body">
-                        <div id="contenerdor_tabla" class="table-responsive shadow-lg">
+                        <div id="contenerdor_tabla" class="table-responsive">
                             <table id="example1" class="table table-bordered table-striped">
                                 <thead>
                                     <tr>
@@ -127,7 +112,7 @@ if (!isset($_SESSION['idUsuario'])) {
                                 <h5 class="m-0"><b> Grupo 1 </b></h5>
                             </div>
                             <?php   
-                                if($idRol == 1 ) {
+                               if($parametro->verificarPermisos($_SESSION['idUsuario'],40) > 0){
                                   
                                     ?>
                             <div class="col-12 col-md-2" id="btnAñadirEquiposGrupo1">
@@ -173,7 +158,7 @@ if (!isset($_SESSION['idUsuario'])) {
                                 <h5 class="m-0"><b> Grupo 2 </b></h5>
                             </div>
                             <?php   
-                                if($idRol == 1 ) {
+                              if($parametro->verificarPermisos($_SESSION['idUsuario'],40) > 0){
                                   
                                     ?>
                             <div class="col-12 col-md-2" id="btnAñadirEquiposGrupo2">
@@ -314,14 +299,9 @@ if (!isset($_SESSION['idUsuario'])) {
             <!-- /.control-sidebar -->
         </div>
 
-        <?php $año = date('Y'); ?>
-        <footer class="main-footer">
-            <div class="float-right d-none d-sm-block">
-                <b>Version</b> 1.0
-            </div>
-            <strong>Copyright &copy; Software Bolivia <?php echo $año ?></strong> Todos los derechos reservados.
-        </footer>
-
+        <?php
+      require "../template/footer.php";
+      ?>
     </div>
     <!-- ./wrapper -->
 
@@ -330,12 +310,37 @@ if (!isset($_SESSION['idUsuario'])) {
 
     <!--        MODAL         -->
 
+     <!-- Modal ver detalle de partidos por equipo -->
+     <div class="modal fade" id="modalVerPartidos2">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">               
+                <div class="modal-header">
+                    <h4 class="modal-title">Partidos del Equipo</h4>
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id="divContenedorDetallePartidos"></div>
+                </div>                 
+                <br>
+                <div class="modal-footer col-md-12">                   
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+    <!-- /.modal -->
+
+
     <!-- Modal ver detalle de partidos por equipo -->
     <div class="modal fade" id="modalVerPartidos">
         <div class="modal-dialog modal-md">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title" id="tituloEquipo"><i class="fas fa-file-signature"></i> Partidos del Equipo</h4>
+                    <h4 class="modal-title" id="tituloEquipo">Partidos del Equipo</h4>
                     <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -460,7 +465,7 @@ if (!isset($_SESSION['idUsuario'])) {
             var idClasificacion= $("#idClasificacion").val();
 
             $.ajax({
-                url: 'clases/Cl_Tabla.php?op=RegistrarEquipoGanador',
+                url: '../clases/Cl_Tabla.php?op=RegistrarEquipoGanador',
                 type: 'POST',
                 data:{
                     idEquipoGanador: idEquipoGanador,
@@ -493,7 +498,7 @@ if (!isset($_SESSION['idUsuario'])) {
         function ElegirGanador(id){
             
             $.ajax({
-                url: 'clases/Cl_Tabla.php?op=ElegirGanador',
+                url: '../clases/Cl_Tabla.php?op=ElegirGanador',
                 type: 'POST',
                 data:{
                     id: id
@@ -514,7 +519,7 @@ if (!isset($_SESSION['idUsuario'])) {
             var texto="";
            
             $.ajax({
-                url: 'clases/Cl_Tabla.php?op=ConfirmarSiguienteFase',
+                url: '../clases/Cl_Tabla.php?op=ConfirmarSiguienteFase',
                 type: 'POST',
                 success: function(data) {
                     if(data == 'Octavos'){
@@ -586,7 +591,7 @@ if (!isset($_SESSION['idUsuario'])) {
             $("#btn_nuevo_add1").prop("disabled", true);
             $("#cargando_add").html('<div class="loading"> <center><i class="fa fa-spinner fa-pulse fa-5x" style="color:#3c8dbc"></i><br/>Procesando ...</center></div>');
             $.ajax({
-                url: 'clases/Cl_Tabla.php?op=SiguienteFaseFinal',
+                url: '../clases/Cl_Tabla.php?op=SiguienteFaseFinal',
                 type: 'POST',
                 success: function(data) { 
                  
@@ -617,7 +622,7 @@ if (!isset($_SESSION['idUsuario'])) {
             $("#btn_nuevo_add1").prop("disabled", true);
             $("#cargando_add").html('<div class="loading"> <center><i class="fa fa-spinner fa-pulse fa-5x" style="color:#3c8dbc"></i><br/>Procesando ...</center></div>');
             $.ajax({
-                url: 'clases/Cl_Tabla.php?op=SiguienteFaseSemifinal',
+                url: '../clases/Cl_Tabla.php?op=SiguienteFaseSemifinal',
                 type: 'POST',
                 success: function(data) { 
                  
@@ -647,7 +652,7 @@ if (!isset($_SESSION['idUsuario'])) {
             $("#btn_nuevo_add1").prop("disabled", true);
             $("#cargando_add").html('<div class="loading"> <center><i class="fa fa-spinner fa-pulse fa-5x" style="color:#3c8dbc"></i><br/>Procesando ...</center></div>');
             $.ajax({
-                url: 'clases/Cl_Tabla.php?op=SiguienteFaseCuartos',
+                url: '../clases/Cl_Tabla.php?op=SiguienteFaseCuartos',
                 type: 'POST',
                 success: function(data) { 
                  
@@ -678,7 +683,7 @@ if (!isset($_SESSION['idUsuario'])) {
             $("#btn_nuevo_add1").prop("disabled", true);
             $("#cargando_add").html('<div class="loading"> <center><i class="fa fa-spinner fa-pulse fa-5x" style="color:#3c8dbc"></i><br/>Procesando ...</center></div>');
             $.ajax({
-                url: 'clases/Cl_Tabla.php?op=SiguienteFaseOctavos',
+                url: '../clases/Cl_Tabla.php?op=SiguienteFaseOctavos',
                 type: 'POST',
                 success: function(data) { 
                  
@@ -708,7 +713,7 @@ if (!isset($_SESSION['idUsuario'])) {
         function ListaEquiposOctavos() {
             
             $.ajax({
-                url: 'clases/Cl_Tabla.php?op=TablaOctavos',
+                url: '../clases/Cl_Tabla.php?op=TablaOctavos',
                 type: 'POST',
                 success: function(data) {
                     $("#TituloClasificacion").html("<b>Octavos de Final</b>");
@@ -725,7 +730,7 @@ if (!isset($_SESSION['idUsuario'])) {
         function ListaEquiposCuartos() {
             
             $.ajax({
-                url: 'clases/Cl_Tabla.php?op=TablaCuartos',
+                url: '../clases/Cl_Tabla.php?op=TablaCuartos',
                 type: 'POST',
                 success: function(data) {
                     $("#TituloClasificacion").html("<b>Cuartos de Final</b>");
@@ -742,7 +747,7 @@ if (!isset($_SESSION['idUsuario'])) {
         function ListaEquiposSemifinal() {
             
             $.ajax({
-                url: 'clases/Cl_Tabla.php?op=TablaSemifinal',
+                url: '../clases/Cl_Tabla.php?op=TablaSemifinal',
                 type: 'POST',
                 success: function(data) {
                     $("#TituloClasificacion").html("<b>Semifinal</b>");
@@ -759,7 +764,7 @@ if (!isset($_SESSION['idUsuario'])) {
         function ListaEquiposFinal1() {
             
             $.ajax({
-                url: 'clases/Cl_Tabla.php?op=TablaFinal1',
+                url: '../clases/Cl_Tabla.php?op=TablaFinal1',
                 type: 'POST',
                 success: function(data) {
                     $("#TituloClasificacion").html("<b>Semifinal</b>");
@@ -776,7 +781,7 @@ if (!isset($_SESSION['idUsuario'])) {
         function ListaEquiposFinal2() {
             
             $.ajax({
-                url: 'clases/Cl_Tabla.php?op=TablaFinal2',
+                url: '../clases/Cl_Tabla.php?op=TablaFinal2',
                 type: 'POST',
                 success: function(data) {
                     $("#TituloClasificacion").html("<b>Final</b>");
@@ -793,7 +798,7 @@ if (!isset($_SESSION['idUsuario'])) {
         function GenerarPartidoOctavos(id) {
             
             $.ajax({
-                url: 'clases/Cl_Tabla.php?op=DatosEquipoPartidoOctavos',
+                url: '../clases/Cl_Tabla.php?op=DatosEquipoPartidoOctavos',
                 type: 'POST',
                 data: {
                     id: id
@@ -817,7 +822,7 @@ if (!isset($_SESSION['idUsuario'])) {
             var nombreGrupo =  $("#nombreGrupo").val();
             
             $.ajax({
-                url: 'clases/Cl_Tabla.php?op=AñadirEquipoGrupo',
+                url: '../clases/Cl_Tabla.php?op=AñadirEquipoGrupo',
                 type: 'POST',
                 data:{
                     nombreGrupo: nombreGrupo,
@@ -838,7 +843,7 @@ if (!isset($_SESSION['idUsuario'])) {
         function añadirEquipos1() {
             
             $.ajax({
-                url: 'clases/Cl_Tabla.php?op=ListadoEquiposDisponibles',
+                url: '../clases/Cl_Tabla.php?op=ListadoEquiposDisponibles',
                 type: 'POST',
                 success: function(data) {
                     $("#contenerdor_tabla3").html('');
@@ -857,7 +862,7 @@ if (!isset($_SESSION['idUsuario'])) {
           
           
             $.ajax({
-                url: 'clases/Cl_Tabla.php?op=ListadoEquiposDisponibles',
+                url: '../clases/Cl_Tabla.php?op=ListadoEquiposDisponibles',
                 type: 'POST',
                 success: function(data) {
                     $("#contenerdor_tabla3").html('');
@@ -902,7 +907,7 @@ if (!isset($_SESSION['idUsuario'])) {
                 let equipo = arreglo_equipo.toString();
                
                 $.ajax({
-                url: 'clases/Cl_Tabla.php?op=terminarTorneo',
+                url: '../clases/Cl_Tabla.php?op=terminarTorneo',
                 type: 'POST',
                 data: {
                     equipo: equipo
@@ -926,23 +931,10 @@ if (!isset($_SESSION['idUsuario'])) {
                 })
             }
 
-      
-
-        function cargarDatos() {
-
-            $("#octavos").hide();
-            $("#cuartos").hide();
-            TablaPosiciones();
-            ValidarBotonAñadir1();
-            ValidarBotonAñadir2();
-            TablaPosicionesGrupo1();
-            TablaPosicionesGrupo2();
-            TablaSiguienteFase();
-        }
 
         function TablaSiguienteFase(){
             $.ajax({
-                url: 'clases/Cl_Tabla.php?op=ValidarSiguienteFase',
+                url: '../clases/Cl_Tabla.php?op=ValidarSiguienteFase',
                 type: 'POST',          
                 success: function(data) {
                 
@@ -1000,7 +992,7 @@ if (!isset($_SESSION['idUsuario'])) {
 
         function ValidarBotonAñadir1() {
             $.ajax({
-                url: 'clases/Cl_Tabla.php?op=ValidarBotonAñadir1',
+                url: '../clases/Cl_Tabla.php?op=ValidarBotonAñadir1',
                 type: 'POST',
               
                 success: function(data) {
@@ -1014,7 +1006,7 @@ if (!isset($_SESSION['idUsuario'])) {
 
         function ValidarBotonAñadir2() {
             $.ajax({
-                url: 'clases/Cl_Tabla.php?op=ValidarBotonAñadir2',
+                url: '../clases/Cl_Tabla.php?op=ValidarBotonAñadir2',
                 type: 'POST',
               
                 success: function(data) {
@@ -1025,21 +1017,22 @@ if (!isset($_SESSION['idUsuario'])) {
             })
         }
 
-        function verDetallesPartidos(idEquipo) {
+        function verDetallesPartidos(idEquipo,nombreEquipo) {
 
             var modo = '';
             $.ajax({
-                url: 'clases/Cl_Tabla.php?op=DetallePartidosEquipos',
+                url: '../clases/Cl_Tabla.php?op=DetallePartidosEquipos2',
                 type: 'POST',
                 data: {
                     idEquipo: idEquipo,
-                    modo:modo
+                    modo:modo,
+                    nombreEquipo: nombreEquipo
                 },
                 success: function(data) {
-                    $("#contenerdor_tabla2").html('');
-                    $('#example2').DataTable().destroy();
-                    $("#contenerdor_tabla2").html(data);
-                    $("#modalVerPartidos").modal("show");
+                    $("#divContenedorDetallePartidos").html('');
+                   // $('#example2').DataTable().destroy();
+                    $("#divContenedorDetallePartidos").html(data);
+                    $("#modalVerPartidos2").modal("show");
                     // $("#example1").DataTable({
                     //     "responsive": true, "lengthChange": false, "autoWidth": false,
                     //     "language": lenguaje_español
@@ -1053,7 +1046,7 @@ if (!isset($_SESSION['idUsuario'])) {
             var modo = 'octavos';
 
             $.ajax({
-                url: 'clases/Cl_Tabla.php?op=DetallePartidosEquipos',
+                url: '../clases/Cl_Tabla.php?op=DetallePartidosEquipos',
                 type: 'POST',
                 data: {
                     idEquipo: idEquipo,
@@ -1071,7 +1064,7 @@ if (!isset($_SESSION['idUsuario'])) {
         function TablaPosiciones() {
 
             $.ajax({
-                url: 'clases/Cl_Tabla.php?op=TablaPosiciones',
+                url: '../clases/Cl_Tabla.php?op=TablaPosiciones',
                 type: 'POST',
                 success: function(data) {
                     $("#contenerdor_tabla").html('');
@@ -1089,7 +1082,7 @@ if (!isset($_SESSION['idUsuario'])) {
         function TablaPosicionesGrupo1() {
 
             $.ajax({
-                url: 'clases/Cl_Tabla.php?op=TablaPosicionesGrupo1',
+                url: '../clases/Cl_Tabla.php?op=TablaPosicionesGrupo1',
                 type: 'POST',
                 success: function(data) {
                     $("#contenerdor_tabla4").html('');
@@ -1124,30 +1117,32 @@ if (!isset($_SESSION['idUsuario'])) {
     </script>
 
 
+    <?php
+      require "../template/piePagina.php";
+      ?>
 
-    <!-- Option 1: Bootstrap Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-    <!-- SweetAlert2 -->
-    <script src="plugins/sweetalert2/sweetalert2.min.js"></script>
-    <!-- Toastr -->
-    <script src="plugins/toastr/toastr.min.js"></script>
-    <!-- jQuery -->
-    <script src="plugins/jquery/jquery.min.js"></script>
-    <!-- Bootstrap 4 -->
-    <script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <!-- DataTables  & Plugins -->
-    <script src="plugins/datatables/jquery.dataTables.min.js"></script>
-    <script src="plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
-    <script src="plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
-    <script src="plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
-    <script src="plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
-    <script src="plugins/datatables-buttons/js/buttons.bootstrap4.min.js"></script>
-    <!-- AdminLTE App -->
-    <script src="dist/js/adminlte.min.js"></script>
-    <!-- AdminLTE for demo purposes -->
-    <script src="dist/js/demo.js"></script>
-    <!-- Page specific script -->
+      
     <script>
+
+        $(document).ready(function() {
+        
+            $("#octavos").hide();
+            $("#cuartos").hide();
+            var tipoCampeonato =  '<?php echo  $_SESSION["tipoCampeonato"]; ?>';
+            if(tipoCampeonato == 'Liguilla'){
+                TablaPosiciones();
+            }
+            else{
+                ValidarBotonAñadir1();
+                ValidarBotonAñadir2();
+                TablaPosicionesGrupo1();
+                TablaPosicionesGrupo2();
+                TablaSiguienteFase();
+            }
+            
+           
+        });
+
         var lenguaje_español = {
             "processing": "Procesando...",
             "lengthMenu": "Mostrar _MENU_ registros",

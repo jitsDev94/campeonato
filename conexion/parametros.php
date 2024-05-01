@@ -186,6 +186,103 @@ class parametros
         return $db;
     }
 
+    public function TablaPosiciones(){
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return false;
+        }
+
+                                 
+        $consulta = "SELECT tp.id,e.id as idEquipo,e.nombreEquipo,tp.puntos,tp.partidosGanados,tp.partidosEmpatados,tp.partidosPerdidos,tp.golFavor,tp.golContra, sum(tp.golFavor - tp.golContra) as diferencia 
+        FROM TablaPosicion as tp 
+        left join inscripcion i on i.id = tp.idEquipo
+           LEFT join Equipo as e on e.id = i.idEquipo 
+        LEFT join campeonato ca on ca.id = i.idCampeonato
+        where ca.estado = 'en curso' and tp.grupo is null
+           GROUP by tp.id,e.id,e.nombreEquipo,tp.puntos,tp.partidosGanados,tp.partidosEmpatados,tp.partidosPerdidos,tp.golFavor,tp.golContra
+           ORDER by tp.puntos desc, diferencia desc";
+
+        if(!$db->Query($consulta)) {
+            return 0;
+        }      
+        return $db;
+    }
+
+    public function DetallePartidosEquipos($idEquipo){
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return false;
+        }
+
+                                 
+        $consulta = "SELECT ca.*,p.idCampeonato,p.fechaPartido,e1.id as idEquipo1,e1.nombreEquipo as EquipoLocal,e2.id as idEquipo2, e2.nombreEquipo as EquipoVisitante 
+        from Partido as p
+        LEFT join inscripcion i on i.id = p.idEquipoLocal
+         LEFT join inscripcion i2 on i2.id = p.idEquipoVisitante
+          LEFT join equipo e1 on e1.id = i.idEquipo
+        LEFT join equipo e2 on e2.id = i2.idEquipo
+        LEFT join campeonato ca on ca.id = i.idCampeonato or ca.id = i2.idCampeonato
+        WHERE i.id =$idEquipo OR i2.id = $idEquipo  and ca.estado = 'en curso'
+        GROUP by p.idCampeonato,p.fechaPartido,e1.id,e1.nombreEquipo,e2.id,e2.nombreEquipo
+        order by p.fechaPartido desc";
+
+        if(!$db->Query($consulta)) {
+            return 0;
+        }      
+        return $db;
+    }
+
+    public function verificarObservaciones($idEquipoObservado,$fechaPartido =''){
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return false;
+        }
+
+        $condicion = '';
+        if($fechaPartido != ''){
+            $condicion = " and fechaPartido = '$fechaPartido'";
+        }
+        $consulta = "SELECT * FROM Partido p 
+        LEFT join inscripcion i on i.id = p.idEquipoObservado
+        LEFT join equipo e on e.id = i.idEquipo
+        LEFT join campeonato ca on ca.id = i.idCampeonato
+        where idEquipoObservado =  $idEquipoObservado and ca.estado = 'en curso' $condicion and estadoObservacion = 'Aceptado'";
+
+        if(!$db->Query($consulta)) {
+            return 0;
+        }      
+        return $db->RowCount();
+    }
+
+    public function obtenerGolesEquipo($EquipoLocal,$fechaPartido,$idEquipo1,$idEquipo2){
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return false;
+        }
+
+                                 
+        $consulta = "SELECT count(hp.Equipo) as goles from acontecimientoPartido as hp 
+        LEFT JOIN Partido as p on p.id = hp.idPartido
+        where hp.Equipo = '".$EquipoLocal."' and p.fechaPartido = '".$fechaPartido."' and hp.idAcontecimiento = 1  and p.idEquipoLocal =  ".$idEquipo1." and p.idEquipoVisitante = ".$idEquipo2."";
+        
+        if(!$db->Query($consulta)) {
+            return 0;
+        } 
+
+        $row = $db->Row();
+        $row->goles;  
+
+        return $row->goles;
+    }
+
     public function RegistrarPermiso($nombre,$menu,$nombreMenu)
 	{       
 
