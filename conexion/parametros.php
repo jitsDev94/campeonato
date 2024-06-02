@@ -154,6 +154,85 @@ class parametros
       
     }
 
+    public function RegistrarInscripcion($idCampeonato,$idEquipo,$monto)
+	{       
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return 'error';
+        }
+      
+        $consulta = "SELECT id FROM Inscripcion where idCampeonato = $idCampeonato and idEquipo = $idEquipo";
+        $db->Query($consulta);
+        if($db->RowCount() > 0){
+           
+            return 'inscrito';
+        }
+
+        $consulta = "INSERT INTO Inscripcion(idCampeonato,idEquipo,inscripcion,fecha) values($idCampeonato,$idEquipo,$monto,curdate())";
+            
+        if (!$db->Query($consulta)) {
+            $db->Kill();
+            return 'Ha ocurrido un error al registrar la insripcion.';
+        }
+       
+        return 'ok';
+      
+    }
+
+    public function EditarEquipoInscrito($idInscripcion,$idEquipo,$idCampeonato)
+	{       
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return 'error';
+        }
+      
+        $consulta = "SELECT id FROM Inscripcion where idCampeonato = $idCampeonato and idEquipo = $idEquipo";
+        $db->Query($consulta);
+        if($db->RowCount() > 0){
+           
+            return 'inscrito';
+        }
+
+        $consulta = "UPDATE Inscripcion SET idEquipo = $idEquipo where id = $idInscripcion";
+            
+        if (!$db->Query($consulta)) {
+            $db->Kill();
+            return 'Ha ocurrido un error al registrar la insripcion.';
+        }
+       
+        return 'ok';
+      
+    }
+
+
+    public function ObtenerPecioCobros($motivo){
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return false;
+        }
+
+                                 
+        $consulta = "SELECT precio FROM configuracionCobros where motivo = '$motivo' and estado ='Habilitado'";
+        if(!$db->Query($consulta)) {
+            return 0;
+        }    
+        if($db->RowCount() > 0){
+            $db->MoveFirst();
+            $row = $db->Row();
+            return $row->precio;
+        }
+        else{
+            return 0;
+        }
+      
+    }
+
     public function ListarPermisos2(){
 
         $db = new MySQL();
@@ -671,6 +750,25 @@ class parametros
 		}
     }
 
+
+    public function DropDownListarTorneos()
+	{      
+
+        $consulta = "SELECT * FROM Campeonato";
+
+
+        $db = new MySQL();
+		if ($db->Error()) $db->Kill();
+		if (!$db->Query($consulta)) $db->Kill();
+		$db->MoveFirst();
+		echo "<option value='0'>Seleccionar.. </option>";
+		while (!$db->EndOfSeek()) {
+			$row = $db->Row();		
+			echo "<option value='" . $row->id . "'>" . $row->nombre  . "</option>";
+		}
+    }
+
+
     public function DropDownBuscarEquipos()
 	{      
 
@@ -886,6 +984,54 @@ class parametros
       
     }
 
+    public function ListaEquiposInscritos($idCampeonato,$idEquipo)
+	{       
+
+        $db = new MySQL();
+		if ($db->Error()) $db->Kill();
+        
+        $condicion = "";     
+   
+        if($idCampeonato != "" && $idCampeonato != 0){
+            $condicion .= " and i.idCampeonato = $idCampeonato";
+        }
+    
+        if($idEquipo != '' && $idEquipo != 0){
+            $condicion .= " and i.idEquipo = $idEquipo";
+        }
+    
+
+        $consulta="SELECT i.id as idInscripcion,i.idEquipo,c.nombre as campeonato,e.nombreEquipo,i.fecha,i.inscripcion,i.estado FROM Inscripcion as i
+        LEFT JOIN Campeonato as c on c.id = i.idCampeonato
+        LEFT join Equipo as e on e.id = i.idEquipo 
+        where 1=1 $condicion order by c.nombre,e.nombreEquipo asc";
+
+      
+		if (!$db->Query($consulta)) $db->Kill();
+		
+        return $db;
+      
+    }
+
+    public function EstadoInscripcion($id,$estado)
+    {       
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return false;
+        }
+        
+        $consulta = "UPDATE inscripcion SET estado = '$estado' where id = $id";                            
+
+        if (!$db->Query($consulta)) {       
+            return 'error';
+        }
+
+
+        return 'ok';
+    
+    }
     public function ListaJugadores($idEquipoDelegado,$idRol,$nombreJugadorFiltro,$idEquipoFiltro)
 	{       
 

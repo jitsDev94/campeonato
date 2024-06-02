@@ -83,7 +83,8 @@
                             </a>
                         </li>
                         </li>
-                        <?php } ?>
+                        <?php } 
+                            if($parametro->verificarPermisos($_SESSION['idUsuario'],'8,22,41') > 0){?>
                         <li class="nav-item">
                             <a href="../views/inscripcion.php" class="nav-link">
                               <i class="nav-icon fas fa-file-signature"></i>                              
@@ -94,7 +95,8 @@
                             </a>
                         </li>
                         <?php
-                            if($parametro->verificarPermisos($_SESSION['idUsuario'],10) > 0){ ?>
+                           }
+                           if($parametro->verificarPermisos($_SESSION['idUsuario'],10) > 0){ ?>
                         <li class="nav-item">
                             <a href="../views/campeonato.php" class="nav-link">
                               <i class="nav-icon fas fa-trophy"></i>
