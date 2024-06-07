@@ -924,14 +924,38 @@ class parametros
       
         $respuesta = array('request' => 'ok','message' => '');
 
+        if($idEquipoLocal == $idEquipoVisitante){
+         
+            return array('request' => 'error','message' => 'El equipo local no puede ser el mismo que el equipo visitante');
+            
+        }
+
         $consulta = "SELECT * FROM programacionPartidos where estado = 'Pendiente' and fecha = '$fecha' and cancha = '$Cancha'";
         $db->Query($consulta);
         if($db->RowCount() > 0  && $confirmacion == 0){
          
-            return array('request' => 'error','message' => 'Ya existe un partido programado a la fecha y hora indicada, favor seleccionar otro horario');
+            return array('request' => 'error','message' => 'Ya existe un partido programado a la fecha, favor seleccionar otro horario');
             
         }
 
+        $arrayfecha = explode('T',$fecha);
+        $fechaSimple = $arrayfecha[0]; 
+        $consulta = "SELECT * FROM programacionPartidos where (codEquipoLocal = $idEquipoLocal or codEquipoVisita = $idEquipoLocal) and date(fecha) = '$fechaSimple'";
+       
+        $db->Query($consulta);
+        if($db->RowCount() > 0  && $confirmacion == 0){
+         
+            return array('request' => 'error','message' => 'El Equipo local ya tiene programado un partido en la fecha, favor seleccionar otro equipo');
+            
+        }
+
+        $consulta = "SELECT * FROM programacionPartidos where (codEquipoLocal = $idEquipoVisitante or codEquipoVisita = $idEquipoVisitante) and date(fecha) = '$fechaSimple'";
+        $db->Query($consulta);
+        if($db->RowCount() > 0  && $confirmacion == 0){
+         
+            return array('request' => 'error','message' => 'El Equipo visitante ya tiene programado un partido en la fecha y hora indicada, favor seleccionar otro equipo');
+            
+        }
 
         $consulta = "SELECT date(fecha) as fecha FROM programacionPartidos where estado = 'Pendiente' GROUP BY date(fecha)";
         $db->Query($consulta);
