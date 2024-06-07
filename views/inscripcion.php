@@ -15,7 +15,7 @@ if (!isset($_SESSION['idUsuario'])) {
 
 $precio = $parametro->ObtenerPecioCobros('Inscripcion');
 $torneo = $parametro->TraerUltimoTorneo();
-if($parametro->verificarPermisos($_SESSION['idUsuario'],'8,22,41') == 0){
+if($parametro->verificarPermisos($_SESSION['idUsuario'],'14') == 0){
   echo "Su usuario no tiene permisos para entrar a esta pagina";
   exit();
 }

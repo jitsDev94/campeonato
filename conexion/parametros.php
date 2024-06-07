@@ -700,7 +700,7 @@ class parametros
         $consulta = "SELECT i.id,e.nombreEquipo FROM Inscripcion as i
                                 left join Equipo as e on e.id = i.idEquipo
                                 left join Campeonato as c on c.id = i.idCampeonato
-                                where c.estado = 'En Curso'";
+                                where c.estado = 'En Curso' order by e.nombreEquipo ASC";
 
 
         $db = new MySQL();
@@ -892,6 +892,141 @@ class parametros
       
     }
 
+    public function eliminarPartidoProgramado($codProgramacion)
+	{       
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return 'error';
+        }
+      
+       
+
+        $consulta = "DELETE from programacionPartidos where codProgramacion = $codProgramacion";       
+        if (!$db->Query($consulta)) {
+            $db->Kill();
+            return 'error';
+        }
+       
+       return 'ok' ;
+      
+    }
+
+    public function RegistrarProgramacionPartido($idEquipoLocal,$idEquipoVisitante,$fecha,$Cancha,$confirmacion)
+	{       
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return 'error';
+        }
+      
+        $respuesta = array('request' => 'ok','message' => '');
+
+        $consulta = "SELECT * FROM programacionPartidos where estado = 'Pendiente' and fecha = '$fecha' and cancha = '$Cancha'";
+        $db->Query($consulta);
+        if($db->RowCount() > 0  && $confirmacion == 0){
+         
+            return array('request' => 'error','message' => 'Ya existe un partido programado a la fecha y hora indicada, favor seleccionar otro horario');
+            
+        }
+
+
+        $consulta = "SELECT date(fecha) as fecha FROM programacionPartidos where estado = 'Pendiente' GROUP BY date(fecha)";
+        $db->Query($consulta);
+        if($db->RowCount() > 0  && $confirmacion == 0){
+            $fila = $db->Row();
+            if(date('Y-m-d',strtotime($fecha)) != $fila->fecha){
+                return array('request' => 'error','message' => 'En la fecha '.date('d-m-Y',strtotime($fila->fecha)).' hay partidos programados que aun no fueron completados. Favor terminar de cerrar todos esos partidos para poder registrar otra fecha.');
+            }
+            
+        }
+
+        $consulta = "SELECT * FROM programacionPartidos where estado = 'Pendiente' and (codEquipoLocal = $idEquipoLocal or codEquipovisita = $idEquipoLocal)";
+        $db->Query($consulta);
+        if($db->RowCount() > 0  && $confirmacion == 0){
+           
+            return array('request' => 'error','message' => 'El equipo local ya tiene un partido programado');
+        }
+
+        $consulta = "SELECT * FROM programacionPartidos where estado = 'Pendiente' and (codEquipoLocal = $idEquipoVisitante or codEquipovisita = $idEquipoVisitante)";
+        $db->Query($consulta);
+        if($db->RowCount() > 0  && $confirmacion == 0){
+           
+            return array('request' => 'error','message' => 'El equipo visitante ya tiene un partido programado');
+        }
+
+        $consulta = "INSERT INTO programacionPartidos (codEquipoLocal,codEquipoVisita,fecha,cancha,estado) values('$idEquipoLocal','$idEquipoVisitante','$fecha','$Cancha','Pendiente')";       
+        if (!$db->Query($consulta)) {
+            $db->Kill();
+            return  array('request' => 'error','message' => 'error al registrar la programacion. ' . $consulta);
+        }
+       
+       return $respuesta ;
+      
+    }
+
+
+    public function ListarPartidosProgramados($cancha = '')
+	{       
+
+        $db = new MySQL();
+		if ($db->Error()) $db->Kill();
+        
+      
+        $condicion = '';
+
+        if($cancha != ''){
+            $condicion = " and p.cancha = '$cancha' ";
+        }
+        $consulta="SELECT p.codProgramacion,i.id as codEquipoLocal, e.nombreEquipo as equipoLocal,
+        i2.id as codEquipovisita , e2.nombreEquipo as equipoVisita,
+        DATE_FORMAT(p.fecha,'%H:%i') as hora,p.cancha,	p.fecha
+        FROM programacionPartidos p
+        LEFT JOIN inscripcion i on i.id =p.codEquipoLocal
+        LEFT JOIN Equipo e on e.id = i.idEquipo
+        LEFT JOIN inscripcion i2 on i2.id =p.codEquipovisita
+        LEFT JOIN Equipo e2 on e2.id = p.codEquipovisita
+        where p.estado = 'Pendiente' $condicion 
+        order by p.fecha asc";
+
+      
+		if (!$db->Query($consulta)) $db->Kill();
+		
+        return $db;
+      
+    }
+
+    public function ObtenerFechaPartidosProgramados()
+	{       
+
+        $db = new MySQL();
+		if ($db->Error()) $db->Kill();
+        
+      
+        $consulta="SELECT p.codProgramacion,i.id as codEquipoLocal, e.nombreEquipo as equipoLocal,
+        i2.id as codEquipovisita , e2.nombreEquipo as equipoVisita,
+        DATE_FORMAT(p.fecha,'%H:%i') as hora,p.cancha,	p.fecha
+        FROM programacionPartidos p
+        LEFT JOIN inscripcion i on i.id =p.codEquipoLocal
+        LEFT JOIN Equipo e on e.id = i.idEquipo
+        LEFT JOIN inscripcion i2 on i2.id =p.codEquipovisita
+        LEFT JOIN Equipo e2 on e2.id = p.codEquipovisita
+        where p.estado = 'Pendiente' 
+        group by date(p.fecha)";
+
+      
+		if (!$db->Query($consulta)) $db->Kill();
+       // if($db->RowCount() > 0){
+            //$db->MoveFirst();
+            return $db;
+        // }
+		// else{
+        //     return 0;
+        // }
+      
+    }
 
     public function ListaEquipos()
 	{       

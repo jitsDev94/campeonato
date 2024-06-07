@@ -321,23 +321,28 @@ class MySQL
 	 *
 	 * @return object Returns TRUE on success or FALSE on error
 	 */
+	// public function Close() {
+	// 	$this->ResetError();
+	// 	$this->active_row = -1;
+	// 	$success = $this->Release();
+	// 	if ($success) {
+	// 		$success = @mysqli_close($this->mysql_link);
+	// 		if (! $success) {
+	// 			$this->SetError();
+	// 		} else {
+	// 			unset($this->last_sql);
+	// 			unset($this->last_result);
+	// 			unset($this->mysql_link);
+	// 		}
+	// 	}
+	// 	return $success;
+	// }
 	public function Close() {
-		$this->ResetError();
-		$this->active_row = -1;
-		$success = $this->Release();
-		if ($success) {
-			$success = @mysqli_close($this->mysql_link);
-			if (! $success) {
-				$this->SetError();
-			} else {
-				unset($this->last_sql);
-				unset($this->last_result);
-				unset($this->mysql_link);
-			}
-		}
-		return $success;
-	}
-
+        $this->Release();
+        if ($this->mysql_link) {
+            mysqli_close($this->mysql_link);
+        }
+    }
 	/**
 	 * Deletes rows in a table based on a WHERE filter
 	 * (can be just one or many rows based on the filter)
@@ -987,12 +992,15 @@ class MySQL
 	 *
 	 */
 	public function Kill($message = "") {
-		if (strlen($message) > 0) {
-			exit($message);
-		} else {
-			exit($this->Error());
-		}
-	}
+        $this->Close();
+    }
+	// public function Kill($message = "") {
+	// 	if (strlen($message) > 0) {
+	// 		exit($message);
+	// 	} else {
+	// 		exit($this->Error());
+	// 	}
+	// }
 
 	/**
 	 * Seeks to the beginning of the records
@@ -1099,6 +1107,17 @@ class MySQL
 	 *                TRUE or FALSE for all others i.e. UPDATE, DELETE, DROP
 	 *                AND FALSE on all errors (setting the local Error message)
 	 */
+
+	//  public function Query($query) {
+    //     $this->last_result = mysqli_query($this->mysql_link, $query);
+    //     if (!$this->last_result) {
+    //         $this->error_desc = mysqli_error($this->mysql_link);
+    //         $this->error_number = mysqli_errno($this->mysql_link);
+    //         error_log("Error en la consulta SQL: " . $this->error_desc);
+    //         return false;
+    //     }
+    //     return true;
+    // }
 	public function Query($sql) {
 		$this->ResetError();
 		$this->last_sql = $sql;
@@ -1263,17 +1282,23 @@ class MySQL
 	 *
 	 * @return boolean Returns TRUE on success or FALSE on failure
 	 */
+	// public function Release() {
+	// 	$this->ResetError();
+	// 	if (! $this->last_result) {
+	// 		$success = true;
+	// 	} else {
+	// 		$success = @mysqli_free_result($this->last_result);
+	// 		if (! $success) $this->SetError();
+	// 	}
+	// 	return $success;
+	// }
 	public function Release() {
-		$this->ResetError();
-		if (! $this->last_result) {
-			$success = true;
-		} else {
-			$success = @mysqli_free_result($this->last_result);
-			if (! $success) $this->SetError();
-		}
-		return $success;
-	}
-
+        if ($this->last_result instanceof mysqli_result) {
+            mysqli_free_result($this->last_result);
+        } else {
+            error_log("Error al liberar el resultado: No es un objeto mysqli_result.");
+        }
+    }
 	/**
 	 * Clears the internal variables from any error information
 	 *

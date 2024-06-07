@@ -1,6 +1,7 @@
 <?php
 
-include 'clases/conexion.php';
+require_once '../conexion/parametros.php';
+$parametro = new parametros();
 session_start();
 
 if (!isset($_SESSION['idUsuario'])) {
@@ -11,6 +12,12 @@ if (!isset($_SESSION['idUsuario'])) {
     $idEquipoDelegado = $_SESSION['idEquipo'];
     $nombreEquipoDelegado= $_SESSION['nombreEquipo'];
 }
+
+// if($parametro->verificarPermisos($_SESSION['idUsuario'],'14') == 0){
+//   echo "Su usuario no tiene permisos para entrar a esta pagina";
+//   exit();
+// }
+
 ?>
 
 <!DOCTYPE html>
@@ -18,25 +25,9 @@ if (!isset($_SESSION['idUsuario'])) {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Programación de Partidos</title>
-  <link rel="icon" type="image/jpg" href="img/image.png">
-  <!-- Google Font: Source Sans Pro -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
-  <!-- Ionicons -->
-  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
-   <!-- DataTables -->
-   <link rel="stylesheet" href="plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
-  <link rel="stylesheet" href="plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
-  <link rel="stylesheet" href="plugins/datatables-buttons/css/buttons.bootstrap4.min.css">
-  <!-- Theme style -->
-  <link rel="stylesheet" href="dist/css/adminlte.min.css">
-   <!-- SweetAlert2 -->
-   <link rel="stylesheet" href="plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css">
-  <!-- Toastr -->
-  <link rel="stylesheet" href="plugins/toastr/toastr.min.css">
-  
+  <?php
+        require "../template/encabezado.php";
+    ?>
    <style>
     .card{
       border-top-color: cornflowerblue;
@@ -45,16 +36,16 @@ if (!isset($_SESSION['idUsuario'])) {
   </style>
 
 </head>
-<body class="hold-transition sidebar-mini layout-fixed sidebar-closed sidebar-collapse" onload="ListaEquipos();" >
+<body class="hold-transition sidebar-mini layout-fixed sidebar-closed sidebar-collapse">
 <div class="wrapper">
 
-    <?php  
-        require "Navegador.php";
-    ?>
+        <?php  
+            require "../template/Navegador.php";
+        ?>
 
-    <?php  
-        require "Menus.php";
-    ?>
+        <?php  
+            require "../template/Menus.php";
+        ?>
 
   <div class="content-wrapper">
     <!-- Content Header (Page header) -->
@@ -62,7 +53,7 @@ if (!isset($_SESSION['idUsuario'])) {
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-9">
-            <h1 class="m-0">Partidos Programados</h1>
+            <h3 class="m-0">Partidos Programados</h3>
           </div>
           <div class="col-12 col-md-3">
               <button type="button" class="btn btn-primary btn-block" onclick="modalRegistrarProgramacionPartido()"><i class="fas fa-plus-circle"></i> Programar Partidos</button>                 
@@ -82,22 +73,8 @@ if (!isset($_SESSION['idUsuario'])) {
             <div class="card info-box shadow-lg">
             
               <div class="card-body">
-                <div id="contenerdor_tabla" class="table-responsive">
-                  <table id="example1" class="table table-bordered table-striped">
-                    <thead>
-                    <tr>
-                      <th>#</th>
-                      <th>Cancha</th>
-                      <th>Equipo Local</th>
-                      <th>Equipo Visitante</th>
-                      <th>Fecha</th>                      
-                      <th>Acción</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                           
-                    </tbody>
-                  </table>
+                <div id="contenerdor_tabla">
+                 
                 </div>
               </div>
               <!-- /.card-body -->
@@ -112,15 +89,9 @@ if (!isset($_SESSION['idUsuario'])) {
       </aside>
       <!-- /.control-sidebar -->
       </div>
-
-           <?php $año = date('Y'); ?>
-        <footer class="main-footer">
-            <div class="float-right d-none d-sm-block">
-            <b>Version</b> 1.0
-            </div>
-            <strong>Copyright &copy; Software Bolivia <?php echo $año ?></strong> Todos los derechos reservados.
-        </footer>
-    
+      <?php
+        require "../template/footer.php";
+        ?> 
     </div>
     <!-- ./wrapper -->
 
@@ -145,34 +116,18 @@ if (!isset($_SESSION['idUsuario'])) {
                       <br>
                         <label for="inputName" class="form-label"><b>Equipo Local(*)</b></label>
                         <select class="form-control shadow-lg" id="idEquipoLocal">
-                            <option selected disabled>Seleccionar..</option>
-                            <?php
-                            $consultar = "SELECT e.id as idEquipo,e.nombreEquipo FROM Inscripcion as i
-                            LEFT join Equipo as e on e.id = i.idEquipo
-                            LEFT join Campeonato as c on c.id = i.idCampeonato
-                            where c.estado= 'En Curso' order by e.nombreEquipo asc";
-                               $resultado1 = mysqli_query($conectar, $consultar);
-                            while ($listado = mysqli_fetch_array($resultado1)) {
+                          <?php 
+                                $parametro->DropDownListarEquiposInscritos();
                             ?>
-                                <option value="<?php echo $listado['idEquipo']; ?>"><?php echo $listado['nombreEquipo']; ?></option>
-                            <?php } ?>
                         </select>           
                     </div>      
                     <div class="col-md-6">
                       <br>
                         <label for="inputName" class="form-label"><b>Equipo Visitante(*)</b></label>
                         <select class="form-control shadow-lg" id="idEquipoVisitante">
-                            <option selected disabled>Seleccionar..</option>
-                            <?php
-                            $consultar = "SELECT e.id as idEquipo,e.nombreEquipo FROM Inscripcion as i
-                            LEFT join Equipo as e on e.id = i.idEquipo
-                            LEFT join Campeonato as c on c.id = i.idCampeonato
-                            where c.estado= 'En Curso' order by e.nombreEquipo asc";
-                               $resultado1 = mysqli_query($conectar, $consultar);
-                            while ($listado = mysqli_fetch_array($resultado1)) {
+                            <?php 
+                                $parametro->DropDownListarEquiposInscritos();
                             ?>
-                                <option value="<?php echo $listado['idEquipo']; ?>"><?php echo $listado['nombreEquipo']; ?></option>
-                            <?php } ?>
                         </select>                
                     </div>  
                     <div class="col-md-6">
@@ -187,8 +142,7 @@ if (!isset($_SESSION['idUsuario'])) {
                         <label for="inputName" class="form-label"><b>Cancha(*)</b></label>                                                
                         <select class="form-control shadow-lg" id="txtCancha">
                             <option value="Cancha 1">Cancha 1</option>
-                            <option value="Cancha 2">Cancha 2</option>
-                            <option value="Cancha 3">Cancha 3</option>
+                            <option value="Cancha 2">Cancha 2</option>                           
                         </select>
                     </div>                                                              
               </form>
@@ -230,7 +184,7 @@ if (!isset($_SESSION['idUsuario'])) {
         function modalEditarEquipo(id) {       
             
           $.ajax({
-            url: 'clases/Cl_Equipo.php?op=DatosEquipo',
+            url: '../clases/Cl_Equipo.php?op=DatosEquipo',
             type: 'POST',
             data: {
                 id: id
@@ -264,7 +218,7 @@ if (!isset($_SESSION['idUsuario'])) {
           }
 
           $.ajax({
-          url: 'clases/Cl_Equipo.php?op=EditarEquipo',
+          url: '../clases/Cl_Equipo.php?op=EditarEquipo',
           type: 'POST',
           data: {
               id: id,
@@ -333,13 +287,13 @@ if (!isset($_SESSION['idUsuario'])) {
       var codProgramacion = codProgramacion;
     
       $.ajax({
-            url: 'clases/Cl_Programa_Partidos.php?op=eliminarPartidoProgramado',
+            url: '../clases/Cl_Programa_Partidos.php?op=eliminarPartidoProgramado',
             type: 'POST', 
             data: {
               codProgramacion: codProgramacion
             },
             success: function(data) {
-                  if (data == "1") {                               
+                  if (data == "ok") {                               
                       Swal.fire('Exito!', 'Partido eliminado correctamente',  'success');
                       location.reload();                     
                   }else{
@@ -357,16 +311,18 @@ if (!isset($_SESSION['idUsuario'])) {
       $("#contenerdor_tabla").html('<div class="loading"> <center><i class="fa fa-spinner fa-pulse fa-5x" style="color:#3c8dbc"></i><br/>Cargando Equipos ...</center></div>');
 
         $.ajax({
-            url: 'clases/Cl_Programa_Partidos.php?op=ListaEquipos',
+            url: '../clases/Cl_Programa_Partidos.php?op=ListaEquipos2',
             type: 'POST', 
             success: function(data) {
                 $("#contenerdor_tabla").html('');
-                $('#example1').DataTable().destroy();
+             //   $('#example1').DataTable().destroy();
                 $("#contenerdor_tabla").html(data);
-                $("#example1").DataTable({
-                    "responsive": true, "lengthChange": false, "autoWidth": false,
-                    "language": lenguaje_español
-                }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');            
+                // $("#example1").DataTable({
+                //     "responsive": true, 
+                //     "lengthChange": false, 
+                //     "autoWidth": false,
+                //     "language": lenguaje_español
+                // });            
             }          
         })         
     }
@@ -404,11 +360,13 @@ if (!isset($_SESSION['idUsuario'])) {
         }
 
         $("#botonRegistro").prop("disabled", true);
-        $("#cargando_add").html('<div class="loading"> <center><i class="fa fa-spinner fa-pulse fa-5x" style="color:#3c8dbc"></i><br/>Procesando ...</center></div>');
-
+                  
+          $("#cargando_add").html('<div class="loading"> <center><i class="fa fa-spinner fa-pulse fa-5x" style="color:#3c8dbc"></i><br/>Procesando ...</center></div>');
+        
          $.ajax({
-            url: 'clases/Cl_Programa_Partidos.php?op=RegistrarProgramacionPartido',
+            url: '../clases/Cl_Programa_Partidos.php?op=RegistrarProgramacionPartido',
             type: 'POST',
+            dataType: 'JSON',
             data: {
                 idEquipoLocal: idEquipoLocal,
                 idEquipoVisitante: idEquipoVisitante,
@@ -417,29 +375,57 @@ if (!isset($_SESSION['idUsuario'])) {
                 confirmacion: confirmacion
              }, 
              success: function(vs) {   
-                      
-                 if (vs == 1) {    
-                   Swal.fire('Exito!', 'Equipo registrado correctamente',  'success');
-                    location.reload();
+              $("#botonRegistro").prop("disabled", false);
+              setTimeout(() => {       
+                $("#cargando_add").html('');
+              }, 2000);
+
+
+              if(vs['request'] == 'error'){
+                Swal.fire('Advertencia!', vs['message'], 'warning');                
+              }
+              else{
+                Swal.fire('Exito!','Partido programado correctamente',  'success');
+                  location.reload();
+              }
+              // if(vs == 'fecha'){
+              //   Swal.fire('Advertencia!', 'Hay partidos', 'warning');                
+              // }
+              // else
+              // if(vs == 'local'){
+              //   Swal.fire('Advertencia!', 'El equipo local ya tiene un partido programado', 'warning');                
+              // }
+              // else
+              // if(vs == 'visitante'){
+              //   Swal.fire('Advertencia!', 'El equipo visitante ya tiene un partido programado', 'warning');
+              // }
+              // else{
+              //   Swal.fire('Exito!','Partido programado correctamente',  'success');
+              //     location.reload();
+              // }
+                 
+                //  if (vs == 1) {    
+                //    Swal.fire('Exito!', 'Equipo registrado correctamente',  'success');
+                //     location.reload();
                                
-                 }else{
-                    $("#botonRegistro").prop("disabled", false);
-                    $("#cargando_add").html('');                       
-                   // Swal.fire("Aviso..!", vs, "error");        
-                   Swal.fire({
-                    title: '¿Esta Seguro?',
-                    text: vs + ",¿Desea Continuar?",
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Si, Continuar!'
-                    }).then((result) => {
-                            if (result.isConfirmed) {
-                              RegistrarProgramacionPartido(1);                      
-                            }
-                    })
-                 }                  
+                //  }else{
+                //     $("#botonRegistro").prop("disabled", false);
+                //     $("#cargando_add").html('');                       
+                //    // Swal.fire("Aviso..!", vs, "error");        
+                //    Swal.fire({
+                //     title: '¿Esta Seguro?',
+                //     text: vs + ",¿Desea Continuar?",
+                //     icon: 'question',
+                //     showCancelButton: true,
+                //     confirmButtonColor: '#3085d6',
+                //     cancelButtonColor: '#d33',
+                //     confirmButtonText: 'Si, Continuar!'
+                //     }).then((result) => {
+                //             if (result.isConfirmed) {
+                //               RegistrarProgramacionPartido(1);                      
+                //             }
+                //     })
+                //  }                  
              },
              error: function(vs){
                 $("#botonRegistro").prop("disabled", false);
@@ -450,35 +436,15 @@ if (!isset($_SESSION['idUsuario'])) {
       </script>
 
 
-
-<!-- Option 1: Bootstrap Bundle with Popper -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-<!-- SweetAlert2 -->
-<script src="plugins/sweetalert2/sweetalert2.min.js"></script>
-<!-- Toastr -->
-<script src="plugins/toastr/toastr.min.js"></script>
-<!-- jQuery -->
-<script src="plugins/jquery/jquery.min.js"></script>
-<!-- Bootstrap 4 -->
-<script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-<!-- DataTables  & Plugins -->
-<script src="plugins/datatables/jquery.dataTables.min.js"></script>
-<script src="plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
-<script src="plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
-<script src="plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
-<script src="plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
-<script src="plugins/datatables-buttons/js/buttons.bootstrap4.min.js"></script>
-<!-- AdminLTE App -->
-<script src="dist/js/adminlte.min.js"></script>
-<!-- AdminLTE for demo purposes -->
-<script src="dist/js/demo.js"></script>
-<!-- Page specific script -->
+      <?php
+      require "../template/piePagina.php";
+      ?>
 <script>
   $(function () {
-    $("#example1").DataTable({
-      "responsive": true, "lengthChange": false, "autoWidth": false,
-      "language": lenguaje_español
-    }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
+
+    ListaEquipos();
+
+   
   })
 
   var lenguaje_español = 
