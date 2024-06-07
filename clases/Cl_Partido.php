@@ -376,33 +376,79 @@ if($tipo == "FiltroJugadoresEquipos"){
     $idEquipo1 = $_POST["idequipo1"];
     $idEquipo2 = $_POST["idequipo2"];
       
-        $resultado = $parametro->TraerJugadoresEquipos($idEquipo1,$idEquipo2); 
+        $resultado = $parametro->TraerJugadoresxEquipos($idEquipo1); 
+        $resultado2 = $resultado;
+        $row2 = $resultado2->Row();
         $resultado->MoveFirst();
-       $tabla = "";
-       $tabla .= '<table id="example1" class="table table-bordered table-striped"  method="POST">
-                   <thead>
-                       <tr>
-                        <th></th>
-                        <th>Nombre</th>
-                        <th>Equipo</th>
-                        <th>Nro</th>           
-                       </tr>
-                   </thead>
-                   <tbody > ';
-    
-       $cont = 0;
-     
-       while (!$resultado->EndOfSeek()) {
-        $row = $resultado->Row();
-            $tabla .= "<tr>";
-            $tabla .= "<td data-title=''><button type='button' class='btn btn-white btn-sm checkbox-toggle' onclick='DatosJugador(".$row->idJugador.")'><i class='fas fa-check'></i></button></td>";
-            $tabla .= "<td data-title=''>" . $row->nombre . " " . $row->apellidos . "</td>";
-            $tabla .= "<td data-title=''>" . $row->nombreEquipo . "</td>";
-            $tabla .= "<td data-title=''>" . $row->nroCamiseta . "</td>";
-            $tabla .= "</tr>";
-        }
-       $tabla .= "</tbody>
-               
-               </table>";
+        $tabla = "";
+        $tabla .= "<div class='row'>";
+        $tabla .= "<div class='col-md-6'>";
+        $tabla .= "<div class='row text-center p-3'>";            
+            $tabla .= "<section class='card col-md-12 pr-4 pl-4'>";      
+            $tabla .= "<br><h5>Equipo ".$row2->nombreEquipo."<h5><br>";         
+                $tabla .= '<table id="example1" class="table table-bordered table-striped" style="font-size:15px;" method="POST">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Nombre</th>
+                                    
+                                    <th>Nro</th>           
+                                </tr>
+                            </thead>
+                        <tbody > ';                
+                $cont = 0;
+                
+                while (!$resultado->EndOfSeek()) {
+                    $row = $resultado->Row();
+                        $tabla .= "<tr>";
+                        $tabla .= "<td data-title=''><button type='button' class='btn btn-primary btn-sm checkbox-toggle' onclick='DatosJugador(".$row->idJugador.")'><i class='fas fa-check'></i></button></td>";
+                        $tabla .= "<td data-title=''>" . $row->nombre . " " . $row->apellidos . "</td>";
+                        //$tabla .= "<td data-title=''>" . $row->nombreEquipo . "</td>";
+                        $tabla .= "<td data-title=''>" . $row->nroCamiseta . "</td>";
+                        $tabla .= "</tr>";
+                    }
+                $tabla .= "</tbody></table>";
+            $tabla .= "</section>";
+            $tabla .= "</div>";
+            $tabla .= "</div>";
+
+
+            $resultado = $parametro->TraerJugadoresxEquipos($idEquipo2); 
+            $resultado2 = $resultado;
+            $row2 = $resultado2->Row();
+            $resultado->MoveFirst();
+           
+            $tabla .= "<div class='col-md-6'>";
+            $tabla .= "<div class='row text-center p-3'>";   
+            $tabla .= "<section class='card col-md-12 pr-4 pl-4'>";  
+            $tabla .= "<br><h5>Equipo ".$row2->nombreEquipo."<h5><br>";                   
+                $tabla .= '<table id="example2" class="table table-bordered table-striped"  style="font-size:15px;" method="POST">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Nombre</th>
+                                 
+                                    <th>Nro</th>           
+                                </tr>
+                            </thead>
+                        <tbody > ';
+                
+                $cont = 0;
+                
+                while (!$resultado->EndOfSeek()) {
+                    $row = $resultado->Row();
+                        $tabla .= "<tr>";
+                        $tabla .= "<td data-title=''><button type='button' class='btn btn-primary btn-sm checkbox-toggle' onclick='DatosJugador(".$row->idJugador.")'><i class='fas fa-check'></i></button></td>";
+                        $tabla .= "<td data-title=''>" . $row->nombre . " " . $row->apellidos . "</td>";
+                       // $tabla .= "<td data-title=''>" . $row->nombreEquipo . "</td>";
+                        $tabla .= "<td data-title=''>" . $row->nroCamiseta . "</td>";
+                        $tabla .= "</tr>";
+                    }
+                $tabla .= "</tbody></table>";
+
+            $tabla .= "</section>";
+            $tabla .= "</div>";
+            $tabla .= "</div>";
+        $tabla .= "</div>";
        echo  $tabla;   
 }

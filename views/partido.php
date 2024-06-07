@@ -397,7 +397,7 @@ $torneo = $parametro->TraerUltimoTorneo();
 
  <!-- Modal datos jugador --> 
     <div class="modal fade" id="ModalDatosJugador">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-xl">
           <div class="modal-content modal-md">
             <div class="modal-header">
                 <h4 class="modal-title" id="tituloJugador"><i class="fas fa-running"></i> Jugadores</h4>
@@ -406,20 +406,8 @@ $torneo = $parametro->TraerUltimoTorneo();
               </button>
             </div>
             <div class="modal-body">
-                <div id="contenerdor_tabla1" class="table-responsive">
-                  <table id="example1" class="table table-bordered table-striped">
-                    <thead>
-                    <tr>
-                      <th></th>
-                      <th>Nombre</th>
-                      <th>Equipo</th>
-                      <th>Nro Polera</th>
-                    </tr>
-                    </thead>
-                    <tbody >
-                      
-                    </tbody>
-                  </table>
+                <div id="contenerdor_tabla1">
+                
                 </div>
             </div>
           </div>
@@ -764,12 +752,17 @@ $torneo = $parametro->TraerUltimoTorneo();
              
                 $("#contenerdor_tabla1").html('');
                 $('#example1').DataTable().destroy();
+                $('#example2').DataTable().destroy();
                 $("#contenerdor_tabla1").html(data);
-                $("#example1").DataTable({
-                    "responsive": true, "lengthChange": false, "autoWidth": false,
-                    "language": lenguaje_español
-                }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');  
 
+                $("#example1").DataTable({
+                    "responsive": true, "lengthChange": false, "autoWidth": false, "search":false,
+                    "language": lenguaje_español
+                });  
+                $("#example2").DataTable({
+                    "responsive": true, "lengthChange": false, "autoWidth": false,"search":false,
+                    "language": lenguaje_español
+                });  
                 $("#ModalDatosJugador").modal("show");
                           
             },

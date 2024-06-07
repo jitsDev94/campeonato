@@ -1329,6 +1329,21 @@ class parametros
       
     }
 
+    public function TraerJugadoresxEquipos($idEquipo1)
+	{       
+
+        $consulta = "SELECT j.id as idJugador,j.nombre,j.apellidos,j.nroCamiseta,e.nombreEquipo FROM Jugador as j 
+        left join Equipo as e on e.id = j.idEquipo 
+        where e.id = $idEquipo1
+        order by e.nombreEquipo,j.nombre ASC";
+
+        $db = new MySQL();
+		if ($db->Error()) $db->Kill();
+		if (!$db->Query($consulta)) $db->Kill();
+		
+        return $db;
+      
+    }
 
     public function TraerJugadoresEquipos($idEquipo1,$idEquipo2)
 	{       
