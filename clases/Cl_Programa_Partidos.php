@@ -122,7 +122,7 @@ if($tipo == "ListaEquipos2"){
                     if($parametro->verificarPermisos($_SESSION['idUsuario'],'14') > 0){
                     $tabla .= '        <div class="row text-center mt-3">';                  
                     $tabla .= '            <div class="col-md-12 col-12">';
-                    $tabla .= "                 <button type='button' class='btn btn-success btn-sm checkbox-toggle' onclick='ModalRegistrarPartido(". chr(34) .$listado->codProgramacion. chr(34) .",". chr(34) .$listado->codEquipoLocal. chr(34) .", ". chr(34) .$listado->codEquipovisita. chr(34) .", ". chr(34) . $datosPartido->fecha. chr(34) .")'>Registrar</button>";
+                    $tabla .= "                 <button type='button' class='btn btn-success btn-sm checkbox-toggle' onclick='ModalRegistrarPartido(". chr(34) .$listado->codProgramacion. chr(34) .",". chr(34) .$listado->codEquipoLocal. chr(34) .", ". chr(34) .$listado->codEquipovisita. chr(34) .", ". chr(34) . date('Y-m-d',strtotime( $datosPartido->fecha)). chr(34) .")'>Registrar</button>";
                     $tabla .= "                 <button type='button' class='btn btn-danger btn-sm checkbox-toggle' onclick='ModalEliminarPartido(". chr(34) .$listado->codProgramacion. chr(34) .",". chr(34) .$listado->equipoLocal. chr(34).", ". chr(34) .$listado->equipoVisita. chr(34) .")'>Eliminar</button>";
                     $tabla .= '            </div>';
                     $tabla .= '        </div>';

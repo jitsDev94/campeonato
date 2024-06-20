@@ -610,6 +610,7 @@ $torneo = $parametro->TraerUltimoTorneo();
                     idSede: idSede,
                     equipo1: equipo1,
                     equipo2: equipo2,
+                    equipo3: equipo3,
                     fecha: fecha,
                     modo: modo,
                     observacion: observacion, 

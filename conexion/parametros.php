@@ -339,6 +339,22 @@ class parametros
         return $db->RowCount();
     }
 
+    public function verificarEquipoGanadorWalkover($idEquipoGanadorWalkover,$fechaPartido =''){
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return false;
+        }
+       
+        $consulta = "SELECT * FROM `partido` where idEquipoGanadorWalkover = $idEquipoGanadorWalkover and fechaPartido = '$fechaPartido';";
+
+        if(!$db->Query($consulta)) {
+            return 0;
+        }      
+        return $db->RowCount();
+    }
+
     public function obtenerGolesEquipo($EquipoLocal,$fechaPartido,$idEquipo1,$idEquipo2){
 
         $db = new MySQL();
@@ -808,6 +824,23 @@ class parametros
 			$row = $db->Row();		
 			echo "<option value='" . $row->idEquipo . "'>" . $row->nombreEquipo . "</option>";
 		}
+    }
+
+    public function DropDownBuscarNombreEquipos($codEquipo)
+	{      
+      
+        $consulta = "SELECT e.id as idEquipo,e.nombreEquipo FROM Inscripcion as i
+        LEFT join Equipo as e on e.id = i.idEquipo
+        LEFT join Campeonato as c on c.id = i.idCampeonato
+        where c.estado= 'En Curso' and i.idEquipo = $codEquipo";
+
+
+        $db = new MySQL();
+		if ($db->Error()) $db->Kill();
+		if (!$db->Query($consulta)) $db->Kill();
+		$db->MoveFirst();
+        $row = $db->Row();		
+        return $row->nombreEquipo;
     }
 
 
@@ -1795,10 +1828,10 @@ class parametros
       
     }
 
-    public function InsertarPartido($idPartido,$equipo1,$equipo2,$idSede,$fecha,$idCampeonato,$modo,$observacion,$estadoObservacion,$idEquipoObservado,$PrecioObservacion)
+    public function InsertarPartido($idPartido,$equipo1,$equipo2,$idSede,$fecha,$idCampeonato,$modo,$observacion,$estadoObservacion,$idEquipoObservado,$PrecioObservacion,$eswalkover,$idEquipoGanadorWalkover)
 	{       
 
-        $consulta = "INSERT INTO Partido(`id`,`idEquipoLocal`, `idEquipoVisitante`, `idSede`, `fechaPartido`, `idCampeonato`, `Modo`, `Observacion`, `estadoObservacion`, `idEquipoObservado`, `precioObservacion`) VALUES($idPartido,$equipo1,$equipo2,$idSede,'$fecha',$idCampeonato,'$modo','$observacion','$estadoObservacion',$idEquipoObservado,$PrecioObservacion)";
+        $consulta = "INSERT INTO Partido(`id`,`idEquipoLocal`, `idEquipoVisitante`, `idSede`, `fechaPartido`, `idCampeonato`, `Modo`, `Observacion`, `estadoObservacion`, `idEquipoObservado`, `precioObservacion`,`walkover`,`idEquipoGanadorWalkover`) VALUES($idPartido,$equipo1,$equipo2,$idSede,'$fecha',$idCampeonato,'$modo','$observacion','$estadoObservacion',$idEquipoObservado,$PrecioObservacion,'$eswalkover',$idEquipoGanadorWalkover)";
 
         $db = new MySQL();
         if ($db->Error()) {
@@ -1810,9 +1843,10 @@ class parametros
 
         if (!$db->Query($consulta)) {
             $success = false;
+            return 'Error al registrar el partido';
         }
        
-        return $success;
+        return 'ok';
       
     }
 
@@ -1830,10 +1864,33 @@ class parametros
         $success = true;
 
         if (!$db->Query($consulta)) {
-            $success = false;
+            $success = false;            
+            return 'error';
         }
        
-        return $success;
+        return 'ok';
+      
+    }
+
+    public function InsertarHechoPartidoWalkover($idAcontecimiento,$equipo,$idPartido)
+	{       
+
+        $consulta = "INSERT INTO acontecimientopartido( `idAcontecimiento`,  `Equipo`, `idPartido`, `precio`, `estado`) values($idAcontecimiento,'$equipo',$idPartido,0,'Pendiente')";
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return false;
+        }
+       
+        $success = true;
+
+        if (!$db->Query($consulta)) {
+            $success = false;            
+            return 'error';
+        }
+       
+        return 'ok';
       
     }
 

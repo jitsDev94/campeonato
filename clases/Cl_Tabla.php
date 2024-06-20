@@ -60,8 +60,12 @@ if($tipo == "DetallePartidosEquipos2"){
             $listado = $resultado1->Row();
             $colorCard = '';
             $totalObservaciones = $parametro->verificarObservaciones($idEquipo,$listado->fechaPartido);
+            $equipoGanadorWalkover = $parametro->verificarEquipoGanadorWalkover($idEquipo,$listado->fechaPartido);
             if($totalObservaciones > 0){
                 $colorCard = "style='border-top-color: red;'";
+            }
+            if($equipoGanadorWalkover > 0){
+                $colorCard = "style='border-top-color: yellow;'";
             }
     $tabla .= '        <div class="col-md-4">';
     $tabla .= '            <div class="card info-box shadow-lg" '.$colorCard.'>';

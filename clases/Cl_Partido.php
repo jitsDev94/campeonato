@@ -221,6 +221,7 @@ if($tipo== "RegistrarPartido"){
     $idSede = $_POST["idSede"];
     $equipo1 = $_POST["equipo1"];
     $equipo2 = $_POST["equipo2"];
+    $idEquipoGanadorWalkover = $_POST["equipo3"];
     $fecha = $_POST["fecha"];
     $modo = $_POST["modo"];
     $observacion = $_POST["observacion"];
@@ -232,23 +233,12 @@ if($tipo== "RegistrarPartido"){
     $idJugador =$_POST["idJugador"];
     $equipo = $_POST["equipo"];
     $eswalkover = $_POST["walkover"];
-    // $eswalkover='no';
-    // if (isset($walkover) && ($walkover == 'on' || $walkover == 1 || $walkover == '1' || $walkover == true)) {
-    //     $eswalkover = 'si';
-    // }
+   
     $codProgramacion = $_POST["codProgramacion"];
 
     $array_idHecho = explode(",",$idHecho);
     $array_idJugador = explode(",",$idJugador);
     $array_equipo = explode(",",$equipo);
-
-    // $Consultar = $parametro->TraerEquipoCampeon($idCampeonato); 
-
-    // if($Consultar > 0){
-    //     echo 4;
-    //     return false;
-    // }
- 
 
     if($observacion != "" || $observacion != null){
         $estadoObservacion = "Pendiente";
@@ -256,69 +246,50 @@ if($tipo== "RegistrarPartido"){
         $PrecioObservacion = $_POST["precioObservacion"];
     }
 
-   // $resultado = $parametro->InsertarPartido($idPartido,$equipo1,$equipo2,$idSede,$fecha,$idCampeonato,$modo,$observacion,$estadoObservacion,$idEquipoObservado,$PrecioObservacion); 
-    $insertarHechos = "INSERT INTO Partido(`id`,`idEquipoLocal`, `idEquipoVisitante`, `idSede`, `fechaPartido`, `idCampeonato`, `Modo`, `Observacion`, `estadoObservacion`, `idEquipoObservado`, `precioObservacion`,`walkover`) VALUES($idPartido,$equipo1,$equipo2,$idSede,'$fecha',$idCampeonato,'$modo','$observacion','$estadoObservacion',$idEquipoObservado,$PrecioObservacion,'$eswalkover')";
-    $resultado2 = mysqli_query($conectar, $insertarHechos);
-   // if($resultado){
+    if($idEquipoGanadorWalkover == ''){
+        $idEquipoGanadorWalkover = 0;
+    }
+
+    $resp = $parametro->InsertarPartido($idPartido,$equipo1,$equipo2,$idSede,$fecha,$idCampeonato,$modo,$observacion,$estadoObservacion,$idEquipoObservado,$PrecioObservacion,$eswalkover,$idEquipoGanadorWalkover);
+
+
+    // $insertarHechos = "INSERT INTO Partido(`id`,`idEquipoLocal`, `idEquipoVisitante`, `idSede`, `fechaPartido`, `idCampeonato`, `Modo`, `Observacion`, `estadoObservacion`, `idEquipoObservado`, `precioObservacion`,`walkover`,`idEquipoGanadorWalkover`) VALUES($idPartido,$equipo1,$equipo2,$idSede,'$fecha',$idCampeonato,'$modo','$observacion','$estadoObservacion',$idEquipoObservado,$PrecioObservacion,'$eswalkover',$idEquipoGanadorWalkover)";
+    // $resultado2 = mysqli_query($conectar, $insertarHechos);
+    if($resp == 'ok'){
         if($idHecho != ""){
             $insertarHechos = "";
             for ($i=0; $i < count($array_idHecho); $i++){
-             //   $resultado2 = $parametro->InsertarHechoPartido($array_idHecho[$i],$array_idJugador[$i],$array_equipo[$i],$idPartido);
-                $insertarHechos = "INSERT INTO acontecimientopartido( `idAcontecimiento`, `idJugador`, `Equipo`, `idPartido`, `precio`, `estado`) values($array_idHecho[$i],$array_idJugador[$i],'$array_equipo[$i]',$idPartido,0,'Pendiente')";
-                $resultado2 = mysqli_query($conectar, $insertarHechos);
+          
+                $resp=$parametro->InsertarHechoPartido($array_idHecho[$i],$array_idJugador[$i],$array_equipo[$i],$idPartido);
+                if($resp == 'ok'){
+                    echo 2;
+                    return;
+                }
+                // $insertarHechos = "INSERT INTO acontecimientopartido( `idAcontecimiento`, `idJugador`, `Equipo`, `idPartido`, `precio`, `estado`) values($array_idHecho[$i],$array_idJugador[$i],'$array_equipo[$i]',$idPartido,0,'Pendiente')";
+                // $resultado2 = mysqli_query($conectar, $insertarHechos);
             }
-    
-            if($codProgramacion != ''){
-                $parametro->actualizarProgramacionPartidos($codProgramacion);            
-            }
-            //else{
-               // $parametro->eliminarPartido($idPartido);             
-               // echo 2;
-            //}
-            echo 1;
+                       
         }
-        else{
-            echo 1;
+
+        if($codProgramacion != ''){
+            $parametro->actualizarProgramacionPartidos($codProgramacion);                              
         }
-    // }
-    // else
-    // {
-    //     echo 3;
-    // }
+
+        if($idEquipoGanadorWalkover != '' && $idEquipoGanadorWalkover != 0 || $idHecho == ''){
+            $nombreEquipo = $parametro->DropDownBuscarNombreEquipos($idEquipoGanadorWalkover);    
+            $resp=$parametro->InsertarHechoPartidoWalkover(1,$nombreEquipo,$idPartido);
+            $resp=$parametro->InsertarHechoPartidoWalkover(1,$nombreEquipo,$idPartido);
+        }
+
+        echo 1;
+    }
+    else{
+        echo 3;
+    }
+
 }
 
 
-// if($tipo == "UltimoPartido"){
-
-//     $id = $_POST["id"];
-//     $datos = array();
-//     $Consultar = "SELECT * FROM Partido order by id desc";
-//     $resultado = mysqli_query($conectar, $Consultar);
-//     $datos = mysqli_fetch_assoc($resultado);
-
-//     if($resultado){
-//         echo json_encode($datos,JSON_UNESCAPED_UNICODE);
-//     }
-//     else{
-//         echo 'error';
-//     } 
-// }
-
-// if($tipo == "UltimoTorneo"){
-
-
-//     $datos = array();
-//     $Consultar = "SELECT * FROM Campeonato where estado = 'En Curso'";
-//     $resultado = mysqli_query($conectar, $Consultar);
-//     $datos = mysqli_fetch_assoc($resultado);
-
-//     if($resultado){
-//         echo json_encode($datos,JSON_UNESCAPED_UNICODE);
-//     }
-//     else{
-//         echo 'error';
-//     } 
-// }
 
 if($tipo == "TorneoFinalizado"){
     
@@ -336,20 +307,6 @@ if($tipo == "TorneoFinalizado"){
    
 }
 
-// if($tipo == "UltimoSede"){
-
-//     $datos = array();
-//     $Consultar = "SELECT * FROM Sede where estado = 'Habilitado'";
-//     $resultado = mysqli_query($conectar, $Consultar);
-//     $datos = mysqli_fetch_assoc($resultado);
-
-//     if($resultado){
-//         echo json_encode($datos,JSON_UNESCAPED_UNICODE);
-//     }
-//     else{
-//         echo 'error';
-//     } 
-// }
 
 if($tipo == "DatosJugador"){
 
