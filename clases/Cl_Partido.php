@@ -261,7 +261,7 @@ if($tipo== "RegistrarPartido"){
             for ($i=0; $i < count($array_idHecho); $i++){
           
                 $resp=$parametro->InsertarHechoPartido($array_idHecho[$i],$array_idJugador[$i],$array_equipo[$i],$idPartido);
-                if($resp == 'ok'){
+                if($resp == 'error'){
                     echo 2;
                     return;
                 }

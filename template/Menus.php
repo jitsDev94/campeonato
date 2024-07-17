@@ -45,7 +45,7 @@
                         </li>
 
                         <li class="nav-item">
-                            <a href="../views/SiguientesPartidos.php" class="nav-link">
+                            <a href="../views/programacionPartidos.php" class="nav-link">
                                 <i class="nav-icon fas fa-clipboard-list"></i>
                                 <p>
                                    Próximos Partidos                                   
@@ -136,12 +136,12 @@
                             </a>
                             <ul class="nav nav-treeview">
                             <?php //if($parametro->verificarPermisos($_SESSION['idUsuario'],14) > 0){ ?>
-                                <li class="nav-item">
+                                <!-- <li class="nav-item">
                                     <a href="../views/programacionPartidos.php" class="nav-link" style="padding-left:35px;">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p> Programar Partidos</p>
                                     </a>
-                                </li>
+                                </li> -->
                                 <?php  if($parametro->verificarPermisos($_SESSION['idUsuario'],1) > 0){ ?>
                                 <li class="nav-item">
                                     <a href="../views/partido.php" class="nav-link" style="padding-left:35px;">
