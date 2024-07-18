@@ -674,6 +674,32 @@ class parametros
         return $row->tarjetas;
     }
 
+    public function TotalTarjetas($idEquipoDelegado,$idRol,$permiso){
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return false;
+        }
+
+        $condicion = "";
+
+        if($permiso == 0){
+            $condicion = "and p.idEquipoObservado = $idEquipoDelegado";
+        }                                 
+        $consulta = "SELECT COUNT(hp.id) as tarjetas FROM acontecimientopartido as hp
+                                         LEFT JOIN Partido as p on p.id = hp.idPartido
+                                         LEFT JOIN Campeonato as c on c.id = p.idCampeonato
+                                         LEFT JOIN Equipo as e on e.nombreEquipo = hp.Equipo
+                                         where hp.estado = 'pendiente' and hp.idAcontecimiento != 1 and c.estado = 'En Curso'  $condicion";
+        if(!$db->Query($consulta)) {
+            return 0;
+        }
+        $db->MoveFirst();
+        $row = $db->Row();		
+
+        return $row->tarjetas;
+    }
 
     public function TotalMultas($idEquipoDelegado,$idRol){
 
@@ -1666,6 +1692,98 @@ class parametros
 
 
         return 'ok';
+      
+    }
+
+    public function EliminarTarjetas($id)
+	{       
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return false;
+        }
+        
+        $consulta = "UPDATE acontecimientopartido SET  estado = 'Eliminado' where id = $id";                            
+
+        if (!$db->Query($consulta)) {       
+            return 'error';
+        }
+
+
+        return 'ok';
+      
+    }
+
+    public function RegistrarPagoTarjeta($id,$precio)
+	{       
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return false;
+        }
+        
+        $consulta = "UPDATE acontecimientopartido SET  precio = $precio ,estado = 'Pagado' where id = $id";                            
+
+        if (!$db->Query($consulta)) {       
+            return 'error';
+        }
+
+
+        return 'ok';
+      
+    }
+
+    public function ListaTarjetasRojas($idRol,$idEquipoDelegado,$permisos)
+	{       
+
+        $condicion = "";
+
+       // if($idRol != 1 && $idRol != 2){
+       if($permisos == 0){
+            $condicion = " and e.id = $idEquipoDelegado";
+        }
+        $consulta = "SELECT hp.id as idHp, j.nombre,j.apellidos,hp.Equipo,p.fechaPartido FROM acontecimientopartido as hp 
+                LEFT JOIN acontecimiento as h on h.id = hp.idAcontecimiento 
+                LEFT JOIN Jugador as j on j.id = hp.idJugador 
+                LEFT JOIN Partido as p on p.id = hp.idPartido
+                LEFT JOIN Campeonato as c on c.id = p.idCampeonato                
+                LEFT JOIN Equipo as e on e.nombreEquipo = hp.Equipo
+                where hp.estado = 'Pendiente' and h.nombreAcontecimiento = 'Tarjeta Roja' and c.estado = 'En Curso' $condicion
+                order by p.fechaPartido desc";
+
+        $db = new MySQL();
+		if ($db->Error()) $db->Kill();
+		if (!$db->Query($consulta)) $db->Kill();
+		
+        return $db;
+      
+    }
+
+    public function ListaTarjetasAmarillas($idRol,$idEquipoDelegado,$permisos)
+	{       
+
+        $condicion = "";
+
+        //if($idRol != 1 && $idRol != 2){
+        if($permisos == 0){
+            $condicion = " and e.id = $idEquipoDelegado";
+        }
+        $consulta = "SELECT hp.id as idHp, j.nombre,j.apellidos,hp.Equipo,p.fechaPartido FROM acontecimientopartido as hp 
+                LEFT JOIN acontecimiento as h on h.id = hp.idAcontecimiento 
+                LEFT JOIN Jugador as j on j.id = hp.idJugador 
+                LEFT JOIN Partido as p on p.id = hp.idPartido
+                LEFT JOIN Campeonato as c on c.id = p.idCampeonato                
+                LEFT JOIN Equipo as e on e.nombreEquipo = hp.Equipo
+                where hp.estado = 'Pendiente' and h.nombreAcontecimiento = 'Tarjeta Amarilla' and c.estado = 'En Curso' $condicion
+                order by p.fechaPartido desc";
+
+        $db = new MySQL();
+		if ($db->Error()) $db->Kill();
+		if (!$db->Query($consulta)) $db->Kill();
+		
+        return $db;
       
     }
 

@@ -1,6 +1,9 @@
 <?php
 
-include 'clases/conexion.php';
+//include 'clases/conexion.php';
+require_once '../conexion/parametros.php';
+$parametro = new parametros();
+
 session_start();
 
 if (!isset($_SESSION['idUsuario'])) {
@@ -18,24 +21,9 @@ if (!isset($_SESSION['idUsuario'])) {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Tarjetas</title>
-  <link rel="icon" type="image/jpg" href="img/image.png">
-  <!-- Google Font: Source Sans Pro -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
-  <!-- Ionicons -->
-  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
-   <!-- DataTables -->
-   <link rel="stylesheet" href="plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
-  <link rel="stylesheet" href="plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
-  <link rel="stylesheet" href="plugins/datatables-buttons/css/buttons.bootstrap4.min.css">
-  <!-- Theme style -->
-  <link rel="stylesheet" href="dist/css/adminlte.min.css">
-   <!-- SweetAlert2 -->
-   <link rel="stylesheet" href="plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css">
-  <!-- Toastr -->
-  <link rel="stylesheet" href="plugins/toastr/toastr.min.css">
+  <?php
+    require "../template/encabezado.php";
+    ?>
   
    <style>
     .card{
@@ -53,15 +41,15 @@ if (!isset($_SESSION['idUsuario'])) {
   </style>
 
 </head>
-<body class="hold-transition sidebar-mini layout-fixed sidebar-closed sidebar-collapse" onload="CargarDatos();">
+<body class="hold-transition sidebar-mini layout-fixed sidebar-closed sidebar-collapse">
 <div class="wrapper">
 
-    <?php  
-        require "Navegador.php";
+<?php  
+        require "../template/Navegador.php";
     ?>
 
     <?php  
-        require "Menus.php";
+        require "../template/Menus.php";
     ?>
 
 <div class="content-wrapper">
@@ -113,13 +101,7 @@ if (!isset($_SESSION['idUsuario'])) {
                                                 <label for="inputCasa" class="form-label"><b>Torneo</b></label> 
                                                 <select class="form-control" id="filIdTorneo"> 
                                                     <?php 
-                                                        $consultar = "SELECT * FROM Campeonato";
-                                                        $resultado1 = mysqli_query($conectar, $consultar);
-                                                        while ($listado = mysqli_fetch_array($resultado1)){
-                                                            ?>
-                                                            <option value="<?php echo $listado['id'];?>"><?php echo $listado['nombre'];?></option>
-                                                            <?php
-                                                        }
+                                                      $parametro->DropDownListarTorneos();
                                                     ?>
                                                    
                                                 </select>
@@ -128,7 +110,7 @@ if (!isset($_SESSION['idUsuario'])) {
                                         <div class="col-md-3">
                                             <div style="margin-top:32px;">
                                               <button type="button" class="btn btn-primary" onclick="FiltrarTarjetas()"><i class="fas fa-filter"></i>  Filtrar</button>
-                                              <button type="button" class="btn btn-secondary" id="botonDirectivaActual" onclick="CargarDatos()"> Mostrar Actual</button>
+                                              <!-- <button type="button" class="btn btn-secondary" id="botonDirectivaActual" onclick="CargarDatos()"> Mostrar Actual</button> -->
                                             </div>
                                         </div>                                    
                                     </div>  
@@ -215,14 +197,9 @@ if (!isset($_SESSION['idUsuario'])) {
       <!-- /.control-sidebar -->
       </div>
 
-           <?php $año = date('Y'); ?>
-        <footer class="main-footer">
-            <div class="float-right d-none d-sm-block">
-            <b>Version</b> 1.0
-            </div>
-            <strong>Copyright &copy; Software Bolivia <?php echo $año ?></strong> Todos los derechos reservados.
-        </footer>
-    
+     <?php
+      require "../template/footer.php";
+      ?>
     </div>
     <!-- ./wrapper -->
 
@@ -234,31 +211,29 @@ if (!isset($_SESSION['idUsuario'])) {
   
       <!-- Modal cobrar Tarjetas --> 
    <div class="modal fade" id="ModalCobroTarjeta">
-        <div class="modal-dialog modal-sm">
+        <div class="modal-dialog modal-md">
           <div class="modal-content">
             <div class="modal-header">
-              <h4 class="modal-title"><i class="nav-icon fas fa-dollar-sign"></i> Registrar Pago Tarjeta</h4>
+              <h4 class="modal-title"> Registrar Pago Tarjeta</h4>
               <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
               </button>
             </div>
             <div class="modal-body">
-              <form method="POST" id="formEditarLote" class="row g-3">                              
-                <div class="mb-3 row">
-                    <label for="staticEmail" class="col-sm-3 col-form-label">Jugador</label>
-                    <div class="col-sm-9 text-center">
-                    <input type="text" readonly class="form-control-plaintext" id="nombre" disabled>
-                    </div>
-                </div>
-                <div class="mb-3 row">
-                    <label for="inputPassword" class="col-sm-3 col-form-label">Precio</label>
-                    <div class="col-sm-9">                    
-                        <input type="text" class="form-control" id ="precio" placeholder="Ingresar Precio">                              
-                    </div>
-                </div>                 
-                <div class="col-md-6">               
-                    <input type="hidden" class="form-control" id ="id">                                          
-                </div> 
+              <form method="POST" id="formEditarLote">
+                <div class="row">
+                  <div class="mb-3 col-md-6">
+                      <label for="" class="form-label">Jugador</label>                     
+                      <input type="text" readonly class="form-control" id="nombre" disabled>                      
+                  </div>
+                  <div class="mb-3 col-md-6">
+                      <label for="" class="form-label">Precio</label>                                        
+                      <input type="text" class="form-control" id ="precio" placeholder="Ingresar Precio">                                                   
+                  </div>                 
+                  <div class="col-md-6">               
+                      <input type="hidden" class="form-control" id ="id">                                          
+                  </div> 
+                </div>                              
               </form>
             </div>
             <div class="modal-footer col-md-12">
@@ -275,41 +250,19 @@ if (!isset($_SESSION['idUsuario'])) {
   <script>
 
 
-        function CargarDatos(){
-            $("#botonDirectivaActual").hide();
-            ListaTarjetasRojas();
-            ListaTarjetasAmarillas();
-            
-        }
+        function modalCobrarTarjetaAmarilla(id,nombre) {       
 
-        function modalCobrarTarjetaAmarilla(id) {       
-
-          $.ajax({
-            url: 'clases/Cl_Tarjetas.php?op=DatosTarjeta',
-            type: 'POST',
-            data: {
-                id: id
-            }, 
-            success: function(data) {
-              if(data == ""){
-                Swal.fire("Error..!", "Ha ocurrido un error al obtener los datos del miembro de la directiva", "error");      
-              }
-              else{
-                var resp= $.parseJSON(data); 
-                var nombre = resp.nombre + ' ' +resp.apellidos;
-                $("#id").val(id);           
+        
+              $("#id").val(id);           
                 $("#nombre").val(nombre);
                 ObtenerPrecioTarjetaAmarilla();
-                $('#ModalCobroTarjeta').modal('show');
-              }              
-            }            
-          })               
+                $('#ModalCobroTarjeta').modal('show');        
         }
 
         function ObtenerPrecioTarjetaAmarilla() {       
 
           $.ajax({
-            url: 'clases/Cl_Tarjetas.php?op=precioTarjetaAmarilla',
+            url: '../clases/Cl_Tarjetas.php?op=precioTarjetaAmarilla',
             type: 'POST',
             success: function(data) {
               if(data == ""){
@@ -323,33 +276,17 @@ if (!isset($_SESSION['idUsuario'])) {
           })               
         }
 
-        function modalCobrarTarjetaRoja(id) {       
-
-          $.ajax({
-            url: 'clases/Cl_Tarjetas.php?op=DatosTarjeta',
-            type: 'POST',
-            data: {
-                id: id
-            }, 
-            success: function(data) {
-              if(data == ""){
-                Swal.fire("Error..!", "Ha ocurrido un error al obtener los datos del miembro de la directiva", "error");      
-              }
-              else{
-                var resp= $.parseJSON(data); 
-                var nombre = resp.nombre + ' ' +resp.apellidos;
-                $("#id").val(id);           
+        function modalCobrarTarjetaRoja(id,nombre) {       
+       
+            $("#id").val(id);           
                 $("#nombre").val(nombre);
                 ObtenerPrecioTarjetaRoja();
-                $('#ModalCobroTarjeta').modal('show');
-              }              
-            }            
-          })               
+                $('#ModalCobroTarjeta').modal('show');        
         }
         function ObtenerPrecioTarjetaRoja() {       
 
           $.ajax({
-            url: 'clases/Cl_Tarjetas.php?op=precioTarjetaRoja',
+            url: '../clases/Cl_Tarjetas.php?op=precioTarjetaRoja',
             type: 'POST',
             success: function(data) {
               if(data == ""){
@@ -383,7 +320,7 @@ if (!isset($_SESSION['idUsuario'])) {
       function EliminarTarjeta(id) {
          
          $.ajax({
-         url: 'clases/Cl_Tarjetas.php?op=EliminarTarjetas',
+         url: '../clases/Cl_Tarjetas.php?op=EliminarTarjetas',
          type: 'POST',
          data: {
              id: id    
@@ -403,9 +340,11 @@ if (!isset($_SESSION['idUsuario'])) {
 
      function ListaTarjetasRojas(){
         
+     
         $.ajax({
-            url: 'clases/Cl_Tarjetas.php?op=ListaTarjetasRojas',
+            url: '../clases/Cl_Tarjetas.php?op=ListaTarjetasRojas',
             type: 'POST', 
+           
             success: function(data) {
                 $("#contenerdor_tabla3").html('');
                 $('#example3').DataTable().destroy();
@@ -423,7 +362,7 @@ if (!isset($_SESSION['idUsuario'])) {
      function ListaTarjetasAmarillas(){
         
         $.ajax({
-            url: 'clases/Cl_Tarjetas.php?op=ListaTarjetasAmarillas',
+            url: '../clases/Cl_Tarjetas.php?op=ListaTarjetasAmarillas',
             type: 'POST', 
             success: function(data) {
                 $("#contenerdor_tabla2").html('');
@@ -443,7 +382,7 @@ if (!isset($_SESSION['idUsuario'])) {
       var idCampeonato = $("#filIdTorneo").val();
 
         $.ajax({
-            url: 'clases/Cl_Tarjetas.php?op=FiltrarTarjetas',
+            url: '../clases/Cl_Tarjetas.php?op=FiltrarTarjetas',
             type: 'POST', 
             data:{
               tarjetas: tarjetas,
@@ -486,7 +425,7 @@ if (!isset($_SESSION['idUsuario'])) {
          }
  
           $.ajax({
-          url: 'clases/Cl_Tarjetas.php?op=RegistrarPagoTarjeta',
+          url: '../clases/Cl_Tarjetas.php?op=RegistrarPagoTarjeta',
           type: 'POST',
           data: {
              id: id,
@@ -509,28 +448,11 @@ if (!isset($_SESSION['idUsuario'])) {
 
 
 
-<!-- Option 1: Bootstrap Bundle with Popper -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-<!-- SweetAlert2 -->
-<script src="plugins/sweetalert2/sweetalert2.min.js"></script>
-<!-- Toastr -->
-<script src="plugins/toastr/toastr.min.js"></script>
-<!-- jQuery -->
-<script src="plugins/jquery/jquery.min.js"></script>
-<!-- Bootstrap 4 -->
-<script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-<!-- DataTables  & Plugins -->
-<script src="plugins/datatables/jquery.dataTables.min.js"></script>
-<script src="plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
-<script src="plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
-<script src="plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
-<script src="plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
-<script src="plugins/datatables-buttons/js/buttons.bootstrap4.min.js"></script>
-<!-- AdminLTE App -->
-<script src="dist/js/adminlte.min.js"></script>
-<!-- AdminLTE for demo purposes -->
-<script src="dist/js/demo.js"></script>
-<!-- Page specific script -->
+<?php
+      require "../template/piePagina.php";
+      ?>
+
+
 <script>
 
 $(function () {
@@ -538,13 +460,16 @@ $(function () {
       "responsive": true, "lengthChange": false, "autoWidth": false,
       "language": lenguaje_español
     }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
-  })
-
-  $(function () {
+ 
+    
     $("#example3").DataTable({
       "responsive": true, "lengthChange": false, "autoWidth": false,
       "language": lenguaje_español
     }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
+
+    ListaTarjetasRojas();
+    ListaTarjetasAmarillas();
+
   })
 
   var lenguaje_español = 

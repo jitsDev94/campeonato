@@ -387,136 +387,49 @@ if($tipo == "TotalIngresos"){
     $row = $parametro->TotalIngresos('actual');    
     $GanaciaTarjetas = $row->GanaciaTarjetas;
 
-
-     //ganacia total en incripcion
-    // $Consultar = "SELECT sum(i.inscripcion) as gananciaInscripcion FROM Inscripcion as i
-    //                 LEFT JOIN Campeonato as c on c.id = i.idCampeonato
-    //                 WHERE c.estado = 'En Curso'";
-    // $resultado = mysqli_query($conectar, $Consultar);
-    // $row = $resultado->fetch_assoc();
     $row = $parametro->totalInscripcion('actual');
     $gananciaInscripcion = $row->gananciaInscripcion;
 
-    //ganacia total en arbitraje
-    // $Consultar = "SELECT sum(pa.total) as totalArbitraje FROM PagoArbitraje as pa
-    //                 LEFT JOIN Campeonato as c on c.id = pa.idCampeonato
-    //                 WHERE c.estado = 'En Curso'";
-    // $resultado = mysqli_query($conectar, $Consultar);
-    // $row = $resultado->fetch_assoc();
+  
     $row = $parametro->totalArbitraje('actual');
     $totalArbitraje = $row->totalArbitraje;
 
-      //ganacia total en multas
-    // $Consultar = "SELECT sum(m.total) as totalMultas FROM Multa as m
-    //             LEFT JOIN Campeonato as c on c.id = m.idCampeonato
-    //             WHERE c.estado = 'En Curso' and m.estado = 'Pagado'";
-    // $resultado = mysqli_query($conectar, $Consultar);
-    // $row = $resultado->fetch_assoc();
+   
     $row = $parametro->gananciasMultas('actual');
     $totalMultas = $row->totalMultas;
 
-      //ganacia total en observaciones rechazadas
-    // $Consultar = "SELECT sum(p.precioObservacion) as totalPrecioObservacion FROM Partido as p
-    //             LEFT JOIN Campeonato as c on c.id = p.idCampeonato
-    //             where c.estado = 'En Curso' and p.estadoObservacion = 'Rechazado'";
-    // $resultado = mysqli_query($conectar, $Consultar);
-    // $row = $resultado->fetch_assoc();
+     
     $row = $parametro->gananciasObservaciones('actual');
     $totalPrecioObservacion = $row->totalPrecioObservacion;
 
-      //ganacia total en Transferencia
-    // $Consultar = "SELECT sum(precioTransferencia) as GanaciaTransferencia FROM Transferencia t  
-    //   LEFT JOIN Campeonato as c on c.id = t.idCampeonato
-    //   where c.estado = 'En Curso'";
-    // $resultado = mysqli_query($conectar, $Consultar);
-    // $row = $resultado->fetch_assoc();
+      
     $row = $parametro->totalTransferencia('actual');
     $GanaciaTransferencia = $row->GanaciaTransferencia;
 
     $total = $GanaciaTarjetas + $gananciaInscripcion + $totalArbitraje + $totalMultas + $totalPrecioObservacion + $GanaciaTransferencia;
 
 
-    //if($resultado){
+    
         echo $total;
-    // }
-    // else{
-    //     echo 'error';
-    // }   
+   
 }
 
 if($tipo == "TotalGastos"){
    
-    //gastos totales en cancha, arbitraje y gastos internos
-    // $Consultar1 = "SELECT SUM(g.total) as totales FROM Gasto as g 
-    //         LEFT JOIN Campeonato as c on c.id = g.idCampeonato
-    //         where c.estado = 'En Curso'";
-    // $resultado = mysqli_query($conectar, $Consultar1);
-    // $row = $resultado->fetch_assoc();
+   
 
     $row = $parametro->TotalGastos();    
     $totales = $row->totales;
 
-    // if($resultado){
-         echo $totales;
-    // }
-    // else{
-    //     echo 'error';
-    // }   
-}
+   
+    echo $totales;
+} 
 
 
 //total ganancia del campeonato actual
 if($tipo == "TotalGananciaActual"){
    
-    // //ganacia total en tarjeta rojas y amarillas
-    // $Consultar = "SELECT sum(precio) as GanaciaTarjetas FROM HechosPartido  as hp
-    //                 LEFT JOIN Partido as p on p.id = hp.idPartido
-    //                 LEFT JOIN Campeonato as c on c.id = p.idCampeonato
-    //                 where c.estado = 'En Curso'";
-    // $resultado = mysqli_query($conectar, $Consultar);
-    // $row = $resultado->fetch_assoc();
-    // $GanaciaTarjetas = $row['GanaciaTarjetas'];
-
-
-    //  //ganacia total en incripcion
-    // $Consultar = "SELECT sum(i.inscripcion) as gananciaInscripcion FROM Inscripcion as i
-    //                 LEFT JOIN Campeonato as c on c.id = i.idCampeonato
-    //                 WHERE c.estado = 'En Curso'";
-    // $resultado = mysqli_query($conectar, $Consultar);
-    // $row = $resultado->fetch_assoc();
-    // $gananciaInscripcion = $row['gananciaInscripcion'];
-
-    // //ganacia total en incripcion
-    // $Consultar = "SELECT sum(pa.total) as totalArbitraje FROM PagoArbitraje as pa
-    //                 LEFT JOIN Campeonato as c on c.id = pa.idCampeonato
-    //                 WHERE c.estado = 'En Curso'";
-    // $resultado = mysqli_query($conectar, $Consultar);
-    // $row = $resultado->fetch_assoc();
-    // $totalArbitraje = $row['totalArbitraje'];
-
-    //   //ganacia total en multas
-    // $Consultar = "SELECT sum(m.total) as totalMultas FROM Multa as m
-    //                 LEFT JOIN Campeonato as c on c.id = m.idCampeonato
-    //                 WHERE c.estado = 'En Curso' and m.estado = 'Pagado'";
-    // $resultado = mysqli_query($conectar, $Consultar);
-    // $row = $resultado->fetch_assoc();
-    // $totalMultas = $row['totalMultas'];
-
-    //   //ganacia total en observaciones rechazadas
-    // $Consultar = "SELECT sum(p.precioObservacion) as totalPrecioObservacion FROM Partido as p
-    //   LEFT JOIN Campeonato as c on c.id = p.idCampeonato
-    //   where c.estado = 'En Curso' and p.estadoObservacion = 'Rechazado'";
-    // $resultado = mysqli_query($conectar, $Consultar);
-    // $row = $resultado->fetch_assoc();
-    // $totalPrecioObservacion = $row['totalPrecioObservacion'];
-
-    //    //ganacia total en Transferencia
-    //    $Consultar = "SELECT sum(precioTransferencia) as GanaciaTransferencia FROM Transferencia t  
-    //    LEFT JOIN Campeonato as c on c.id = t.idCampeonato
-    //    where c.estado = 'En Curso'";
-    //  $resultado = mysqli_query($conectar, $Consultar);
-    //  $row = $resultado->fetch_assoc();
-    //  $GanaciaTransferencia = $row['GanaciaTransferencia'];
+  
 
 
     $row = $parametro->TotalIngresos('actual');    
@@ -538,75 +451,21 @@ if($tipo == "TotalGananciaActual"){
     $row = $parametro->totalTransferencia('actual');
     $GanaciaTransferencia = $row->GanaciaTransferencia;
 
-    //  //gastos totales en cancha, arbitraje y gastos internos
-    // $Consultar1 = "SELECT SUM(g.total) as totales FROM Gasto as g 
-    //         LEFT JOIN Campeonato as c on c.id = g.idCampeonato
-    //         where c.estado = 'En Curso'";
-    // $resultado = mysqli_query($conectar, $Consultar1);
-    // $row = $resultado->fetch_assoc();
-    // $totalGastos = $row['totales'];
+ 
     $row = $parametro->TotalGastos('actual');    
     $totalGastos = $row->totales;
 
     $total = $GanaciaTarjetas + $gananciaInscripcion + $totalArbitraje + $totalMultas + $totalPrecioObservacion +$GanaciaTransferencia - $totalGastos;
 
-
-    // if($resultado){
-         echo $total;
-    // }
-    // else{
-    //     echo 'error';
-    // }   
+    echo $total;
+    
 }
 
 
 //total ganancia de todos los campeonatos
 if($tipo == "TotalGanancia"){
    
-    // //ganacia total en tarjeta rojas y amarillas
-    // $Consultar = "SELECT sum(precio) as GanaciaTarjetas FROM HechosPartido";
-    // $resultado = mysqli_query($conectar, $Consultar);
-    // $row = $resultado->fetch_assoc();
-    // $GanaciaTarjetas = $row['GanaciaTarjetas'];
-
-
-    //  //ganacia total en incripcion
-    // $Consultar = "SELECT sum(inscripcion) as gananciaInscripcion FROM Inscripcion";
-    // $resultado = mysqli_query($conectar, $Consultar);
-    // $row = $resultado->fetch_assoc();
-    // $gananciaInscripcion = $row['gananciaInscripcion'];
-
-    // //ganacia total en incripcion
-    // $Consultar = "SELECT sum(total) as totalArbitraje FROM PagoArbitraje";
-    // $resultado = mysqli_query($conectar, $Consultar);
-    // $row = $resultado->fetch_assoc();
-    // $totalArbitraje = $row['totalArbitraje'];
-
-    //   //ganacia total en multas
-    // $Consultar = "SELECT sum(total) as totalMultas FROM Multa WHERE estado = 'Pagado'";          
-    // $resultado = mysqli_query($conectar, $Consultar);
-    // $row = $resultado->fetch_assoc();
-    // $totalMultas = $row['totalMultas'];
-
-    // //ganacia total en observaciones rechazadas
-    // $Consultar = "SELECT sum(precioObservacion) as totalPrecioObservacion FROM Partido where estadoObservacion = 'Rechazado'";     
-    // $resultado = mysqli_query($conectar, $Consultar);
-    // $row = $resultado->fetch_assoc();
-    // $totalPrecioObservacion = $row['totalPrecioObservacion'];
-
-    // //ganacia total en Transferencia
-    // $Consultar = "SELECT sum(precioTransferencia) as GanaciaTransferencia FROM Transferencia";
-    // $resultado = mysqli_query($conectar, $Consultar);
-    // $row = $resultado->fetch_assoc();
-    // $GanaciaTransferencia = $row['GanaciaTransferencia'];
-
-     //gastos totales en cancha, arbitraje y gastos internos
-    // $Consultar1 = "SELECT SUM(total) as totales FROM Gasto";
-    // $resultado = mysqli_query($conectar, $Consultar1);
-    // $row = $resultado->fetch_assoc();
-    // $totalGastos = $row['totales'];
-
-
+  
     $row = $parametro->TotalIngresos();    
     $GanaciaTarjetas = $row->GanaciaTarjetas;
 
@@ -630,13 +489,8 @@ if($tipo == "TotalGanancia"){
     $totalGastos = $row->totales;
 
     $total = $GanaciaTarjetas + $gananciaInscripcion + $totalArbitraje + $totalMultas + $totalPrecioObservacion + $GanaciaTransferencia - $totalGastos;
-
-
-    // if($resultado){
-         echo $total;
-    // }
-    // else{
-    //     echo 'error';
-    // }   
+   
+    echo $total;
+   
 }
 

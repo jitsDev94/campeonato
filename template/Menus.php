@@ -2,12 +2,13 @@
    require_once '../conexion/parametros.php';
 
    $parametro = new parametros();
-
+   $permiso = $parametro->verificarPermisos($_SESSION['idUsuario'],2);
    $jugadores =  $parametro->TotalJugadores($idEquipoDelegado,$idRol);    
    $Equipos =  $parametro->totalEquipos();
    $inscritos = $parametro->totalInscritos(); 
    $totalMultas = $parametro->TotalMultas($idEquipoDelegado,$idRol);
    $Observaciones = $parametro->TotalObservaciones($idEquipoDelegado,$idRol);
+   $tarjetas = $parametro->TotalTarjetas($idEquipoDelegado,$idRol,$permiso);
    ?>
    <!-- Main Sidebar Container -->
         <aside class="main-sidebar sidebar-dark-primary elevation-4">
@@ -182,7 +183,7 @@
                                         // $ejecutar = mysqli_query($conectar, $consulta) or die(mysqli_error($conectar));
                                         // $row = $ejecutar->fetch_assoc();
                                         // $tarjetas = $row['tarjetas'];
-                                        $tarjetas = 0;
+                                       
                                         ?>
                                         <p>   Tarjetas
                                         <span class="badge badge-info right"><?php echo $tarjetas;?></span>

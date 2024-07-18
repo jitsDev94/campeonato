@@ -1,10 +1,14 @@
 <?php
 
+
+
+include("../conexion/conexion.php");
+require_once '../conexion/parametros.php';
+$parametro = new parametros();
+
 session_start();
 $idRol = $_SESSION['idRol'];   
 $idEquipoDelegado = $_SESSION['idEquipo'];
-
-include("conexion.php");
 
 $tipo = $_GET["op"];
 
@@ -14,11 +18,9 @@ if($tipo == "RegistrarPagoTarjeta"){
     $precio  = $_POST["precio"];
     $id = $_POST["id"];
 
-
-        $registrar = "UPDATE HechosPartido SET  precio = $precio ,estado = 'Pagado' where id = $id";
-        $resultado = mysqli_query($conectar, $registrar);
-    
-        if($resultado){
+    $resultado = $parametro->RegistrarPagoTarjeta($id,$precio); 
+       
+        if($resultado == 'ok'){
             echo '1';
         }
         else{
@@ -61,33 +63,13 @@ if($tipo == "precioTarjetaRoja"){
 }
 
 
-if($tipo == "DatosTarjeta"){
-
-    $id = $_POST["id"];
-    $datos = array();
-    $Consultar = "SELECT j.nombre,j.apellidos FROM HechosPartido as hp 
-                    LEFT JOIN Jugador as j on j.id = hp.idJugador 
-                    where hp.id = $id";
-    $resultado = mysqli_query($conectar, $Consultar);
-    $datos = mysqli_fetch_assoc($resultado);
-
-    if($resultado){
-        echo json_encode($datos,JSON_UNESCAPED_UNICODE);
-    }
-    else{
-        echo 'error';
-    }   
-}
-
-
 if($tipo == "EliminarTarjetas"){
 
     $id  = $_POST["id"];
-    
-        $registrar = "UPDATE HechosPartido SET estado = 'Eliminado' where id = $id";
-        $resultado = mysqli_query($conectar, $registrar);
-    
-        if($resultado){
+           
+        $resultado = $parametro->EliminarTarjetas($id); 
+       
+        if($resultado == 'ok'){       
             echo '1';
         }
         else{
@@ -97,62 +79,42 @@ if($tipo == "EliminarTarjetas"){
 
 
 if($tipo == "ListaTarjetasRojas"){
-
-    $condicion = "";
-
-    if($idRol == 3){
-        $condicion = "and e.id = $idEquipoDelegado";
-    }
-    $consultar = "SELECT hp.id as idHp, j.nombre,j.apellidos,hp.Equipo,p.fechaPartido FROM HechosPartido as hp 
-                LEFT JOIN Hechos as h on h.id = hp.idHecho 
-                LEFT JOIN Jugador as j on j.id = hp.idJugador 
-                LEFT JOIN Partido as p on p.id = hp.idPartido
-                LEFT JOIN Campeonato as c on c.id = p.idCampeonato
-                LEFT JOIN Equipo as e on e.nombreEquipo = hp.Equipo
-                where hp.estado = 'Pendiente' and h.nombreHecho = 'Tarjeta Roja' and c.estado = 'En Curso' $condicion
-                order by p.fechaPartido desc";
-    $resultado1 = mysqli_query($conectar, $consultar);
+   
+    $permisos = $parametro->verificarPermisos($_SESSION['idUsuario'],'2');
+    $resultado1 = $parametro->ListaTarjetasRojas($idRol,$idEquipoDelegado,$permisos);    
 
         $tabla = "";
-        if($idRol == 3){
-            $tabla .= '<table id="example31" class="table table-bordered table-striped"  method="POST">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Nombre</th>
-                    <th>Equipo</th>
-                    <th>Fecha</th>    
-                </tr>
-            </thead>
-            <tbody > ';
-        }
-        else{
+              
             $tabla .= '<table id="example3" class="table table-bordered table-striped"  method="POST">
             <thead>
                 <tr>
                     <th>#</th>
                     <th>Nombre</th>
                     <th>Equipo</th>
-                    <th width="80px">Fecha</th>
-                    <th width="65px">Acción</th>      
-                </tr>
+                    <th width="80px">Fecha</th>';
+                    if($parametro->verificarPermisos($_SESSION['idUsuario'],'2') > 0){
+             $tabla .= '        <th width="65px">Acción</th>   ';   
+                    }
+            $tabla .= '  </tr>
             </thead>
             <tbody > ';
-        }
+        
       
      
         $cont = 0;
-        if ($resultado1) {
-            while ($listado = mysqli_fetch_array($resultado1)) {
+        if ($resultado1->RowCount() > 0) {
+            while (!$resultado1->EndOfSeek()) {
+                $listado = $resultado1->Row();
+                $nombreCompleto = $listado->nombre . " " . $listado->apellidos;
                 $cont++;
                 $tabla .= "<tr>";
                 $tabla .= "<td data-title=''>" .  $cont . "</td>";
-                $tabla .= "<td data-title=''>" . $listado['nombre'] . " " . $listado['apellidos'] . "</td>";
-                $tabla .= "<td data-title=''>" . $listado['Equipo'] . "</td>";
-                $tabla .= "<td data-title=''>" . $listado['fechaPartido'] . "</td>";
-                if($idRol != 3){
-                $tabla .= "<td data-title=''><button type='button' class='btn btn-primary btn-sm checkbox-toggle' onclick='modalCobrarTarjetaRoja(".$listado['idHp'].")'><i title= 'Regitrar Pago' class='fas fa-hand-holding-usd'></i></button>";      
-                $tabla .= " <button type='button' class='btn btn-danger btn-sm checkbox-toggle' onclick='ConfirmarEliminar(".$listado['id'].")'><i title= 'Eliminar' class='fas fa-trash'></i></button>";
+                $tabla .= "<td data-title=''>" . $listado->nombre . " " . $listado->apellidos . "</td>";
+                $tabla .= "<td data-title=''>" . $listado->Equipo . "</td>";
+                $tabla .= "<td data-title=''>" . $listado->fechaPartido . "</td>";
+                if($parametro->verificarPermisos($_SESSION['idUsuario'],'2') > 0){
+                $tabla .= "<td data-title=''><button type='button' class='btn btn-primary btn-sm checkbox-toggle' onclick='modalCobrarTarjetaRoja(".chr(34). $listado->idHp.chr(34).",".chr(34). $nombreCompleto . chr(34).")'><i title= 'Regitrar Pago' class='fas fa-hand-holding-usd'></i></button>";      
+                $tabla .= " <button type='button' class='btn btn-danger btn-sm checkbox-toggle' onclick='ConfirmarEliminar(".$listado->idHp.")'><i title= 'Eliminar' class='fas fa-trash'></i></button>";
                 }
                 $tabla .= "</tr>";
             }
@@ -167,62 +129,44 @@ if($tipo == "ListaTarjetasRojas"){
 
 if($tipo == "ListaTarjetasAmarillas"){
 
-    $condicion = "";
-
-    if($idRol == 3){
-        $condicion = "and e.id = $idEquipoDelegado";
-    }
-
-    $consultar = "SELECT hp.id as idHp, j.nombre,j.apellidos,hp.Equipo,p.fechaPartido FROM HechosPartido as hp 
-                    LEFT JOIN Hechos as h on h.id = hp.idHecho 
-                    LEFT JOIN Jugador as j on j.id = hp.idJugador 
-                    LEFT JOIN Partido as p on p.id = hp.idPartido
-                    LEFT JOIN Campeonato as c on c.id = p.idCampeonato
-                    LEFT JOIN Equipo as e on e.nombreEquipo = hp.Equipo
-                    where hp.estado = 'Pendiente' and h.nombreHecho = 'Tarjeta Amarilla' and c.estado = 'En Curso' $condicion
-                    order by p.fechaPartido desc";
-    $resultado1 = mysqli_query($conectar, $consultar);
+    $permisos = $parametro->verificarPermisos($_SESSION['idUsuario'],'2');
+    $resultado1 = $parametro->ListaTarjetasAmarillas($idRol,$idEquipoDelegado,$permisos);  
+   
 
         $tabla = "";
-        if($idRol == 3){
-            $tabla .= '<table id="example21" class="table table-bordered table-striped"  method="POST">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Nombre</th>
-                    <th>Equipo</th>
-                    <th>Fecha</th> 
-                </tr>
-            </thead>
-            <tbody > ';
-        }
-        else{
+       
             $tabla .= '<table id="example2" class="table table-bordered table-striped"  method="POST">
             <thead>
                 <tr>
+                     <tr>
                     <th>#</th>
                     <th>Nombre</th>
                     <th>Equipo</th>
-                    <th width="80px">Fecha</th>
-                    <th width="65px">Acción</th>    
+                    <th width="80px">Fecha</th>';
+                    if($parametro->verificarPermisos($_SESSION['idUsuario'],'2') > 0){
+             $tabla .= '<th width="65px">Acción</th>   ';   
+                    }
+            $tabla .= '</tr>
                 </tr>
             </thead>
             <tbody > ';
-        }
+        
       
      
         $cont = 0;
-        if ($resultado1) {
-            while ($listado = mysqli_fetch_array($resultado1)) {
+        if ($resultado1->RowCount() > 0) {
+            while (!$resultado1->EndOfSeek()) {
+                $listado = $resultado1->Row();
+                $nombreCompleto = $listado->nombre . " " . $listado->apellidos;
                 $cont++;
                 $tabla .= "<tr>";
                 $tabla .= "<td data-title=''>" .  $cont . "</td>";
-                $tabla .= "<td data-title=''>" . $listado['nombre'] . " " . $listado['apellidos'] . "</td>";
-                $tabla .= "<td data-title=''>" . $listado['Equipo'] . "</td>";
-                $tabla .= "<td data-title=''>" . $listado['fechaPartido'] . "</td>";
-                if($idRol != 3){
-                $tabla .= "<td data-title=''><button type='button' class='btn btn-primary btn-sm checkbox-toggle' onclick='modalCobrarTarjetaAmarilla(".$listado['idHp'].")'><i title= 'Regitrar Pago' class='fas fa-hand-holding-usd'></i></button>";      
-                $tabla .= " <button type='button' class='btn btn-danger btn-sm checkbox-toggle' onclick='ConfirmarEliminar(".$listado['id'].")'><i title= 'Eliminar' class='fas fa-trash'></i></button>";
+                $tabla .= "<td data-title=''>" . $listado->nombre . " " . $listado->apellidos . "</td>";
+                $tabla .= "<td data-title=''>" . $listado->Equipo . "</td>";
+                $tabla .= "<td data-title=''>" . $listado->fechaPartido . "</td>";
+                if($parametro->verificarPermisos($_SESSION['idUsuario'],'2') > 0){
+                $tabla .= "<td data-title=''><button type='button' class='btn btn-primary btn-sm checkbox-toggle' onclick='modalCobrarTarjetaAmarilla(".chr(34). $listado->idHp.chr(34).",".chr(34). $nombreCompleto . chr(34).")'><i title= 'Regitrar Pago' class='fas fa-hand-holding-usd'></i></button>";      
+                $tabla .= " <button type='button' class='btn btn-danger btn-sm checkbox-toggle' onclick='ConfirmarEliminar(".$listado->idHp.")'><i title= 'Eliminar' class='fas fa-trash'></i></button>";
                 }
                 $tabla .= "</tr>";
             }
@@ -243,18 +187,18 @@ if($tipo == "FiltrarTarjetas"){
        
     $condicion = "";
 
-    if($idRol == 3){
+    if($idRol != 1 && $idRol != 2){
         $condicion = "and e.id = $idEquipoDelegado";
     }
 
 
-    $consultar = "SELECT hp.id as idHp, j.nombre,j.apellidos,hp.Equipo,p.fechaPartido,c.nombre as campeonato,hp.estado FROM HechosPartido as hp 
-                LEFT JOIN Hechos as h on h.id = hp.idHecho 
+    $consultar = "SELECT hp.id as idHp, j.nombre,j.apellidos,hp.Equipo,p.fechaPartido,c.nombre as campeonato,hp.estado FROM acontecimientopartido as hp 
+                LEFT JOIN acontecimiento as h on h.id = hp.idAcontecimiento 
                 LEFT JOIN Jugador as j on j.id = hp.idJugador 
                 LEFT JOIN Partido as p on p.id = hp.idPartido
                 LEFT JOIN Campeonato as c on c.id = p.idCampeonato
                 LEFT JOIN Equipo as e on e.nombreEquipo = hp.Equipo
-                where h.nombreHecho = '$tarjetas' and p.idCampeonato = $idCampeonato $condicion
+                where h.nombreAcontecimiento  = '$tarjetas' and p.idCampeonato = $idCampeonato $condicion
                 order by p.fechaPartido desc";
     $resultado1 = mysqli_query($conectar, $consultar);
   
