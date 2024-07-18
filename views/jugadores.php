@@ -67,7 +67,7 @@ if (!isset($_SESSION['idUsuario'])) {
       </div><!-- /.container-fluid -->
     </div>
  
-      <?php if($idRol != 3){ ?>
+      <?php if($idRol == 1 || $idRol == 2){ ?>
         <section class="col-lg-12 col-md-12"><br>          
             <div id="accordion">
                 <div class="card info-box shadow-lg">
@@ -367,7 +367,9 @@ if (!isset($_SESSION['idUsuario'])) {
         
       var nombre = $("#filNombre").val();    
       var idEquipo = $("#filEquipo").val();
-
+      var  idRol = <?php  echo $idRol; ?> ;
+      var  idEquipoDelegado = <?php  echo $idEquipoDelegado; ?> ;
+     
       $("#contenerdor_tabla").html('<div class="loading"> <center><i class="fa fa-spinner fa-pulse fa-5x" style="color:#3c8dbc"></i><br/>Cargando Jugadores ...</center></div>');
 
         $.ajax({
@@ -375,7 +377,9 @@ if (!isset($_SESSION['idUsuario'])) {
             type: 'POST', 
             data:{
               nombre: nombre,
-              idEquipo: idEquipo
+              idEquipo: idEquipo,
+              idEquipoDelegado: idEquipoDelegado,
+              idRol: idRol
             },
             success: function(data) {
                 $("#contenerdor_tabla").html('');

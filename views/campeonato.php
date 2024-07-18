@@ -1,6 +1,9 @@
 <?php
 
-include 'clases/conexion.php';
+// include 'clases/conexion.php';
+require_once '../conexion/parametros.php';
+$parametro = new parametros();
+
 session_start();
 
 if (!isset($_SESSION['idUsuario'])) {
@@ -18,26 +21,10 @@ if (!isset($_SESSION['idUsuario'])) {
 
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Torneo</title>
-  <link rel="icon" type="image/jpg" href="img/image.png">
-  <!-- Google Font: Source Sans Pro -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
-  <!-- Ionicons -->
-  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
-  <!-- DataTables -->
-  <link rel="stylesheet" href="plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
-  <link rel="stylesheet" href="plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
-  <link rel="stylesheet" href="plugins/datatables-buttons/css/buttons.bootstrap4.min.css">
-  <!-- Theme style -->
-  <link rel="stylesheet" href="dist/css/adminlte.min.css">
-  <!-- SweetAlert2 -->
-  <link rel="stylesheet" href="plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css">
-  <!-- Toastr -->
-  <link rel="stylesheet" href="plugins/toastr/toastr.min.css">
-
+  <meta name="viewport" content="width=device-width, initial-scale=1">  
+  <?php
+    require "../template/encabezado.php";
+    ?>
   <style>
     .card {
       border-top-color: cornflowerblue;
@@ -47,15 +34,15 @@ if (!isset($_SESSION['idUsuario'])) {
 
 </head>
 
-<body class="hold-transition sidebar-mini layout-fixed sidebar-closed sidebar-collapse" onload="CargarDatos();">
+<body class="hold-transition sidebar-mini layout-fixed sidebar-closed sidebar-collapse">
   <div class="wrapper">
 
-    <?php
-    require "Navegador.php";
+  <?php  
+        require "../template/Navegador.php";
     ?>
 
-    <?php
-    require "Menus.php";
+    <?php  
+        require "../template/Menus.php";
     ?>
 
     <div class="content-wrapper">
@@ -167,21 +154,16 @@ if (!isset($_SESSION['idUsuario'])) {
                           <div class="form-group">
                             <label for="inputCasa" class="form-label"><b>Nombre Torneo</b></label>
                             <select class="form-control" id="filCampeonato">
-                              <option value="0" selected disabled>Seleccionar Torneo...</option>
+                            
                               <?php
-                              $consultar = "SELECT * FROM Campeonato where estado = 'Concluido'";
-                              $resultado1 = mysqli_query($conectar, $consultar);
-                              while ($listado = mysqli_fetch_array($resultado1)) {
-                              ?>
-                                <option value="<?php echo $listado['id']; ?>"><?php echo $listado['nombre']; ?></option>
-                              <?php } ?>
+                                $parametro->DropDownListarTorneos();?>
                             </select>
                           </div>
                         </div>
                         <div class="col-md-3">
                           <div style="margin-top:32px;">
                             <button type="button" class="btn btn-primary" id="btn_add1" onclick="FiltrarDirectivas()"><i class="fas fa-filter"></i> Filtrar</button>
-                            <button type="button" class="btn btn-secondary" id="botonDirectivaActual" onclick="ListaDirectiva()"> Mostrar Actual</button>
+                            <!-- <button type="button" class="btn btn-secondary" id="botonDirectivaActual" onclick="ListaDirectiva()"> Mostrar Actual</button> -->
                           </div>
                         </div>
                       </div>
@@ -282,13 +264,9 @@ if (!isset($_SESSION['idUsuario'])) {
       <!-- /.control-sidebar -->
     </div>
 
-    <?php $año = date('Y'); ?>
-    <footer class="main-footer">
-      <div class="float-right d-none d-sm-block">
-        <b>Version</b> 1.0
-      </div>
-      <strong>Copyright &copy; Software Bolivia <?php echo $año ?></strong> Todos los derechos reservados.
-    </footer>
+    <?php
+      require "../template/footer.php";
+      ?>
 
   </div>
   <!-- ./wrapper -->
@@ -351,7 +329,7 @@ if (!isset($_SESSION['idUsuario'])) {
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h4 class="modal-title" id="tituloDirectiva"><i class="nav-icon fas fa-briefcase"></i> Nueva Directiva</h4>
+          <h4 class="modal-title" id="tituloDirectiva">Nueva Directiva</h4>
           <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -382,12 +360,8 @@ if (!isset($_SESSION['idUsuario'])) {
                 <select class="form-control shadow-lg" id="idCampeonato">
                   <!-- <option value="0" selected disabled>Seleccionar...</option> -->
                   <?php
-                  $consultar = "SELECT * FROM Campeonato where estado = 'En Curso'";
-                  $resultado1 = mysqli_query($conectar, $consultar);
-                  while ($listado = mysqli_fetch_array($resultado1)) {
+                    $parametro->DropDownTraerUltimoTorneo();
                   ?>
-                    <option value="<?php echo $listado['id']; ?>"><?php echo $listado['nombre']; ?></option>
-                  <?php } ?>
                 </select>
               </div>
             </div>
@@ -410,22 +384,12 @@ if (!isset($_SESSION['idUsuario'])) {
   <!-- /.modal -->
 
   <script>
-    function CargarDatos() {
-
-      ListaTorneo();
-      ListaDirectiva();
-
-      TotalIngresos();
-      TotalGastos();
-      TotalGanacias();
-      Totales();
-    }
-
+    
 
     function TotalIngresos() {
 
       $.ajax({
-        url: 'clases/Cl_Campeonato.php?op=TotalIngresos',
+        url: '../clases/Cl_Campeonato.php?op=TotalIngresos',
         type: 'POST',
         success: function(data) {
           if (data == "error") {
@@ -448,7 +412,7 @@ if (!isset($_SESSION['idUsuario'])) {
     function TotalGastos() {
 
       $.ajax({
-        url: 'clases/Cl_Campeonato.php?op=TotalGastos',
+        url: '../clases/Cl_Campeonato.php?op=TotalGastos',
         type: 'POST',
         success: function(data) {
 
@@ -471,7 +435,7 @@ if (!isset($_SESSION['idUsuario'])) {
     function TotalGanacias() {
 
       $.ajax({
-        url: 'clases/Cl_Campeonato.php?op=TotalGananciaActual',
+        url: '../clases/Cl_Campeonato.php?op=TotalGananciaActual',
         type: 'POST',
         success: function(data) {
           if (data == "error") {
@@ -494,7 +458,7 @@ if (!isset($_SESSION['idUsuario'])) {
     function Totales() {
 
       $.ajax({
-        url: 'clases/Cl_Campeonato.php?op=TotalGanancia',
+        url: '../clases/Cl_Campeonato.php?op=TotalGanancia',
         type: 'POST',
         success: function(data) {
           if (data == "error") {
@@ -531,7 +495,7 @@ if (!isset($_SESSION['idUsuario'])) {
 
     function ReiniciarDirectiva() {
       $.ajax({
-        url: 'clases/Cl_Campeonato.php?op=ReiniciarDirectiva',
+        url: '../clases/Cl_Campeonato.php?op=ReiniciarDirectiva',
         type: 'POST',
         success: function(data) {
           if (data == "2") {
@@ -548,7 +512,7 @@ if (!isset($_SESSION['idUsuario'])) {
 
     function ModalRegistrarTorneo() {
       $.ajax({
-        url: 'clases/Cl_Campeonato.php?op=TorneoFinalizado',
+        url: '../clases/Cl_Campeonato.php?op=TorneoFinalizado',
         type: 'POST',
         success: function(data) {
 
@@ -605,7 +569,7 @@ if (!isset($_SESSION['idUsuario'])) {
     function modalEditarDirectiva(id) {
 
       $.ajax({
-        url: 'clases/Cl_Campeonato.php?op=DatosMiembrosDirectiva',
+        url: '../clases/Cl_Campeonato.php?op=DatosMiembrosDirectiva',
         type: 'POST',
         data: {
           id: id
@@ -649,7 +613,7 @@ if (!isset($_SESSION['idUsuario'])) {
 
 
       $.ajax({
-        url: 'clases/Cl_Campeonato.php?op=EditarMiembroDirectiva',
+        url: '../clases/Cl_Campeonato.php?op=EditarMiembroDirectiva',
         type: 'POST',
         data: {
           id: id,
@@ -664,8 +628,10 @@ if (!isset($_SESSION['idUsuario'])) {
             Swal.fire("Error..!", "Ha ocurrido un error al editar a miembro de la directiva", "error");
           } else {
             if (vs == 1) {
+              $('#ModalRegistrarDirectiva').modal('hide');
               Swal.fire('Exito!', 'Datos editado correctamente', 'success');
-              location.reload();
+              ListaDirectiva();
+              //location.reload();
             }
           }
         },
@@ -696,7 +662,7 @@ if (!isset($_SESSION['idUsuario'])) {
     function EliminarDirectiva(id) {
 
       $.ajax({
-        url: 'clases/Cl_Campeonato.php?op=EliminarDirectiva',
+        url: '../clases/Cl_Campeonato.php?op=EliminarDirectiva',
         type: 'POST',
         data: {
           id: id
@@ -706,8 +672,10 @@ if (!isset($_SESSION['idUsuario'])) {
             Swal.fire("Error..!", "ha ocurrido un error al deshabilitar", "error");
           } else {
             if (vs == 1) {
+              
               Swal.fire('Exito..!', 'Eliminado correctamente.', 'success');
-              location.reload();
+              ListaDirectiva();
+              //location.reload();
             }
           }
         }
@@ -717,10 +685,16 @@ if (!isset($_SESSION['idUsuario'])) {
     function ListaDirectiva() {
 
       $("#contenerdor_tabla2").html('<div class="loading"> <center><i class="fa fa-spinner fa-pulse fa-5x" style="color:#3c8dbc"></i><br/>Cargando Directiva ...</center></div>');
+      var nombre = $("#filNombre").val();
+      var idCampeonato = $("#filCampeonato").val();
 
       $.ajax({
-        url: 'clases/Cl_Campeonato.php?op=ListaDirectiva',
+        url: '../clases/Cl_Campeonato.php?op=ListaDirectiva',
         type: 'POST',
+        data: {
+          nombre: nombre,
+          idCampeonato: idCampeonato
+        },
         success: function(data) {
           $("#contenerdor_tabla2").html('');
           $('#example2').DataTable().destroy();
@@ -736,7 +710,7 @@ if (!isset($_SESSION['idUsuario'])) {
       $("#contenerdor_tabla3").html('<div class="loading"> <center><i class="fa fa-spinner fa-pulse fa-5x" style="color:#3c8dbc"></i><br/>Cargando Torneos ...</center></div>');
 
       $.ajax({
-        url: 'clases/Cl_Campeonato.php?op=ListaTorneo',
+        url: '../clases/Cl_Campeonato.php?op=ListaTorneo',
         type: 'POST',
         success: function(data) {
           $("#contenerdor_tabla3").html('');
@@ -761,7 +735,7 @@ if (!isset($_SESSION['idUsuario'])) {
         
 
       $.ajax({
-        url: 'clases/Cl_Campeonato.php?op=FiltrarDirectivas',
+        url: '../clases/Cl_Campeonato.php?op=ListaDirectiva',
         type: 'POST',
         data: {
           nombre: nombre,
@@ -816,7 +790,7 @@ if (!isset($_SESSION['idUsuario'])) {
      
 
       $.ajax({
-        url: 'clases/Cl_Campeonato.php?op=RegistrarDirectiva',
+        url: '../clases/Cl_Campeonato.php?op=RegistrarDirectiva',
         type: 'POST',
         data: {
           nombre: nombre,
@@ -831,8 +805,10 @@ if (!isset($_SESSION['idUsuario'])) {
             Swal.fire("Error..!", "Ha ocurrido un error al registrar la direciva", "error");
           } else {
             if (vs == 1) {
+              $('#ModalRegistrarDirectiva').modal('hide');
               Swal.fire('Exito!', 'Encargado registrado correctamente', 'success');
-              location.reload();
+              ListaDirectiva();
+              //location.reload();
             }
           }
         },
@@ -860,7 +836,7 @@ if (!isset($_SESSION['idUsuario'])) {
  
 
       $.ajax({
-        url: 'clases/Cl_Campeonato.php?op=RegistrarTorneo',
+        url: '../clases/Cl_Campeonato.php?op=RegistrarTorneo',
         type: 'POST',
         data: {
           nombre: nombre,
@@ -893,31 +869,21 @@ if (!isset($_SESSION['idUsuario'])) {
     }
   </script>
 
-
-
-  <!-- Option 1: Bootstrap Bundle with Popper -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-  <!-- SweetAlert2 -->
-  <script src="plugins/sweetalert2/sweetalert2.min.js"></script>
-  <!-- Toastr -->
-  <script src="plugins/toastr/toastr.min.js"></script>
-  <!-- jQuery -->
-  <script src="plugins/jquery/jquery.min.js"></script>
-  <!-- Bootstrap 4 -->
-  <script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-  <!-- DataTables  & Plugins -->
-  <script src="plugins/datatables/jquery.dataTables.min.js"></script>
-  <script src="plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
-  <script src="plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
-  <script src="plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
-  <script src="plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
-  <script src="plugins/datatables-buttons/js/buttons.bootstrap4.min.js"></script>
-  <!-- AdminLTE App -->
-  <script src="dist/js/adminlte.min.js"></script>
-  <!-- AdminLTE for demo purposes -->
-  <script src="dist/js/demo.js"></script>
-  <!-- Page specific script -->
+<?php
+      require "../template/piePagina.php";
+      ?>
   <script>
+    $(function () {
+        ListaTorneo();
+          ListaDirectiva();
+
+          TotalIngresos();
+          TotalGastos();
+          TotalGanacias();
+          Totales();
+    })
+
+    
     var lenguaje_español = {
       "processing": "Procesando...",
       "lengthMenu": "Mostrar _MENU_ registros",

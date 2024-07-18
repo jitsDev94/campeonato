@@ -49,6 +49,8 @@ if($tipo == "ListaJugadores"){
 
     $nombre = @$_POST["nombre"];
     $idEquipo = @$_POST["idEquipo"];
+    $idRol = @$_POST["idRol"];
+    $idEquipoDelegado = @$_POST["idEquipoDelegado"];
 
     $resultado1 = $parametro->ListaJugadores($idEquipoDelegado,$idRol,$nombre,$idEquipo);    
   

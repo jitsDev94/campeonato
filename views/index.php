@@ -67,7 +67,7 @@ $anunciosVigentes = $parametro->listarAnunciosVigentes();
 
       <?php
       
-       if ($parametro->verificarPermisos($_SESSION['idUsuario'],'13') > 0) {
+       if ($parametro->verificarPermisos($_SESSION['idUsuario'],'26') > 0) {
        
        ?>
            <div class="alert alert-primary alert-dismissible fade show  ml-3 mr-3" role="alert">
@@ -96,8 +96,9 @@ $anunciosVigentes = $parametro->listarAnunciosVigentes();
           ?>
           <div class="row ml-1 mr-1">
           <?php 
+           $anunciosVigentes->MoveFirst();
            while (!$anunciosVigentes->EndOfSeek()) {    
-            $anunciosVigentes->MoveFirst();
+            
             $listado = $anunciosVigentes->Row();
             ?>
       

@@ -439,6 +439,75 @@ class parametros
     }
 
 
+    public function ReiniciarDirectiva($id='')
+	{       
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return 'error';
+        }           
+       
+        $condicion = '';
+        if($id!= ''){
+            $condicion = " and id= $id";
+        }
+        $consulta = "UPDATE Directiva SET estado = 'Concluido' where 1=1 $condicion";
+
+           
+        if (!$db->Query($consulta)) {
+            $db->Kill();
+            return 'error';
+        }
+       
+        return 'ok';
+      
+    }
+
+    public function EditarMiembroDirectiva($id,$nombre,$fecha,$cargo)
+	{       
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return 'error';
+        }           
+       
+        $consulta = "UPDATE Directiva SET nombre = '$nombre', cargo = '$cargo', fechaNombramiento ='$fecha' where id = $id";
+
+           
+        if (!$db->Query($consulta)) {
+            $db->Kill();
+            return 'error';
+        }
+       
+        return 'ok';
+      
+    }
+
+
+    public function RegistrarDirectiva($nombre,$fecha,$cargo,$idCampeonato)
+	{       
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return 'error';
+        }           
+        $gestion = explode("-", $fecha); 
+
+        $consulta = "INSERT INTO Directiva values(null,'$nombre','$cargo',$gestion[0],'$fecha',$idCampeonato,'Vigente')";
+
+           
+        if (!$db->Query($consulta)) {
+            $db->Kill();
+            return 'error';
+        }
+       
+        return 'ok';
+      
+    }
+
     public function EstadoPermiso($id, $estado)
 	{       
 
@@ -589,7 +658,7 @@ class parametros
         }
 
         $condicion = "";
-        if($idRol == 3){
+        if($idRol != 1 && $idRol != 2){
             $condicion = "and p.idEquipoObservado = $idEquipoDelegado";
         }                                 
         $consulta = "SELECT COUNT(p.id) as tarjetas 
@@ -615,7 +684,7 @@ class parametros
         }
 
         $condicion = "";
-        if($idRol == 3){
+        if($idRol != 1 && $idRol != 2){
             $condicion = "and i.idEquipo = $idEquipoDelegado";
         }                                 
         $consulta = "SELECT count(m.motivoMulta) as totalMultas FROM Multa as m
@@ -641,7 +710,7 @@ class parametros
         }
 
         $condicion = "";
-        if($idRol == 3){
+        if($idRol != 1 && $idRol != 2){
             $condicion = "where idEquipo = $idEquipoDelegado";
         }                                 
         $consulta = "SELECT count(id) as totalJugadores FROM Jugador $condicion";
@@ -759,7 +828,10 @@ class parametros
 		if ($db->Error()) $db->Kill();
 		if (!$db->Query($consulta)) $db->Kill();
 		$db->MoveFirst();
-		echo "<option value='0'>Seleccionar</option>";
+       
+        echo "<option value='0'>Seleccionar</option>";
+        
+		
 		while (!$db->EndOfSeek()) {
 			$row = $db->Row();		
 			echo "<option value='" . $row->id . "'>" . $row->nombre . "</option>";
@@ -767,6 +839,7 @@ class parametros
     }
 
 
+    
     public function DropDownListarTorneos()
 	{      
 
@@ -858,6 +931,21 @@ class parametros
 			$row = $db->Row();
 		
 			echo "<option value='" . $row->id . "'>" . $row->nombreAcontecimiento . "</option>";
+		}      
+    }
+
+    public function DropDownTraerUltimoTorneo()
+	{       
+
+        $db = new MySQL();
+		if ($db->Error()) $db->Kill();
+		if (!$db->Query("SELECT * FROM Campeonato where estado = 'En Curso'")) $db->Kill();
+		$db->MoveFirst();
+		
+		while (!$db->EndOfSeek()) {
+			$row = $db->Row();
+		
+			echo "<option value='" . $row->id . "'>" . $row->nombre . "</option>";
 		}      
     }
 
@@ -1021,6 +1109,237 @@ class parametros
         }
        
        return $respuesta ;
+      
+    }
+
+    public function validarCampeonExistente()   
+	{       
+
+        $db = new MySQL();
+		if ($db->Error()) $db->Kill();
+        
+    
+        $consulta="SELECT * FROM equipocampeon ec
+        LEFT join inscripcion i on i.id = ec.id
+        LEFT join campeonato c on c.id = i.idCampeonato
+        where c.estado = 'En Curso'";
+      
+		if (!$db->Query($consulta)) $db->Kill();
+		
+        return $db;
+      
+    }
+
+    public function TotalGastos($estado ='')    
+	{       
+
+        $db = new MySQL();
+		if ($db->Error()) $db->Kill();
+        
+        $condicion = '';
+        if($estado != ''){
+            $condicion = " and c.estado = 'En Curso'";
+        }
+            
+        $consulta="SELECT SUM(g.total) as totales FROM Gasto as g 
+            LEFT JOIN Campeonato as c on c.id = g.idCampeonato
+            where 1=1 $condicion";
+      
+		if (!$db->Query($consulta)) $db->Kill();
+		
+        return $db->row();
+      
+    }
+
+    public function totalTransferencia($estado ='') 
+	{       
+
+        $db = new MySQL();
+		if ($db->Error()) $db->Kill();
+        
+        $condicion = '';
+        if($estado != ''){
+            $condicion = " and c.estado = 'En Curso'";
+        }
+            
+        $consulta="SELECT sum(precioTransferencia) as GanaciaTransferencia FROM Transferencia t  
+        LEFT JOIN Campeonato as c on c.id = t.idCampeonato
+        where 1=1 $condicion";
+      
+		if (!$db->Query($consulta)) $db->Kill();
+		
+        return $db->row();
+      
+    }
+
+    public function gananciasObservaciones($estado ='') 
+	{       
+
+        $db = new MySQL();
+		if ($db->Error()) $db->Kill();
+        
+        $condicion = '';
+        if($estado != ''){
+            $condicion = " and c.estado = 'En Curso'";
+        }
+            
+        $consulta="SELECT sum(p.precioObservacion) as totalPrecioObservacion FROM Partido as p
+                 LEFT JOIN Campeonato as c on c.id = p.idCampeonato
+                 where p.estadoObservacion = 'Rechazado' $condicion";
+      
+		if (!$db->Query($consulta)) $db->Kill();
+		
+        return $db->row();
+      
+    }
+
+    public function gananciasMultas($estado ='')    
+	{       
+
+        $db = new MySQL();
+		if ($db->Error()) $db->Kill();
+        
+        $condicion = '';
+        if($estado != ''){
+            $condicion = " and c.estado = 'En Curso'";
+        }
+            
+        $consulta="SELECT sum(m.total) as totalMultas FROM Multa as m
+                 LEFT JOIN Campeonato as c on c.id = m.idCampeonato
+                 WHERE m.estado = 'Pagado' $condicion";
+              
+		if (!$db->Query($consulta)) $db->Kill();
+		
+        return $db->row();
+      
+    }
+
+
+    public function totalArbitraje($estado ='') 
+	{       
+
+        $db = new MySQL();
+		if ($db->Error()) $db->Kill();
+        
+        $condicion = '';
+        if($estado != ''){
+            $condicion = " and c.estado = 'En Curso'";
+        }
+            
+        $consulta="SELECT sum(pa.total) as totalArbitraje FROM PagoArbitraje as pa
+                LEFT JOIN Campeonato as c on c.id = pa.idCampeonato
+                WHERE 1=1 $condicion";
+      
+		if (!$db->Query($consulta)) $db->Kill();
+		
+        return $db->row();
+      
+    }
+
+   
+
+    public function totalInscripcion($estado ='')   
+	{       
+
+        $db = new MySQL();
+		if ($db->Error()) $db->Kill();
+        
+        $condicion = '';
+        if($estado != ''){
+            $condicion = " and c.estado = 'En Curso'";
+        }
+            
+        $consulta="SELECT sum(i.inscripcion) as gananciaInscripcion FROM Inscripcion as i
+                    LEFT JOIN Campeonato as c on c.id = i.idCampeonato
+                    WHERE 1=1 $condicion";
+      
+		if (!$db->Query($consulta)) $db->Kill();
+		
+        return $db->row();
+      
+    }
+
+    public function TotalIngresos($estado ='')  
+	{       
+
+        $db = new MySQL();
+		if ($db->Error()) $db->Kill();
+        
+        $condicion = '';
+        if($estado != ''){
+            $condicion = " and c.estado = 'En Curso'";
+        }
+            
+        $consulta="SELECT sum(precio) as GanaciaTarjetas FROM acontecimientopartido  as hp
+                    LEFT JOIN Partido as p on p.id = hp.idPartido
+                    LEFT JOIN campeonato as c on c.id = p.idCampeonato
+                    where c.estado = 'En Curso'";
+      
+		if (!$db->Query($consulta)) $db->Kill();
+		
+        return $db->row();
+      
+    }
+
+    public function ListaDirectiva($nombre,$idCampeonato)
+	{       
+
+        $db = new MySQL();
+		if ($db->Error()) $db->Kill();
+
+        $condicion = '';
+        if($nombre != ''){
+            $condicion .= " and d.nombre like '%$nombre%'";
+        }
+        if($idCampeonato != '0'){
+            $condicion .= " and idCampeonato = $idCampeonato";
+        }
+        if($idCampeonato == '0' && $nombre == ''){
+            $condicion .= " and d.estado = 'Vigente'";
+        }
+
+        $consulta="SELECT d.*,c.nombre as campeonato FROM Directiva as d left join Campeonato as c on c.id = d.idCampeonato where 1=1  $condicion ";
+      
+		if (!$db->Query($consulta)) $db->Kill();
+		
+        return $db;
+      
+    }
+
+    public function ListaTorneo()
+	{       
+
+        $db = new MySQL();
+		if ($db->Error()) $db->Kill();
+        
+            
+        $consulta="SELECT camp.id,camp.nombre,camp.tipo,camp.fechaInicio,camp.estado,(SELECT sum(precio) as GanaciaTarjetas FROM acontecimientopartido  as hp
+        LEFT JOIN Partido as p on p.id = hp.idPartido
+        LEFT JOIN Campeonato as c on c.id = p.idCampeonato
+        where c.id = camp.id) as GanaciaTarjetas, 
+        (SELECT sum(i.inscripcion) as gananciaInscripcion FROM Inscripcion as i
+        LEFT JOIN Campeonato as c on c.id = i.idCampeonato
+        WHERE c.id = camp.id) as gananciaInscripcion,
+        (SELECT sum(pa.total) as totalArbitraje FROM PagoArbitraje as pa
+        LEFT JOIN Campeonato as c on c.id = pa.idCampeonato
+        WHERE  c.id = camp.id) as totalArbitraje,
+        (SELECT sum(m.total) as totalMultas FROM Multa as m
+        LEFT JOIN Campeonato as c on c.id = m.idCampeonato
+        WHERE c.id = camp.id and m.estado = 'Pagado') as totalMultas,
+        (SELECT sum(p.precioObservacion) as totalPrecioObservacion FROM Partido as p
+        LEFT JOIN Campeonato as c on c.id = p.idCampeonato
+        where c.id = camp.id and p.estadoObservacion = 'Rechazado') as totalPrecioObservacion,
+        (SELECT sum(precioTransferencia) as GanaciaTransferencia FROM Transferencia t  
+        LEFT JOIN Campeonato as c on c.id = t.idCampeonato
+        where c.id = camp.id) as GanaciaTransferencia,
+        (SELECT SUM(g.total) as totalGasto FROM Gasto as g 
+        LEFT JOIN Campeonato as c on c.id = g.idCampeonato
+        where c.id = camp.id) as totalGasto
+        FROM Campeonato camp";
+      
+		if (!$db->Query($consulta)) $db->Kill();
+		
+        return $db;
       
     }
 
@@ -1232,7 +1551,7 @@ class parametros
         
         $condicion = "";
 
-        if($idRol == 3){
+        if($idRol != 1 && $idRol != 2){
 
             $condicion .= " and j.idEquipo = $idEquipoDelegado";
         }
