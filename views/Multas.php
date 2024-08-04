@@ -1,6 +1,8 @@
 <?php
 
-include 'clases/conexion.php';
+require_once '../conexion/parametros.php';
+$parametro = new parametros();
+
 session_start();
 
 if (!isset($_SESSION['idUsuario'])) {
@@ -11,6 +13,10 @@ if (!isset($_SESSION['idUsuario'])) {
     $idEquipoDelegado = $_SESSION['idEquipo'];
     $nombreEquipoDelegado = $_SESSION['nombreEquipo'];
 }
+if($parametro->verificarPermisos($_SESSION['idUsuario'],'11,43,42') == 0){
+    echo "Su usuario no tiene permisos para entrar a esta pagina";
+    exit();
+  }
 ?>
 
 <!DOCTYPE html>
@@ -19,25 +25,10 @@ if (!isset($_SESSION['idUsuario'])) {
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Multas</title>
-    <link rel="icon" type="image/jpg" href="img/image.png">
-    <!-- Google Font: Source Sans Pro -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
-    <!-- Ionicons -->
-    <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
-    <!-- DataTables -->
-    <link rel="stylesheet" href="plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
-    <link rel="stylesheet" href="plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
-    <link rel="stylesheet" href="plugins/datatables-buttons/css/buttons.bootstrap4.min.css">
-    <!-- Theme style -->
-    <link rel="stylesheet" href="dist/css/adminlte.min.css">
-    <!-- SweetAlert2 -->
-    <link rel="stylesheet" href="plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css">
-    <!-- Toastr -->
-    <link rel="stylesheet" href="plugins/toastr/toastr.min.css">
-
+    <?php
+    require "../template/encabezado.php";
+    ?>
+  
     <style>
         .card {
             border-top-color: cornflowerblue;
@@ -47,16 +38,16 @@ if (!isset($_SESSION['idUsuario'])) {
 
 </head>
 
-<body class="hold-transition sidebar-mini layout-fixed sidebar-closed sidebar-collapse" onload="ListarMultas();">
+<body class="hold-transition sidebar-mini layout-fixed sidebar-closed sidebar-collapse" >
     <div class="wrapper">
+   
+    <?php  
+        require "../template/Navegador.php";
+    ?>
 
-        <?php
-        require "Navegador.php";
-        ?>
-
-        <?php
-        require "Menus.php";
-        ?>
+    <?php  
+        require "../template/Menus.php";
+    ?>
 
         <div class="content-wrapper">
             <!-- Content Header (Page header) -->
@@ -66,16 +57,14 @@ if (!isset($_SESSION['idUsuario'])) {
                         <div class="col-sm-10 pb-3">
                             <h1 class="m-0">Multas</h1>
                         </div>
-                        <div class="col-12 col-md-2">
-                            <button type="button" class="btn btn-primary btn-block" onclick="modalRegistrarMultas()"><i class="fas fa-plus-circle"></i> Registrar Multa</button>
-                        </div>
+                      
                         <!-- /.col
-          <div class="col-sm-6">
-            <ol class="breadcrumb float-sm-right">
-              <li class="breadcrumb-item"><a href="index.php">Inicio</a></li>
-              <li class="breadcrumb-item active">Dashboard</li>
-            </ol>
-          </div> /.col -->
+                            <div class="col-sm-6">
+                                <ol class="breadcrumb float-sm-right">
+                                <li class="breadcrumb-item"><a href="index.php">Inicio</a></li>
+                                <li class="breadcrumb-item active">Dashboard</li>
+                                </ol>
+                            </div> /.col -->
                     </div><!-- /.row -->
                 </div><!-- /.container-fluid -->
             </div>
@@ -96,20 +85,15 @@ if (!isset($_SESSION['idUsuario'])) {
                                     <form role="form" method="post" id="formFiltroVenta">
                                         <div class="box-body">
                                             <div class="form-horizontal">
+                                               
                                                 <div class="row">
                                                     <div class="col-md-3">
                                                         <div class="form-group">
                                                             <label for="inputCasa" class="form-label"><b>Torneo</b></label>
-                                                            <select class="form-control" id="filCampeonato">
-                                                                <option value="" selected>Seleccionar Torneo...</option>
-                                                                <?php
-                                                                $consultar = "SELECT * FROM Campeonato order by id asc";
-                                                                $resultado1 = mysqli_query($conectar, $consultar);
-                                                                while ($listado = mysqli_fetch_array($resultado1)) {
-                                                                    $torneo = utf8_encode($listado['nombre']);
+                                                            <select class="form-control" id="filCampeonato">                                                              
+                                                                <?php 
+                                                                    $parametro->DropDownListarTorneos();
                                                                 ?>
-                                                                    <option value="<?php echo $listado['id']; ?>"><?php echo $listado['nombre']; ?></option>
-                                                                <?php } ?>
                                                             </select>
                                                         </div>
                                                     </div>
@@ -117,16 +101,10 @@ if (!isset($_SESSION['idUsuario'])) {
                                                     <div class="col-md-3">
                                                         <div class="form-group">
                                                             <label for="inputCasa" class="form-label"><b>Nombre Equipo</b></label>
-                                                            <select class="form-control" id="filEquipo">
-                                                                <option value="" selected>Seleccionar Equipo...</option>
-                                                                <?php
-                                                                $consultar = "SELECT * FROM Equipo where estado = 'Habilitado' order by nombreEquipo asc";
-                                                                $resultado1 = mysqli_query($conectar, $consultar);
-                                                                while ($listado = mysqli_fetch_array($resultado1)) {
-                                                                    $equipos = utf8_encode($listado['nombreEquipo']);
+                                                            <select class="form-control" id="filEquipo">                                                                
+                                                                <?php 
+                                                                    $parametro->DropDownBuscarEquipos();
                                                                 ?>
-                                                                    <option value="<?php echo $listado['id']; ?>"><?php echo $listado['nombreEquipo']; ?></option>
-                                                                <?php } ?>
                                                             </select>
                                                         </div>
                                                     </div>
@@ -134,7 +112,7 @@ if (!isset($_SESSION['idUsuario'])) {
                                                     <div class="col-md-3">
                                                         <div style="margin-top:32px;">
                                                             <button type="button" class="btn btn-primary" id="btn_add1" onclick="FiltrarMultas()"><i class="fas fa-filter"></i> Filtrar</button>
-                                                            <button type="button" class="btn btn-secondary" id="botonDirectivaActual" onclick="ListarMultas()"> Mostrar Actual</button>
+                                                            <!-- <button type="button" class="btn btn-secondary" id="botonDirectivaActual" onclick="ListarMultas()"> Mostrar Actual</button> -->
                                                         </div>
                                                     </div>
                                                 </div>
@@ -151,25 +129,22 @@ if (!isset($_SESSION['idUsuario'])) {
 
             <section class="col-lg-12 col-md-12">
                 <div class="card info-box shadow-lg">
-
+                <div class="card-header">    
+                <div class="row"> 
+                            <div class="col-12 col-md-10">
+                                <label for=""><h4>Listado de Multas</h4></label>
+                            </div>       
+                            <div class="col-12 col-md-2">
+                            <?php  if($parametro->verificarPermisos($_SESSION['idUsuario'],'11') > 0){ ?>
+                                <button type="button" class="btn btn-primary btn-block" onclick="modalRegistrarMultas()"><i class="fas fa-plus-circle"></i> Registrar Multa</button>
+                                <?php } ?>
+                            </div>   
+                        </div>
+                           
+                </div>
                     <div class="card-body">
-                        <div id="contenerdor_tabla" class="table-responsive">
-                            <table id="example1" class="table table-bordered table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>#</th>
-                                        <th>Fecha</th>
-                                        <th>Motivo</th>
-                                        <th>Equipo</th>
-                                        <th>Total</th>
-                                        <th>Torneo</th>
-                                        <th>Acción</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-
-                                </tbody>
-                            </table>
+                      
+                        <div id="contenerdor_tabla" class="table-responsive">                           
                         </div>
                     </div>
                     <!-- /.card-body -->
@@ -185,14 +160,9 @@ if (!isset($_SESSION['idUsuario'])) {
             <!-- /.control-sidebar -->
         </div>
 
-        <?php $año = date('Y'); ?>
-        <footer class="main-footer">
-            <div class="float-right d-none d-sm-block">
-                <b>Version</b> 1.0
-            </div>
-            <strong>Copyright &copy; Software Bolivia <?php echo $año ?></strong> Todos los derechos reservados.
-        </footer>
-
+        <?php
+      require "../template/footer.php";
+      ?>
     </div>
     <!-- ./wrapper -->
 
@@ -206,56 +176,35 @@ if (!isset($_SESSION['idUsuario'])) {
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title" id="tituloJugador"><i class="nav-icon fas fa-users"></i> Nuevo Equipo</h4>
+                    <h4 class="modal-title" id="tituloJugador">Nueva Multa</h4>
                     <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
                     <form method="POST" id="formEditarLote" class="row g-3">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="inputCasa" class="form-label"><b>Motivo Multa(*)</b></label>
-                                <select class="form-control" id="motivoMulta">
-                                    <option>No asistio a la reunion</option>
-                                    <option>No presento veedor</option>
-                                </select>
-                            </div>
+                        <div class="col-md-6">                            
+                            <label for="inputCasa" class="form-label"><b>Motivo Multa(*)</b></label>
+                            <select class="form-control" id="motivoMulta">
+                                <option selected>No asistio a la reunión</option>
+                                <option>No presento veedor</option>
+                            </select>                            
                         </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="inputCasa" class="form-label"><b>Nombre Equipo(*)</b></label>
-                                <select class="form-control" id="idEquipo">
-                                    <?php
-                                    $consultar = "SELECT e.id,e.nombreEquipo FROM Inscripcion as i
-                                    left join Equipo as e on e.id = i.idEquipo
-                                    left join Campeonato as c on c.id = i.idCampeonato
-                                    where c.estado = 'En Curso' order by nombreEquipo asc";
-                                    $resultado1 = mysqli_query($conectar, $consultar);
-                                    while ($listado = mysqli_fetch_array($resultado1)) {
-                                        $equipos = utf8_encode($listado['nombreEquipo']);
-                                    ?>
-                                        <option value="<?php echo $listado['id']; ?>"><?php echo $listado['nombreEquipo']; ?></option>
-                                    <?php } ?>
-                                </select>
-                            </div>
+                        <div class="col-md-6">                           
+                            <label for="inputCasa" class="form-label"><b>Nombre Equipo(*)</b></label>
+                            <select class="form-control" id="idEquipo">
+                                <?php 
+                                    $parametro->DropDownListarEquiposInscritos();
+                                ?>
+                            </select>                            
                         </div>
-                        <div class="col-md-6">
-                            <br>
-                            <label for="inputName" class="form-label"><b>Total(*)</b></label>
-                            <div class="input-group">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text"><i class="fas fa-dollar-sign"></i></span>
-                                </div>
-                                <input type="text" class="form-control" id="total" placeholder="Ingresar total multa">
-                            </div>
+                        <div class="col-md-6">                           
+                            <label for="inputName" class="form-label"><b>Total(*)</b></label>                           
+                            <input type="text" class="form-control" id="total" placeholder="Ingresar total multa">                           
                         </div>
-                        <div class="col-md-6">
-                            <br>
-                            <label for="inputName" class="form-label"><b>Fecha Multa(*)</b></label>
-                            <div class="input-group">
-                                <input type="date" class="form-control" id="fecha">
-                            </div>
+                        <div class="col-md-6">                           
+                            <label for="inputName" class="form-label"><b>Fecha Multa(*)</b></label>                           
+                            <input type="date" class="form-control" id="fecha" value='<?php echo date('Y-m-d'); ?>'>                           
                         </div>
                         <div class="col-md-6">
                             <input type="hidden" class="form-control" id="id">
@@ -299,7 +248,7 @@ if (!isset($_SESSION['idUsuario'])) {
         function CobrarMulta(id) {
 
             $.ajax({
-                url: 'clases/Cl_Multa.php?op=CobrarMulta',
+                url: '../clases/Cl_Multa.php?op=CobrarMulta',
                 type: 'POST',
                 data: {
                     id: id
@@ -322,15 +271,15 @@ if (!isset($_SESSION['idUsuario'])) {
             obtenerprecio();
             $("#tituloJugador").html("<i class='nav-icon fas fa-list'></i> Nueva Multa");
             $("#botonRegistro").html("<button type='button' class='btn btn-primary' id='botonRegistro' onclick='RegistrarMulta()'>Registrar</button>");
-            $("#motivoMulta").val("No asistio a la reunion");
+            //$("#motivoMulta").val("No asistio a la reunion");
            
-            $("#fecha").val("");
+            //$("#fecha").val("");
             $('#ModalRegistrarMultas').modal('show');
         }
 
         function obtenerprecio(){
             $.ajax({
-                url: 'clases/Cl_Multa.php?op=precioMulta',
+                url: '../clases/Cl_Multa.php?op=precioMulta',
                 type: 'POST',
                 success: function(data) {
                     if (data == "error") {
@@ -364,7 +313,7 @@ if (!isset($_SESSION['idUsuario'])) {
         function EliminarMulta(id) {
 
             $.ajax({
-                url: 'clases/Cl_Multa.php?op=EliminarMulta',
+                url: '../clases/Cl_Multa.php?op=EliminarMulta',
                 type: 'POST',
                 data: {
                     id: id
@@ -385,18 +334,13 @@ if (!isset($_SESSION['idUsuario'])) {
         function FiltrarMultas() {
 
             var idEquipo = $("#filEquipo").val();
-            var idCampeonato = $("#filCampeonato").val();
-
-            if(idEquipo == "" && idCampeonato == ""){
-                Swal.fire("Filtros Vacios..!", "Debe seleccionar un metodo de filtro", "warning");
-                return false;
-            }
+            var idCampeonato = $("#filCampeonato").val();           
 
             $("#btn_add1").prop("disabled", true);
             $("#cargando_add1").html('<div class="loading"> <center><i class="fa fa-spinner fa-pulse fa-5x" style="color:#3c8dbc"></i><br/>Procesando ...</center></div>');
 
             $.ajax({
-                url: 'clases/Cl_Multa.php?op=FiltrarMultas',
+                url: '../clases/Cl_Multa.php?op=FiltrarMultas',
                 type: 'POST',
                 data:{
                     idEquipo:idEquipo,
@@ -428,7 +372,7 @@ if (!isset($_SESSION['idUsuario'])) {
             $("#contenerdor_tabla").html('<div class="loading"> <center><i class="fa fa-spinner fa-pulse fa-5x" style="color:#3c8dbc"></i><br/>Cargando Multas ...</center></div>');
 
             $.ajax({
-                url: 'clases/Cl_Multa.php?op=ListarMultas',
+                url: '../clases/Cl_Multa.php?op=ListarMultas',
                 type: 'POST',
                 success: function(data) {
                     $("#contenerdor_tabla").html('');
@@ -451,9 +395,20 @@ if (!isset($_SESSION['idUsuario'])) {
             var total = $('#total').val();
             var idEquipo = $('#idEquipo').val();
 
-
-            if (total == "" || fecha == "") {
-                Swal.fire("Campos Vacios..!", "Debe completar todos los campos obligatorios", "warning");
+            if (motivoMulta == "") {
+                Swal.fire("Campos Vacios..!", "Debe seleccionar el motivo de la multa", "warning");
+                return false;
+            }
+            if (idEquipo == "" || idEquipo == "0") {
+                Swal.fire("Campos Vacios..!", "Debe seleccionar un equipo", "warning");
+                return false;
+            }
+            if (total == "" || total == "0") {
+                Swal.fire("Campos Vacios..!", "Debe ingresar el monto de la multa", "warning");
+                return false;
+            }
+            if ( fecha == "") {
+                Swal.fire("Campos Vacios..!", "Debe indicar la fecha", "warning");
                 return false;
             }
 
@@ -462,7 +417,7 @@ if (!isset($_SESSION['idUsuario'])) {
  
 
             $.ajax({
-                url: 'clases/Cl_Multa.php?op=RegistrarMulta',
+                url: '../clases/Cl_Multa.php?op=RegistrarMulta',
                 type: 'POST',
                 data: {
                     motivoMulta: motivoMulta,
@@ -490,30 +445,11 @@ if (!isset($_SESSION['idUsuario'])) {
         }
     </script>
 
+<?php
+      require "../template/piePagina.php";
+      ?>
 
 
-    <!-- Option 1: Bootstrap Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-    <!-- SweetAlert2 -->
-    <script src="plugins/sweetalert2/sweetalert2.min.js"></script>
-    <!-- Toastr -->
-    <script src="plugins/toastr/toastr.min.js"></script>
-    <!-- jQuery -->
-    <script src="plugins/jquery/jquery.min.js"></script>
-    <!-- Bootstrap 4 -->
-    <script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <!-- DataTables  & Plugins -->
-    <script src="plugins/datatables/jquery.dataTables.min.js"></script>
-    <script src="plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
-    <script src="plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
-    <script src="plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
-    <script src="plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
-    <script src="plugins/datatables-buttons/js/buttons.bootstrap4.min.js"></script>
-    <!-- AdminLTE App -->
-    <script src="dist/js/adminlte.min.js"></script>
-    <!-- AdminLTE for demo purposes -->
-    <script src="dist/js/demo.js"></script>
-    <!-- Page specific script -->
     <script>
         $(function() {
             $("#example1").DataTable({
@@ -521,7 +457,9 @@ if (!isset($_SESSION['idUsuario'])) {
                 "lengthChange": false,
                 "autoWidth": false,
                 "language": lenguaje_español
-            }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
+            });
+
+            FiltrarMultas();
         })
 
         var lenguaje_español = {

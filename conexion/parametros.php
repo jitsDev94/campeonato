@@ -749,6 +749,69 @@ class parametros
         return $row->totalJugadores;
     }
 
+
+    public function obtenerListadoMultas($idCampeonato,$idEquipo,$idRol,$idEquipoDelegado)
+	{       
+
+        $condicion = "";
+        if($idRol != 1 && $idRol != 2){
+            $condicion .= " and c.id = (select id from campeonato where estado = 'En Curso') and e.id = $idEquipoDelegado";
+        }
+        
+         
+        if($idCampeonato != "" && $idCampeonato != 0){
+            //cuando se busco por el filtro de campeonato
+            $condicion .= " and c.id = $idCampeonato";
+        }
+        
+        if($idEquipo != "" && $idEquipo != 0){
+            //cuando se busco por el filtro de equipo
+            $condicion .= " and e.id = $idEquipo";
+        }
+        
+
+        $consulta = "SELECT m.id,m.motivoMulta,e.nombreEquipo,m.total,m.fecha,c.nombre as nombreCampeonato,m.estado
+                            FROM Multa as m
+                            LEFT JOIN Campeonato as c on c.id = m.IdCampeonato
+                            LEFT JOIN Equipo as e on e.id = m.idEquipo
+                            where 1=1 $condicion";
+
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return false;
+        }
+
+        if (!$db->Query($consulta)) {
+           return 0;
+        }
+      
+        return $db;
+      
+    }
+
+    public function RegistrarMulta($motivoMulta,$fecha,$total,$idEquipo)
+	{       
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return 'error';
+        }
+             
+
+        $consulta = "INSERT INTO Multa(motivoMulta,idEquipo,idCampeonato,total,fecha,estado) values('$motivoMulta',$idEquipo,(select id from campeonato where estado = 'En Curso'),$total,'$fecha','Pendiente')";
+            
+        if (!$db->Query($consulta)) {
+            $db->Kill();
+            return 'Ha ocurrido un error al registrar la multa.';
+        }
+       
+        return 'ok';
+      
+    }
+
     public function autenticacionUsuario($usuario,$password)
 	{       
 
@@ -802,6 +865,26 @@ class parametros
 		while (!$db->EndOfSeek()) {
 			$row = $db->Row();		
 			echo "<option value='" . $row->id . "'>" . $row->nombreRol . "</option>";
+		}
+    }
+
+    public function DropDownListarEquiposInscritosMutas()
+	{      
+
+        $consulta = "SELECT e.id,e.nombreEquipo FROM Inscripcion as i
+                                left join Equipo as e on e.id = i.idEquipo
+                                left join Campeonato as c on c.id = i.idCampeonato
+                                where c.estado = 'En Curso' order by e.nombreEquipo ASC";
+
+
+        $db = new MySQL();
+		if ($db->Error()) $db->Kill();
+		if (!$db->Query($consulta)) $db->Kill();
+		$db->MoveFirst();		
+        echo "<option value='0'>Seleccionar..</option>";
+		while (!$db->EndOfSeek()) {
+			$row = $db->Row();		
+			echo "<option value='" . $row->id . "'>" . $row->nombreEquipo . "</option>";
 		}
     }
 

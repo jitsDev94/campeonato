@@ -1,0 +1,1 @@
+UPDATE Jugador SET idEquipo = 15 where id = 50
