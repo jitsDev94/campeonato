@@ -1,6 +1,7 @@
 <?php
 
-include 'clases/conexion.php';
+require_once '../conexion/parametros.php';
+$parametro = new parametros();
 session_start();
 
 if (!isset($_SESSION['idUsuario'])) {
@@ -19,24 +20,9 @@ if (!isset($_SESSION['idUsuario'])) {
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Detalle Partidos</title>
-    <link rel="icon" type="image/jpg" href="img/image.png">
-    <!-- Google Font: Source Sans Pro -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
-    <!-- Ionicons -->
-    <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
-    <!-- DataTables -->
-    <link rel="stylesheet" href="plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
-    <link rel="stylesheet" href="plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
-    <link rel="stylesheet" href="plugins/datatables-buttons/css/buttons.bootstrap4.min.css">
-    <!-- Theme style -->
-    <link rel="stylesheet" href="dist/css/adminlte.min.css">
-    <!-- SweetAlert2 -->
-    <link rel="stylesheet" href="plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css">
-    <!-- Toastr -->
-    <link rel="stylesheet" href="plugins/toastr/toastr.min.css">
+    <?php
+    require "../template/encabezado.php";
+    ?>
 
     <style>
         .card {
@@ -47,15 +33,15 @@ if (!isset($_SESSION['idUsuario'])) {
 
 </head>
 
-<body class="hold-transition sidebar-mini layout-fixed sidebar-closed sidebar-collapse" onload="">
+<body class="hold-transition sidebar-mini layout-fixed sidebar-closed sidebar-collapse">
     <div class="wrapper">
 
-        <?php
-        require "Navegador.php";
+        <?php  
+            require "../template/Navegador.php";
         ?>
 
-        <?php
-        require "Menus.php";
+        <?php  
+            require "../template/Menus.php";
         ?>
 
         <div class="content-wrapper">
@@ -65,15 +51,7 @@ if (!isset($_SESSION['idUsuario'])) {
                     <div class="row mb-2">
                         <div class="col-sm-10">
                             <h1 class="m-0">Detalle de Partidos</h1>
-                        </div>
-
-                        <!-- /.col
-          <div class="col-sm-6">
-            <ol class="breadcrumb float-sm-right">
-              <li class="breadcrumb-item"><a href="index.php">Inicio</a></li>
-              <li class="breadcrumb-item active">Dashboard</li>
-            </ol>
-          </div> /.col -->
+                        </div>                     
                     </div><!-- /.row -->
                 </div><!-- /.container-fluid -->
             </div>
@@ -107,32 +85,7 @@ if (!isset($_SESSION['idUsuario'])) {
                                         </div>
                                     </div>
                                 </div>
-                            
-                  
-                  
-                  
-                        <!-- <div id="contenerdor_tabla" class="table-responsive">
-                            <table id="example1" class="table table-bordered table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>#</th>
-                                        <th>Fecha Partido</th>
-                                        <th>Equipo Local</th>
-                                        <th>Resultados</th>
-                                        <th>Equipo Visitante</th>
-                                        <th>Acción</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
 
-                                </tbody>
-                            </table>
-                        </div> -->
-                                        
-                      
-                        
-                  
-                    <!-- /.card-body -->
                 </div>
                 <br>
             </section>
@@ -149,13 +102,9 @@ if (!isset($_SESSION['idUsuario'])) {
             <!-- /.control-sidebar -->
         </div>
 
-        <?php $año = date('Y'); ?>
-        <footer class="main-footer">
-            <div class="float-right d-none d-sm-block">
-                <b>Version</b> 1.0
-            </div>
-            <strong>Copyright &copy; Software Bolivia <?php echo $año ?></strong> Todos los derechos reservados.
-        </footer>
+        <?php
+        require "../template/footer.php";
+        ?>
 
     </div>
     <!-- ./wrapper -->
@@ -239,7 +188,7 @@ if (!isset($_SESSION['idUsuario'])) {
 
 
             $.ajax({
-                url: 'clases/Cl_DetallePartido.php?op=DatosEquipo',
+                url: '../clases/Cl_DetallePartido.php?op=DatosEquipo',
                 type: 'POST',
                 data: {
                     id: idPartido
@@ -263,7 +212,7 @@ if (!isset($_SESSION['idUsuario'])) {
         function detalleEquipo1(id, nombreEquipo) {
 
             $.ajax({
-                url: 'clases/Cl_DetallePartido.php?op=detalleEquipo1',
+                url: '../clases/Cl_DetallePartido.php?op=detalleEquipo1',
                 type: 'POST',
                 data: {
                     id: id,
@@ -282,7 +231,7 @@ if (!isset($_SESSION['idUsuario'])) {
         function detalleEquipo2(id, nombreEquipo) {
 
             $.ajax({
-                url: 'clases/Cl_DetallePartido.php?op=detalleEquipo2',
+                url: '../clases/Cl_DetallePartido.php?op=detalleEquipo2',
                 type: 'POST',
                 data: {
                     id: id,
@@ -303,7 +252,7 @@ if (!isset($_SESSION['idUsuario'])) {
         function modalEditarEquipo(id) {
 
             $.ajax({
-                url: 'clases/Cl_Equipo.php?op=DatosEquipo',
+                url: '../clases/Cl_Equipo.php?op=DatosEquipo',
                 type: 'POST',
                 data: {
                     id: id
@@ -336,7 +285,7 @@ if (!isset($_SESSION['idUsuario'])) {
             }
 
             $.ajax({
-                url: 'clases/Cl_Equipo.php?op=EditarEquipo',
+                url: '../clases/Cl_Equipo.php?op=EditarEquipo',
                 type: 'POST',
                 data: {
                     id: id,
@@ -394,7 +343,7 @@ if (!isset($_SESSION['idUsuario'])) {
         function EstadoEquipo(id, estado) {
 
             $.ajax({
-                url: 'clases/Cl_Equipo.php?op=EstadoEquipo',
+                url: '../clases/Cl_Equipo.php?op=EstadoEquipo',
                 type: 'POST',
                 data: {
                     id: id,
@@ -423,14 +372,14 @@ if (!isset($_SESSION['idUsuario'])) {
             var fecha = $("#fecha").val();
             var grupo = $("#grupo").val();
 
-            if (fecha == "") {
-                swal.fire("Oopss..!", "Debe ingresar un fecha", "warning");
-                return false;
-            }
+            // if (fecha == "") {
+            //     swal.fire("Oopss..!", "Debe ingresar un fecha", "warning");
+            //     return false;
+            // }
 
             $("#contenerdor_tabla").html('');
             $.ajax({
-                url: 'clases/Cl_DetallePartido.php?op=ListaPartidos2',
+                url: '../clases/Cl_DetallePartido.php?op=ListaPartidos2',
                 type: 'POST',
                 data: {
                     fecha: fecha,
@@ -455,7 +404,7 @@ if (!isset($_SESSION['idUsuario'])) {
             }
 
             $.ajax({
-                url: 'clases/Cl_Equipo.php?op=RegistrarEquipo',
+                url: '../clases/Cl_Equipo.php?op=RegistrarEquipo',
                 type: 'POST',
                 data: {
                     nombre: nombre,
@@ -475,38 +424,21 @@ if (!isset($_SESSION['idUsuario'])) {
         }
     </script>
 
+        <?php
+      require "../template/piePagina.php";
+      ?>
 
-
-    <!-- Option 1: Bootstrap Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-    <!-- SweetAlert2 -->
-    <script src="plugins/sweetalert2/sweetalert2.min.js"></script>
-    <!-- Toastr -->
-    <script src="plugins/toastr/toastr.min.js"></script>
-    <!-- jQuery -->
-    <script src="plugins/jquery/jquery.min.js"></script>
-    <!-- Bootstrap 4 -->
-    <script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <!-- DataTables  & Plugins -->
-    <script src="plugins/datatables/jquery.dataTables.min.js"></script>
-    <script src="plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
-    <script src="plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
-    <script src="plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
-    <script src="plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
-    <script src="plugins/datatables-buttons/js/buttons.bootstrap4.min.js"></script>
-    <!-- AdminLTE App -->
-    <script src="dist/js/adminlte.min.js"></script>
-    <!-- AdminLTE for demo purposes -->
-    <script src="dist/js/demo.js"></script>
-    <!-- Page specific script -->
     <script>
         $(function() {
+
+            listarPatidos();
+
             $("#example7").DataTable({
                 "responsive": true,
                 "lengthChange": false,
                 "autoWidth": false,
                 "language": lenguaje_español
-            }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
+            });
         })
 
         var lenguaje_español = {

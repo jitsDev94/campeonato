@@ -3,7 +3,10 @@
 use PhpParser\Node\Stmt\Else_;
 
 session_start();
-include("conexion.php");
+//include("conexion.php");
+include("../conexion/conexion.php");
+require_once '../conexion/parametros.php';
+$parametro = new parametros();
 
 $tipo = $_GET["op"];
 
@@ -30,8 +33,8 @@ if($tipo == "DatosEquipo"){
 
 if($tipo == "ListaPartidos2"){
 
-    $fecha = $_POST["fecha"];
-    $grupo = $_POST["grupo"];
+    $fecha = @$_POST["fecha"];
+    $grupo = @$_POST["grupo"];
 
     $consultargoles2="";
     $condicion = "";
@@ -41,60 +44,54 @@ if($tipo == "ListaPartidos2"){
         $condicion = "and tp1.grupo = $grupo AND tp2.grupo = $grupo";
     }
     
+    $resultado = $parametro->ListaPartidos2($fecha,$grupo); 
 
-    $consultar = "SELECT p.id,p.fechaPartido,e1.id as idEquipo1,e1.nombreEquipo as EquipoLocal,e2.id as idEquipo2, e2.nombreEquipo as EquipoVisitante from Partido as p
-    LEFT JOIN TablaPosicion as tp1 on tp1.idEquipo = p.idEquipoLocal
-    LEFT JOIN TablaPosicion as tp2 on tp2.idEquipo = p.idEquipoVisitante
-    LEFT JOIN Equipo as e1 on e1.id = tp1.idEquipo
-    LEFT JOIN Equipo as e2 on e2.id = tp2.idEquipo
-    WHERE p.fechaPartido = '$fecha' $condicion
-    GROUP by  p.id,p.fechaPartido,e1.id,e1.nombreEquipo,e2.id,e2.nombreEquipo";
-
-    // "SELECT p.id,p.fechaPartido,e1.id as idEquipo1,e1.nombreEquipo as EquipoLocal,e2.id as idEquipo2, e2.nombreEquipo as EquipoVisitante from Partido as p
-    // LEFT JOIN Equipo as e1 on e1.id = p.idEquipoLocal
-    // LEFT JOIN Equipo as e2 on e2.id = p.idEquipoVisitante
-    // WHERE p.fechaPartido = '$fecha'
-    // GROUP by  p.id,p.fechaPartido,e1.id,e1.nombreEquipo,e2.id,e2.nombreEquipo";
-    $resultado1 = mysqli_query($conectar, $consultar);
+   
 
     $tabla = '';
    
-    if ($resultado1) {
+    if ($resultado->RowCount() > 0) {
         $tabla .= '<div class="row">';
         $count = 0;  
    
-        while ($listado = mysqli_fetch_array($resultado1)) {
+        while (!$resultado->EndOfSeek()) {
+            $listado = $resultado->Row();
             $count ++;  
-            $consultargoles1 = "SELECT count(hp.Equipo) as goles from HechosPartido as hp 
-                LEFT JOIN Partido as p on p.id = hp.idPartido
-                where hp.Equipo = '".$listado['EquipoLocal']."' and p.fechaPartido = '$fecha' and hp.idHecho = 1 and p.idEquipoLocal =  ".$listado['idEquipo1']." and p.idEquipoVisitante = ".$listado['idEquipo2']."";
-                $resultado2 = mysqli_query($conectar, $consultargoles1);
-                $row = $resultado2->fetch_assoc();
-                $goles1 = $row['goles'];
+            if($count == 1){
+                $tabla .= '<div class="col-md-12 text-center ml-3 mr-3">           
+                <h5 class="p-3">Fecha Partidos - '.$listado->fechaPartido.'</h5>  </div>                             
+            ';
+            }
+            // $consultargoles1 = "SELECT count(hp.Equipo) as goles from acontecimientopartido as hp 
+            //     LEFT JOIN Partido as p on p.id = hp.idPartido
+            //     where hp.Equipo = '".$listado->EquipoLocal."' and p.fechaPartido = '$fecha' and hp.idAcontecimiento = 1 and p.idEquipoLocal =  ".$listado->idEquipo1." and p.idEquipoVisitante = ".$listado->idEquipo2."";
+            //     $resultado2 = mysqli_query($conectar, $consultargoles1);
+            //     $row = $resultado2->fetch_assoc();
+                $dato = $parametro->obtenerGoles($listado->EquipoLocal,$listado->idEquipo1,$listado->idEquipo2,$listado->fechaPartido,$fecha);
+                $goles1 = $dato->goles; 
         
 
-                $consultargoles2 = "SELECT count(hp.Equipo) as goles from HechosPartido as hp 
-                LEFT JOIN Partido as p on p.id = hp.idPartido
-                where hp.Equipo = '".$listado['EquipoVisitante']."' and p.fechaPartido = '$fecha' and hp.idHecho = 1 and p.idEquipoLocal =  ".$listado['idEquipo1']." and p.idEquipoVisitante = ".$listado['idEquipo2']."";
-                $resultado3 = mysqli_query($conectar, $consultargoles2);
-                $row = $resultado3->fetch_assoc();
-                $goles2 = $row['goles'];
+                // $consultargoles2 = "SELECT count(hp.Equipo) as goles from acontecimientopartido as hp 
+                // LEFT JOIN Partido as p on p.id = hp.idPartido
+                // where hp.Equipo = '".$listado->EquipoVisitante."' and p.fechaPartido = '$fecha' and hp.idAcontecimiento = 1 and p.idEquipoLocal =  ".$listado->idEquipo1." and p.idEquipoVisitante = ".$listado->idEquipo2."";
+                // $resultado3 = mysqli_query($conectar, $consultargoles2);
+                // $row = $resultado3->fetch_assoc();
+                $dato = $parametro->obtenerGoles($listado->EquipoVisitante,$listado->idEquipo1,$listado->idEquipo2,$listado->fechaPartido,$fecha);
+                $goles2 = $dato->goles;                
                 
-            $tabla .= '<div class="card col-md-2 text-center ml-3 mr-3">
-    
-       
-                <h5 class="pt-4">'.$listado['EquipoLocal'] .' - '.$listado['EquipoVisitante'].'</h5>
+            $tabla .= '<div class="card col-md-2 text-center ml-3 mr-3">           
+                <h5 class="pt-4">'.$listado->EquipoLocal .' - '.$listado->EquipoVisitante.'</h5>
                 <h5 class="pt-1"> '.$goles1.' - '.$goles2.'</h5><br>
-                <button type="button" class="btn btn-success btn-sm mb-2"  onclick="ModalVerPartidos('.$listado['id'].')">Ver detalles</button>                  
+                <button type="button" class="btn btn-success btn-sm mb-2"  onclick="ModalVerPartidos('.$listado->id.')">Ver detalles</button>                  
             </div> ';
         }
    
 
-    $tabla .= '</div>';
+        $tabla .= ' </div>';
 
-    if($count == 0){
-        $tabla .='<div class="alert alert-warning text-center" role="alert">No se encontraron partidos en esa fecha</div>';
-    }
+        if($count == 0){
+            $tabla .='<div class="alert alert-warning text-center" role="alert">No se encontraron partidos en esa fecha</div>';
+        }
    
     }
     else{

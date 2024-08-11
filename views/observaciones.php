@@ -12,6 +12,11 @@ if (!isset($_SESSION['idUsuario'])) {
     $idEquipoDelegado = $_SESSION['idEquipo'];
     $nombreEquipoDelegado= $_SESSION['nombreEquipo'];
 }
+
+if($parametro->verificarPermisos($_SESSION['idUsuario'],'5') == 0){
+    echo "Su usuario no tiene permisos para entrar a esta pagina";
+    exit();
+  }
 ?>
 
 <!DOCTYPE html>

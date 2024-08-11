@@ -1,0 +1,7 @@
+SELECT o.id,o.idPartido,o.estadoObservacion,o.idEquipoObservado,
+        case when o.estadoObservacion = 'Rechazado' then o.motivoRechazo else o.castigo end as castigo,o.observacion,p.fechaPartido,e.nombreEquipo as equipoObservado  FROM observacion o
+        left join Partido p on p.id = o.idPartido
+        LEFT join inscripcion i on i.id = o.idEquipoObservado
+        LEFT join equipo e on e.id = i.idEquipo
+        LEFT join campeonato ca on ca.id = i.idCampeonato
+        where o.idPartido =  10 and ca.estado = 'en curso'  and p.fechaPartido = '2024-02-10'

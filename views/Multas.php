@@ -129,19 +129,19 @@ if($parametro->verificarPermisos($_SESSION['idUsuario'],'11,43,42') == 0){
 
             <section class="col-lg-12 col-md-12">
                 <div class="card info-box shadow-lg">
-                <div class="card-header">    
-                <div class="row"> 
-                            <div class="col-12 col-md-10">
-                                <label for=""><h4>Listado de Multas</h4></label>
-                            </div>       
-                            <div class="col-12 col-md-2">
-                            <?php  if($parametro->verificarPermisos($_SESSION['idUsuario'],'11') > 0){ ?>
-                                <button type="button" class="btn btn-primary btn-block" onclick="modalRegistrarMultas()"><i class="fas fa-plus-circle"></i> Registrar Multa</button>
-                                <?php } ?>
-                            </div>   
-                        </div>
-                           
-                </div>
+                    <div class="card-header">    
+                            <div class="row"> 
+                                <div class="col-12 col-md-10">
+                                    <label for=""><h4>Listado de Multas</h4></label>
+                                </div>       
+                                <div class="col-12 col-md-2">
+                                <?php  if($parametro->verificarPermisos($_SESSION['idUsuario'],'11') > 0){ ?>
+                                    <button type="button" class="btn btn-primary btn-block" onclick="modalRegistrarMultas()"><i class="fas fa-plus-circle"></i> Registrar Multa</button>
+                                    <?php } ?>
+                                </div>   
+                            </div>
+                            
+                    </div>
                     <div class="card-body">
                       
                         <div id="contenerdor_tabla" class="table-responsive">                           
