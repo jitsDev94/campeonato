@@ -298,7 +298,7 @@ class parametros
         }
 
                                  
-        $consulta = "SELECT ca.*,p.idCampeonato,p.fechaPartido,e1.id as idEquipo1,e1.nombreEquipo as EquipoLocal,e2.id as idEquipo2, e2.nombreEquipo as EquipoVisitante 
+        $consulta = "SELECT ca.*,p.id as idPartido, p.idCampeonato,p.fechaPartido,e1.id as idEquipo1,e1.nombreEquipo as EquipoLocal,e2.id as idEquipo2, e2.nombreEquipo as EquipoVisitante 
         from Partido as p
         LEFT join inscripcion i on i.id = p.idEquipoLocal
          LEFT join inscripcion i2 on i2.id = p.idEquipoVisitante
@@ -315,7 +315,7 @@ class parametros
         return $db;
     }
 
-    public function verificarObservaciones($idEquipoObservado,$fechaPartido =''){
+    public function verificarObservaciones($idPartido,$fechaPartido =''){
 
         $db = new MySQL();
         if ($db->Error()) {
@@ -325,18 +325,21 @@ class parametros
 
         $condicion = '';
         if($fechaPartido != ''){
-            $condicion = " and fechaPartido = '$fechaPartido'";
+            $condicion = " and p.fechaPartido = '$fechaPartido'";
         }
-        $consulta = "SELECT * FROM Partido p 
-        LEFT join inscripcion i on i.id = p.idEquipoObservado
+        $consulta = "SELECT o.id,o.idPartido,o.estadoObservacion,o.idEquipoObservado,
+        case when o.estadoObservacion = 'Rechazado' then o.motivoRechazo else o.castigo end as castigo,o.observacion,p.fechaPartido,e.nombreEquipo as equipoObservado  FROM observacion o
+        left join Partido p on p.id = o.idPartido
+        LEFT join inscripcion i on i.id = o.idEquipoObservado
         LEFT join equipo e on e.id = i.idEquipo
         LEFT join campeonato ca on ca.id = i.idCampeonato
-        where idEquipoObservado =  $idEquipoObservado and ca.estado = 'en curso' $condicion and estadoObservacion = 'Aceptado'";
+        where o.idPartido =  $idPartido and ca.estado = 'en curso' $condicion";
 
+        file_put_contents('./obs.log',$consulta);
         if(!$db->Query($consulta)) {
             return 0;
         }      
-        return $db->RowCount();
+        return $db;
     }
 
     public function verificarEquipoGanadorWalkover($idEquipoGanadorWalkover,$fechaPartido =''){
@@ -749,6 +752,142 @@ class parametros
         return $row->totalJugadores;
     }
 
+    public function FiltrarObservaciones($idCampeonato,$idEquipo)
+	{       
+
+        $condicion = "";
+        // if($idRol != 1 && $idRol != 2){
+        //     $condicion .= " and c.id = (select id from campeonato where estado = 'En Curso') and e.id = $idEquipoDelegado";
+        // }
+        
+         
+        if($idCampeonato != "" && $idCampeonato != 0){         
+            $condicion .= " and p.idCampeonato = $idCampeonato";
+        }
+        
+        if($idEquipo != "" && $idEquipo != 0){           
+            $condicion .=" and o.idEquipoObservado = $idEquipo";
+        }
+        
+
+        $consulta = "SELECT p.id as idPartido, o.id as idObservacion, e1.nombreEquipo as equipoLocal, e2.nombreEquipo as esquipoVisitante, 
+        s.nombreSede,c.nombre as nombreCampeonato,o.motivoRechazo,e3.nombreEquipo as equipoObservado,o.idEquipoObservado,
+        p.fechaPartido,p.Modo,o.Observacion,o.estadoObservacion,o.fechaRespuesta,u.usuario,o.castigo
+        FROM observacion o
+        left join Partido as p on p.id = o.idPartido
+        LEFT JOIN Equipo as e1 on e1.id = p.idEquipoLocal
+        LEFT JOIN Equipo as e2 on e2.id = p.idEquipoVisitante
+        LEFT JOIN Equipo as e3 on e3.id = o.idEquipoObservado
+        LEFT join Campeonato as c on c.id = p.idCampeonato
+        LEFT join Sede as s on s.id = p.idSede
+        LEFT join usuario u on u.id = o.idUsuarioRespuesta
+        where 1=1 $condicion";
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return false;
+        }
+
+        if (!$db->Query($consulta)) {
+           return 0;
+        }
+      
+        return $db;
+      
+    }
+
+    public function AceptarObservacion($codObservacion,$idPartido,$estado,$motivo,$castigos,$puntos,$goles,$codEquipoObservado,$idUsuario,$equipoObservado,$equipoNoObservado,$equipoObservador)
+	{       
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return 'error';
+        }
+             
+        if($estado == 'Rechazado'){
+            $consulta = "UPDATE observacion SET estadoObservacion = '$estado', motivoRechazo = '$motivo', fechaRespuesta=sysdate(), idUsuarioRespuesta= $idUsuario, castigo='$castigos' where id = $codObservacion";
+        }
+        else{
+           // $castigosTexto ='Se procedio a quitar los 3 puntos y se dio 2 goles en contra al equipo observado';
+            $consulta = "UPDATE observacion SET estadoObservacion = '$estado', fechaRespuesta=sysdate(), idUsuarioRespuesta= $idUsuario, castigo = 'Se procedio a quitar los 3 puntos y se dio 2 goles en contra al equipo observado' where id = $codObservacion";
+        }
+                  
+        if (!$db->Query($consulta)) {
+            $db->Kill();
+            return 'Ha ocurrido un error al registrar la observacion.';
+        }
+
+        // if($castigos == "puntos"){
+
+
+        //     $consulta = "SELECT * FROM `acontecimientopartido` where idAcontecimiento = 1 and idPartido = $idPartido and Equipo = '$equipoObservado'";
+        //     $db->Query($consulta);           
+        //     $golesFavor = $db->RowCount();
+        //     if($golesFavor == ''){
+        //         $golesFavor = 0;
+        //     }
+        //     $consulta = "SELECT * FROM `acontecimientopartido` where idAcontecimiento = 1 and idPartido = $idPartido and Equipo = '$equipoNoObservado'";
+        //     $db->Query($consulta);           
+        //     $golesContra = $db->RowCount();
+        //     if($golesContra == ''){
+        //         $golesContra = 0;
+        //     }
+
+        //     //esto hace que quede la tabla de posicion como estaba al comenzo con respecto a los goles
+        //     $consulta = "UPDATE TablaPosicion SET puntos = puntos - $puntos, partidosGanados= partidosGanados - 1, partidosPerdidos = partidosPerdidos + 1, golFavor = golFavor - $golesFavor, golContra = golContra - $golesContra where idEquipo = $codEquipoObservado";
+        //     if (!$db->Query($consulta)) {
+        //         if (!$db->TransactionRollback()) {
+        //             $db->Kill();
+        //         }
+        //         return 'Ha ocurrido un error al configurar el castigo, intenta nuevamente.';
+        //     }
+
+        //     // aqui aplicamos el castigo de la cantidad de goles en contra
+        //     $consulta = "UPDATE TablaPosicion SET golContra = golContra + $goles where idEquipo = $codEquipoObservado";
+        //     if (!$db->Query($consulta)) {
+        //         if (!$db->TransactionRollback()) {
+        //             $db->Kill();
+        //         }
+        //         return 'Ha ocurrido un error al configurar el castigo, intenta nuevamente.';
+        //     }
+
+
+        //     // aqui damos los puntos y los goles al equipo que gano la observacion
+        //     if($equipoObservador == 'local'){
+        //         $consulta = "UPDATE TablaPosicion SET puntos = puntos + $puntos, partidosGanados= partidosGanados + 1, partidosPerdidos = partidosPerdidos - 1, golFavor = golFavor - $golesContra, golContra = golContra - $golesFavor where idEquipo = (SELECT idEquipoLocal FROM partido where id= $idPartido)";
+        //         $consulta2 = "UPDATE TablaPosicion SET golFavor = golFavor + $goles where idEquipo = (SELECT idEquipoLocal FROM partido where id= $idPartido)";
+        //     }
+        //     else{
+        //         $consulta = "UPDATE TablaPosicion SET puntos = puntos + $puntos, partidosGanados= partidosGanados + 1, partidosPerdidos = partidosPerdidos - 1, golFavor = golFavor - $golesContra, golContra = golContra - $golesFavor where idEquipo = (SELECT idEquipoVisitante FROM partido where id= $idPartido)";
+        //         $consulta2 = "UPDATE TablaPosicion SET golFavor = golFavor + $goles where idEquipo = (SELECT idEquipoVisitante FROM partido where id= $idPartido)";
+        //     }
+
+        //     if (!$db->Query($consulta)) {
+        //         if (!$db->TransactionRollback()) {
+        //             $db->Kill();
+        //         }
+        //         return 'Ha ocurrido un error al configurar el castigo, intenta nuevamente.';
+        //     }
+
+            
+        //     if (!$db->Query($consulta2)) {
+        //         if (!$db->TransactionRollback()) {
+        //             $db->Kill();
+        //         }
+        //         return 'Ha ocurrido un error al configurar el castigo, intenta nuevamente.';
+        //     }
+
+        //     return 'ok';           
+        // }
+        // else{
+             return 'ok';
+        // }
+       
+       
+    }
+
 
     public function obtenerListadoMultas($idCampeonato,$idEquipo,$idRol,$idEquipoDelegado)
 	{       
@@ -967,10 +1106,15 @@ class parametros
     }
 
 
-    public function DropDownBuscarEquipos()
+    public function DropDownBuscarEquipos($idRol='',$idEquipoDelegado='')
 	{      
 
-        $consulta = "SELECT * FROM Equipo where estado = 'Habilitado' order by nombreEquipo asc";
+        $condicion ="";
+        if($idRol == 3){
+            $condicion =" and id = $idEquipoDelegado";
+        }
+
+        $consulta = "SELECT * FROM Equipo where estado = 'Habilitado' $condicion order by nombreEquipo asc";
 
 
         $db = new MySQL();
@@ -2350,9 +2494,7 @@ class parametros
 
     public function InsertarPartido($idPartido,$equipo1,$equipo2,$idSede,$fecha,$idCampeonato,$modo,$observacion,$estadoObservacion,$idEquipoObservado,$PrecioObservacion,$eswalkover,$idEquipoGanadorWalkover)
 	{       
-
-        $consulta = "INSERT INTO Partido(`id`,`idEquipoLocal`, `idEquipoVisitante`, `idSede`, `fechaPartido`, `idCampeonato`, `Modo`, `Observacion`, `estadoObservacion`, `idEquipoObservado`, `precioObservacion`,`walkover`,`idEquipoGanadorWalkover`) VALUES($idPartido,$equipo1,$equipo2,$idSede,'$fecha',$idCampeonato,'$modo','$observacion','$estadoObservacion',$idEquipoObservado,$PrecioObservacion,'$eswalkover',$idEquipoGanadorWalkover)";
-
+       
         $db = new MySQL();
         if ($db->Error()) {
             $db->Kill();
@@ -2360,12 +2502,25 @@ class parametros
         }
        
         $success = true;
+        $consulta = "INSERT INTO Partido(`id`,`idEquipoLocal`, `idEquipoVisitante`, `idSede`, `fechaPartido`, `idCampeonato`, `Modo`, `walkover`,`idEquipoGanadorWalkover`) VALUES($idPartido,$equipo1,$equipo2,$idSede,'$fecha',$idCampeonato,'$modo','$eswalkover',$idEquipoGanadorWalkover)";
 
         if (!$db->Query($consulta)) {
             $success = false;
             return 'Error al registrar el partido';
         }
        
+        if($idEquipoObservado != 0 && $idEquipoObservado !=''){
+            //$idPartido = $db->GetLastInsertID();
+            $consulta = "INSERT INTO observacion(`idPartido`,`Observacion`, `estadoObservacion`, `idEquipoObservado`, `precioObservacion`) VALUES($idPartido,'$observacion','$estadoObservacion',$idEquipoObservado,$PrecioObservacion)";
+            
+            if (!$db->Query($consulta)) {
+                if (!$db->TransactionRollback()) {
+                    $db->Kill();
+                }
+                return 'Error al registrar la observacion del partido';
+            }
+        }
+
         return 'ok';
       
     }

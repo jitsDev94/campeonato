@@ -59,7 +59,8 @@ if($tipo == "DetallePartidosEquipos2"){
         while (!$resultado1->EndOfSeek()) {
             $listado = $resultado1->Row();
             $colorCard = '';
-            $totalObservaciones = $parametro->verificarObservaciones($idEquipo,$listado->fechaPartido);
+            $Observaciones = $parametro->verificarObservaciones($listado->idPartido,$listado->fechaPartido);
+            $totalObservaciones = $Observaciones->RowCount();
             $equipoGanadorWalkover = $parametro->verificarEquipoGanadorWalkover($idEquipo,$listado->fechaPartido);
             if($totalObservaciones > 0){
                 $colorCard = "style='border-top-color: red;'";
@@ -67,82 +68,49 @@ if($tipo == "DetallePartidosEquipos2"){
             if($equipoGanadorWalkover > 0){
                 $colorCard = "style='border-top-color: yellow;'";
             }
-    $tabla .= '        <div class="col-md-4">';
-    $tabla .= '            <div class="card info-box shadow-lg" '.$colorCard.'>';
-    $tabla .= '                <div class="card-body">';  
-           
-            $goles1 = $parametro->obtenerGolesEquipo($listado->EquipoLocal,$listado->fechaPartido,$listado->idEquipo1,$listado->idEquipo2);             
-            $goles2 = $parametro->obtenerGolesEquipo($listado->EquipoVisitante,$listado->fechaPartido,$listado->idEquipo1,$listado->idEquipo2);
-                $tabla .= '        <div class="row">';
-                $tabla .= '            <div class="col-md-12 text-center mb-3"><b>Fecha Partido: </b> '.date('d-m-Y',strtotime($listado->fechaPartido)).'</div><br>';
-                $tabla .= '            <div class="col-md-5 col-5">';
-                $estilo='';
-                if($listado->EquipoLocal == $nombreEquipo){
-                    $estilo = "style='font-weight: bold;'";
-                }
-                $tabla .= '                <img src="../img/logoEquipo.png" alt="Sin Logo" width="100%"><br><span '.$estilo.'>'.$listado->EquipoLocal.'</span>';
-                $tabla .= '            </div>';
-                $tabla .= '            <div class="col-md-2  col-2 text-center pt-4">vs<br>'.$goles1.'-'.$goles2.'</div>';
-                $tabla .= '            <div class="col-md-5  col-5">';
-                $estilo2='';
-                if($listado->EquipoVisitante == $nombreEquipo){
-                    $estilo2 = "style='font-weight: bold;'";
-                }
-                $tabla .= '                <img src="../img/logoEquipo.png" alt="Sin Logo"  width="100%"><br><span '.$estilo2.'>'.$listado->EquipoVisitante.'';
-                $tabla .= '            </div>';
-                $tabla .= '        </div>';
-      
-    $tabla .= '                </div>';
-    $tabla .= '            </div>';
-    $tabla .= '        </div>';
+            $tabla .= '        <div class="col-md-4">';
+            $tabla .= '            <div class="card info-box shadow-lg" '.$colorCard.'>';
+            $tabla .= '                <div class="card-body">';  
+                
+                    $goles1 = $parametro->obtenerGolesEquipo($listado->EquipoLocal,$listado->fechaPartido,$listado->idEquipo1,$listado->idEquipo2);             
+                    $goles2 = $parametro->obtenerGolesEquipo($listado->EquipoVisitante,$listado->fechaPartido,$listado->idEquipo1,$listado->idEquipo2);
+                        $tabla .= '        <div class="row">';
+                        $tabla .= '            <div class="col-md-12 text-center mb-3"><b>Fecha Partido: </b> '.date('d-m-Y',strtotime($listado->fechaPartido)).'</div><br>';
+                        $tabla .= '            <div class="col-md-5 col-5">';
+                        $estilo='';
+                        if($listado->EquipoLocal == $nombreEquipo){
+                            $estilo = "style='font-weight: bold;'";
+                        }
+                        $tabla .= '                <img src="../img/logoEquipo.png" alt="Sin Logo" width="100%"><br><span '.$estilo.'>'.$listado->EquipoLocal.'</span>';
+                        $tabla .= '            </div>';
+                        $tabla .= '            <div class="col-md-2  col-2 text-center pt-4">vs<br>'.$goles1.'-'.$goles2.'</div>';
+                        $tabla .= '            <div class="col-md-5  col-5">';
+                        $estilo2='';
+                        if($listado->EquipoVisitante == $nombreEquipo){
+                            $estilo2 = "style='font-weight: bold;'";
+                        }
+                        $tabla .= '                <img src="../img/logoEquipo.png" alt="Sin Logo"  width="100%"><br><span '.$estilo2.'>'.$listado->EquipoVisitante.'';
+                        $tabla .= '            </div>';
+                        if($totalObservaciones > 0){
+                            $row = $Observaciones->Row();
+                            if($row->estadoObservacion == 'Pendiente'){
+                                $tabla .= "            <div class='col-md-12 text-center pt-2'> <div class='alert alert-warning' role='alert'>Observación Pendiente realizada a ".$row->equipoObservado."</div> </div>";
+                            }
+                            else{
+                                $tabla .= "            <div class='col-md-12 text-center pt-2'><button type='button' class='btn btn-danger btn-sm checkbox-toggle' onclick='verAprobacion(" . chr(34) . $row->castigo . chr(34) . "," . chr(34) . $row->equipoObservado . chr(34) . "," . chr(34) . $row->observacion . chr(34) . "," . chr(34) . $row->estadoObservacion . chr(34) . ")'>Ver Detalle Observación</div>";
+                            }
+                            
+                        }
+                        $tabla .= '        </div>';
+            
+            $tabla .= '                </div>';
+            $tabla .= '            </div>';
+            $tabla .= '        </div>';
+        }
     }
-}
+
     $tabla .= '    </div>';
-       
-        // $tabla .= '<table id="example2" class="table table-bordered table-striped"  method="POST">
-        //             <thead>
-        //                 <tr>
-        //                     <th>#</th>
-        //                     <th>Fecha Partido</th>
-        //                     <th>Equipo Local</th>
-        //                     <th width="50px;">Resultados</th>
-        //                     <th>Equipo Visitante</th>        
-        //                 </tr>
-        //             </thead>
-        //             <tbody > ';
-     
-        // $cont = 0;
-        // if ($resultado1->RowCount() > 0) {
-        //     while (!$resultado1->EndOfSeek()) {
-        //         $listado = $resultado1->Row();
-        //         $goles1 = $parametro->obtenerGolesEquipo($listado->EquipoLocal,$listado->fechaPartido,$listado->idEquipo1,$listado->idEquipo2);             
-        //         $goles2 = $parametro->obtenerGolesEquipo($listado->EquipoVisitante,$listado->fechaPartido,$listado->idEquipo1,$listado->idEquipo2);
-                              
-        //         $cont++;
-        //         $tabla .= "<tr>";
-        //         $tabla .= "<td data-title=''>" .  $cont . "</td>";
-        //         $tabla .= "<td data-title=''>" . $listado->fechaPartido . "</td>";
-        //         if($listado->EquipoLocal == $nombreEquipo){
-        //             $tabla .= "<td data-title=''><b>" . $listado->EquipoLocal . "</b></td>";
-        //         }
-        //         else{
-        //             $tabla .= "<td data-title=''>" . $listado->EquipoLocal . "</td>";
-        //         }
-                
-        //         $tabla .= "<td data-title=''>".$goles1." - ".$goles2."</td>";
-        //         if($listado->EquipoVisitante == $nombreEquipo){
-        //             $tabla .= "<td data-title=''><b>" . $listado->EquipoVisitante . "</b></td>";
-        //         }
-        //         else{
-        //             $tabla .= "<td data-title=''>" . $listado->EquipoVisitante . "</td>";
-        //         }
-        //         $tabla .= "</tr>";
-        //     }
-        // }
-    
-        // $tabla .= "</tbody>
-                
-        //         </table>";
+
         echo  $tabla;   
 }
 

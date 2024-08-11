@@ -166,11 +166,6 @@ if($parametro->verificarPermisos($_SESSION['idUsuario'],'11,43,42') == 0){
     </div>
     <!-- ./wrapper -->
 
-
-
-
-    <!--        MODAL         -->
-
     <!-- Modal nuevo/editar multas -->
     <div class="modal fade" id="ModalRegistrarMultas">
         <div class="modal-dialog">

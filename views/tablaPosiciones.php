@@ -454,7 +454,53 @@ if (!isset($_SESSION['idUsuario'])) {
     </div>
     <!-- /.modal -->
 
+
+    <div class="modal" tabindex="-1" id='modalVerObservacion'>
+        <div class="modal-dialog modal-md">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id='lblObservacion'>Detalle Observación</h5>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"> <span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body">
+              <div class='row'>                              
+                <div class='col-md-6 mt-2'>
+                    <label for="">Equipo Observado</label>
+                    <input  type='text' id='txtEquipoObservado' class='form-control shadow-lg' readonly>                   
+                </div>
+                <div class='col-md-6 mt-2'>
+                    <label for="">Estado Observación</label>
+                    <input  type='text' id='txtEstadoObservacion' class='form-control shadow-lg' readonly>                   
+                </div>
+                <div class='col-md-12 mt-2'>
+                    <label for="">Observacion del Equipo</label>
+                    <textarea id="txtMotivoObservacion" rows="5" readonly class='form-control shadow-lg'></textarea>
+                </div>
+                <div class='col-md-12 mt-2'>
+                    <label for="">Respuesta de la Observación</label>
+                    <textarea id="txtRespuestaObservacion" rows="5" readonly class='form-control shadow-lg'></textarea>
+                </div>
+
+              </div>
+            </div>
+            <div class="modal-footer">               
+                <button type="button" class="btn btn-danger" data-bs-target="#modalVerPartidos2" data-bs-toggle="modal" data-bs-dismiss="modal">Volver</button>           
+            </div>
+            </div>
+        </div>
+    </div>
+
     <script>
+
+        function verAprobacion(castigo,equipoObservado,observacion,estado) {
+            
+            $("#txtRespuestaObservacion").html(castigo);
+            $("#txtEquipoObservado").val(equipoObservado);
+            $("#txtEstadoObservacion").val(estado);
+            $("#txtMotivoObservacion").html(observacion);           
+            $("#modalVerObservacion").modal('show');
+            $("#modalVerPartidos2").modal('hide');
+        }
 
         function RegistrarEquipoGanador(){
 
@@ -1114,6 +1160,8 @@ if (!isset($_SESSION['idUsuario'])) {
                 }
             })
         }
+
+
     </script>
 
 

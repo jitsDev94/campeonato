@@ -1,6 +1,7 @@
 <?php
 
-include 'clases/conexion.php';
+require_once '../conexion/parametros.php';
+$parametro = new parametros();
 session_start();
 
 if (!isset($_SESSION['idUsuario'])) {
@@ -16,26 +17,10 @@ if (!isset($_SESSION['idUsuario'])) {
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Observaciones</title>
-  <link rel="icon" type="image/jpg" href="img/image.png">
-  <!-- Google Font: Source Sans Pro -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
-  <!-- Ionicons -->
-  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
-   <!-- DataTables -->
-   <link rel="stylesheet" href="plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
-  <link rel="stylesheet" href="plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
-  <link rel="stylesheet" href="plugins/datatables-buttons/css/buttons.bootstrap4.min.css">
-  <!-- Theme style -->
-  <link rel="stylesheet" href="dist/css/adminlte.min.css">
-   <!-- SweetAlert2 -->
-   <link rel="stylesheet" href="plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css">
-  <!-- Toastr -->
-  <link rel="stylesheet" href="plugins/toastr/toastr.min.css">
+    <meta charset="utf-8">
+    <?php
+    require "../template/encabezado.php";
+    ?>
   
    <style>
     .card{
@@ -45,15 +30,15 @@ if (!isset($_SESSION['idUsuario'])) {
   </style>
 
 </head>
-<body class="hold-transition sidebar-mini layout-fixed sidebar-closed sidebar-collapse" onload="CargarDatos();">
+<body class="hold-transition sidebar-mini layout-fixed sidebar-closed sidebar-collapse">
 <div class="wrapper">
 
     <?php  
-        require "Navegador.php";
+        require "../template/Navegador.php";
     ?>
 
     <?php  
-        require "Menus.php";
+        require "../template/Menus.php";
     ?>
 
 <div class="content-wrapper">
@@ -93,8 +78,11 @@ if (!isset($_SESSION['idUsuario'])) {
                                         <div class="row">
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label for="inputCasa" class="form-label"><b>Equipo  </b></label> 
+                                                <label for="inputCasa" class="form-label"><b>Equipo Observado </b></label> 
                                                 <select class="form-control" id="filIdEquipos"> 
+                                                    <?php 
+                                                        $parametro->DropDownBuscarEquipos($idRol,$idEquipoDelegado);
+                                                    ?>
                                                     <?php 
                                                         $condicion ="";
                                                         if($idRol != 3){ ?>
@@ -106,14 +94,14 @@ if (!isset($_SESSION['idUsuario'])) {
                                                         if($idRol == 3){
                                                             $condicion =" and id = $idEquipoDelegado";
                                                         }
-                                                        $selected = "selected";
-                                                        $consultar = "SELECT * FROM Equipo where estado = 'Habilitado'  $condicion order by nombreEquipo asc";
-                                                        $resultado1 = mysqli_query($conectar, $consultar);
-                                                        while ($listado = mysqli_fetch_array($resultado1)){
+                                                        // $selected = "selected";
+                                                        // $consultar = "SELECT * FROM Equipo where estado = 'Habilitado'  $condicion order by nombreEquipo asc";
+                                                        // $resultado1 = mysqli_query($conectar, $consultar);
+                                                        // while ($listado = mysqli_fetch_array($resultado1)){
                                                             ?>
-                                                             <option value="<?php echo $listado['id']; ?>" <?php  if($idRol == 3 && $idEquipoDelegado == $listado['id'] ){ echo $selected;} ?>><?php echo $listado['nombreEquipo']; ?></option>
+                                                             <!-- <option value="<?php echo $listado['id']; ?>" <?php  if($idRol == 3 && $idEquipoDelegado == $listado['id'] ){ echo $selected;} ?>><?php echo $listado['nombreEquipo']; ?></option> -->
                                                             <?php
-                                                        }
+                                                        //}
                                                     ?>
                                                 </select>
                                             </div>
@@ -122,23 +110,16 @@ if (!isset($_SESSION['idUsuario'])) {
                                             <div class="form-group">
                                                 <label for="inputCasa" class="form-label"><b>Torneo</b></label> 
                                                 <select class="form-control" id="filIdTorneo"> 
-                                                    <?php 
-                                                        $consultar = "SELECT * FROM Campeonato";
-                                                        $resultado1 = mysqli_query($conectar, $consultar);
-                                                        while ($listado = mysqli_fetch_array($resultado1)){
-                                                            ?>
-                                                            <option value="<?php echo $listado['id'];?>"><?php echo $listado['nombre'];?></option>
-                                                            <?php
-                                                        }
-                                                    ?>
+                                                <?php 
+                                                                    $parametro->DropDownListarTorneos();
+                                                                ?>
                                                    
                                                 </select>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div style="margin-top:32px;">
-                                              <button type="button" class="btn btn-primary" onclick="FiltrarTarjetas()"><i class="fas fa-filter"></i>  Filtrar</button>
-                                              <button type="button" class="btn btn-secondary" id="botonDirectivaActual" onclick="CargarDatos()"> Mostrar Actual</button>
+                                              <button type="button" class="btn btn-primary" onclick="FiltrarObservaciones()"><i class="fas fa-filter"></i>  Filtrar</button>                                              
                                             </div>
                                         </div>                                    
                                     </div>  
@@ -186,18 +167,44 @@ if (!isset($_SESSION['idUsuario'])) {
       <!-- /.control-sidebar -->
       </div>
 
-           <?php $año = date('Y'); ?>
-        <footer class="main-footer">
-            <div class="float-right d-none d-sm-block">
-            <b>Version</b> 1.0
-            </div>
-            <strong>Copyright &copy; Software Bolivia <?php echo $año ?></strong> Todos los derechos reservados.
-        </footer>
+      <?php
+      require "../template/footer.php";
+      ?>
     
     </div>
     <!-- ./wrapper -->
 
   
+    <div class="modal" tabindex="-1" id='modalVerObservacion'>
+        <div class="modal-dialog modal-md">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id='lblObservacion'>Motivo del Rechazo</h5>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"> <span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body">
+              <div class='row'>               
+                <div class='col-md-6 mt-2'>
+                    <label for="">Fecha Resolución</label>
+                    <input  type='text' id='txtFechaRespuesta' class='form-control shadow-lg' readonly>                          
+                </div>
+                <div class='col-md-6 mt-2'>
+                    <label for="">Usuario</label>
+                    <input  type='text' id='txtUsuarioRespuesta' class='form-control shadow-lg' readonly>                   
+                </div>
+                <div class='col-md-12 mt-2'>
+                    <label for="">Detalle</label>
+                    <textarea id="txtMotivoRechazo_ver" rows="5" readonly class='form-control shadow-lg'></textarea>
+                </div>
+
+              </div>
+            </div>
+            <div class="modal-footer">               
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cerrar</button>           
+            </div>
+            </div>
+        </div>
+    </div>
 
     <div class="modal" tabindex="-1" id='RechazarObservacion'>
         <div class="modal-dialog modal-md">
@@ -232,19 +239,24 @@ if (!isset($_SESSION['idUsuario'])) {
             </div>
             <div class="modal-body">
                 <div class='row'>
+                    <input type="hidden" id='txtcodObservacion'>
                     <input type="hidden" id='txtcodPartido2'>
                     <input type="hidden" id='txtcodEquipoObservado'>
+                    <input type="hidden" id='txtEquipoLocal'>
+                    <input type="hidden" id='txtEsquipoVisitante'>
+                    <input type="hidden" id='txtEquipoObservado'>
                     <div class='col-md-12 mb-3'>
                         <label for="">Tipo de Castigos</label>
                         <select class='form-control shadow-lg' id='txtCastigos' onclick='mostrarcastigos()'>
                             <option value="" selected disabled>Seleccionar..</option>
                             <option value="puntos">Quita de puntos en la tabla de posición</option>
-                            <option value="goles">Goles en contra para el proximo partido</option>
+                            <!-- <option value="goles">Goles en contra para el proximo partido</option> -->
                         </select>
                     </div>               
                     <div class='col-md-12' id='divQuitarPuntos' style='display:none;'>
-                        <label for="">Cantidad de puntos a quitar</label>
-                        <input placeholder='Ingresar los puntos que se quitaran' type='number' id='txtCantidadPuntos' class='form-control shadow-lg'>                   
+                        <div class="alert alert-warning" role='alert'>Se procedera a quitar los 3 puntos y se dara 2 goles en contra al equipo observado. ¿Desea Continuar?</div>
+                        <!-- <label for="">Cantidad de puntos a quitar</label>
+                        <input placeholder='Ingresar los puntos que se quitaran' type='number' id='txtCantidadPuntos' class='form-control shadow-lg'> -->
                     </div>
                     <div class='col-md-12' id='divGolesContra' style='display:none;'>
                         <label for="">Cantidad de goles en contra</label>
@@ -272,12 +284,6 @@ if (!isset($_SESSION['idUsuario'])) {
 
 
   <script>
-
-
-        function CargarDatos(){
-            $("#botonDirectivaActual").hide();
-            ListaObservaciones();       
-        }
 
         function RechazarObservacion(cod){
             $("#txtcodPartido").val(cod);
@@ -320,10 +326,32 @@ if (!isset($_SESSION['idUsuario'])) {
             })
         }
 
-      function ConfirmarAceptarObservacion(id,equipoObservado) {
+
+        function verMotivoRechazo(motivo,fecha,usuario) {
      
-            $("#txtcodPartido2").val(id);
-            $("#txtcodEquipoObservado").val(equipoObservado);
+            $("#txtMotivoRechazo_ver").html(motivo);
+            $("#txtFechaRespuesta").val(fecha);
+            $("#txtUsuarioRespuesta").val(usuario);
+            $("#lblObservacion").html('Motivo del Rechazo');
+            $("#modalVerObservacion").modal('show');
+        }
+        function verAprobacion(motivo,fecha,usuario) {
+     
+            $("#txtMotivoRechazo_ver").html(motivo);
+            $("#txtFechaRespuesta").val(fecha);
+            $("#txtUsuarioRespuesta").val(usuario);
+            $("#lblObservacion").html('Detalle de la Aprobación');
+            $("#modalVerObservacion").modal('show');
+        }
+
+      function ConfirmarAceptarObservacion(idObservacion,idPartido,codEquipoObservado,equipoLocal,esquipoVisitante,equipoObservado) {
+     
+            $("#txtcodObservacion").val(idObservacion);
+            $("#txtcodPartido2").val(idPartido);
+            $("#txtcodEquipoObservado").val(codEquipoObservado);
+            $("#txtEquipoLocal").val(equipoLocal);
+            $("#txtEsquipoVisitante").val(esquipoVisitante);
+            $("#txtEquipoObservado").val(equipoObservado);
 
             $("#AceptarObservacion").modal('show');
       }
@@ -335,104 +363,90 @@ if (!isset($_SESSION['idUsuario'])) {
         }
 
         $("#divAlertaCastigos").html('');
+        var codObservacion = $("#txtcodObservacion").val();        
         var codEquipoObservado = $("#txtcodEquipoObservado").val();
         var castigos = $("#txtCastigos").val();
-        var puntos = $("#txtCantidadPuntos").val();
-        var goles = $("#txtCantidadGoles").val();
+        var castigosTexto = $("#txtCastigos option:selected").text();
+        //var puntos = $("#txtCantidadPuntos").val();
+        var puntos = 3;
+        //var goles = $("#txtCantidadGoles").val();
+        var goles = 2;
+        var equipoLocal = $("#txtEquipoLocal").val();
+        var esquipoVisitante = $("#txtEsquipoVisitante").val();
+        var equipoObservado = $("#txtEquipoObservado").val();
 
         if(estado == 'Aceptado'){
-           // $("#divAlertaCastigos").html('<div class="col-md-5 loading"> <center><i class="fa fa-spinner fa-pulse fa-5x" style="color:#3c8dbc"></i><br/>Guardando Partido ...</center></div>');
-         
-
+           // $("#divAlertaCastigos").html('<div class="col-md-5 loading"> <center><i class="fa fa-spinner fa-pulse fa-5x" style="color:#3c8dbc"></i><br/>Guardando Partido ...</center></div>');         
             if(castigos == "" || castigos == null){
                 $("#divAlertaCastigos").html("<div class='alert alert-warning' role='alert'>Debe seleccionar un tipo de castigo</div>");                
                 return false;
             }
 
-            if(castigos =='puntos'){
-                if(puntos == ''){
-                    $("#divAlertaCastigos").html("<div class='alert alert-warning' role='alert'>Debe indicar las cantidad de puntos a descontar</div>");
-                    return false;
-                }
-            }else{
-                if(castigos =='goles'){
-                    if(goles == ''){
-                        $("#divAlertaCastigos").html("<div class='alert alert-warning' role='alert'>Debe indicar las cantidad de goles a descontar</div>");
-                        return false;
-                    }
-                }
-            }
+            // if(castigos =='puntos'){
+            //     if(puntos == ''){
+            //         $("#divAlertaCastigos").html("<div class='alert alert-warning' role='alert'>Debe indicar las cantidad de puntos a descontar</div>");
+            //         return false;
+            //     }
+            // }else{
+            //     if(castigos =='goles'){
+            //         if(goles == ''){
+            //             $("#divAlertaCastigos").html("<div class='alert alert-warning' role='alert'>Debe indicar las cantidad de goles a descontar</div>");
+            //             return false;
+            //         }
+            //     }
+            // }
         }
 
         $("#btnAceptarObs").prop("disabled",true);
-        $("#btnAceptarObs").html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span><span > Aceptar Observación</span>');
+        $("#divAlertaCastigos").html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span><span >Aplicando Castigo</span>');
         var motivo = $("#txtMotivoRechazo").val();
          
          $.ajax({
-         url: 'clases/Cl_Observaciones.php?op=AceptarObservacion',
+         url: '../clases/Cl_Observaciones.php?op=AceptarObservacion',
             type: 'POST',
             data: {
-                id: id,
+                codObservacion: codObservacion,
+                idPartido: id,
                 estado: estado,
                 motivo: motivo,
-                castigos:castigos,
+                castigos:castigos,                
                 puntos:puntos,
                 goles:goles,
-                codEquipoObservado: codEquipoObservado
+                codEquipoObservado: codEquipoObservado,               
+                equipoLocal:equipoLocal,
+                esquipoVisitante: esquipoVisitante,
+                equipoObservado: equipoObservado
              }, 
              success: function(vs) {
                     $("#divAlertaCastigos").html('');
                     $("#btnAceptarObs").prop("disabled",false);
-                    if (vs == 2) {
-                    Swal.fire("Error..!", "ha ocurrido un error al aceptar la observación", "error");                     
-                    }else{
-                        if(vs== 1){
-                            if(estado == "Aceptado"){
-                                    if (vs == 3) {
-                                    Swal.fire("Error..!", "ha ocurrido un error al configurar el castigo, intenta nuevamente", "error");                     
-                                    }
-                                    else{
-                                        Swal.fire('Exito..!','Observación aceptada correctamente.', 'success');
-                                        location.reload();
-                                    }
-                               
-                            }
-                            else{
-                                Swal.fire('Exito..!','Observación rechazada correctamente.', 'success');
-                                location.reload();
-                            }
-                            
-                        }           
-                    }                  
+                  
+                    if(vs== 'ok'){
+                        if(estado == "Aceptado"){                              
+                            Swal.fire('Exito..!','Observación aceptada correctamente.', 'success');                                                                             
+                        }
+                        else{
+                            Swal.fire('Exito..!','Observación rechazada correctamente.', 'success');                           
+                        }
+
+                        location.reload();
+                    } 
+                    else{
+                        Swal.fire("Error..!", vs, "error");     
+                    }          
+                                      
              }
          })         
      }
 
-     function ListaObservaciones(){
-        
-        $.ajax({
-            url: 'clases/Cl_Observaciones.php?op=ListaObservaciones',
-            type: 'POST', 
-            success: function(data) {
-                $("#contenerdor_tabla").html('');
-                $('#example').DataTable().destroy();
-                $("#contenerdor_tabla").html(data);   
-                $("#botonDirectivaActual").hide(); 
-                $("#example").DataTable({
-                "responsive": true, "lengthChange": false, "autoWidth": false,
-                "language": lenguaje_español
-                }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
-            }          
-        })         
-    }
-
-    function FiltrarTarjetas(){
+   
+    function FiltrarObservaciones(){
         
       var idEquipos = $("#filIdEquipos").val();    
       var idCampeonato = $("#filIdTorneo").val();
 
         $.ajax({
-            url: 'clases/Cl_Observaciones.php?op=FiltrarObservaciones',
+            url: '../clases/Cl_Observaciones.php?op=FiltrarObservaciones',
             type: 'POST', 
             data:{
                 idEquipos: idEquipos,
@@ -445,52 +459,35 @@ if (!isset($_SESSION['idUsuario'])) {
                 $("#example").DataTable({
                 "responsive": true, "lengthChange": false, "autoWidth": false,
                 "language": lenguaje_español
-                }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
-                $("#botonDirectivaActual").show();
+                });
+               // $("#botonDirectivaActual").show();
              
             }          
         })         
     }
       </script>
 
+    <?php
+      require "../template/piePagina.php";
+    ?>
 
-
-<!-- Option 1: Bootstrap Bundle with Popper -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-<!-- SweetAlert2 -->
-<script src="plugins/sweetalert2/sweetalert2.min.js"></script>
-<!-- Toastr -->
-<script src="plugins/toastr/toastr.min.js"></script>
-<!-- jQuery -->
-<script src="plugins/jquery/jquery.min.js"></script>
-<!-- Bootstrap 4 -->
-<script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-<!-- DataTables  & Plugins -->
-<script src="plugins/datatables/jquery.dataTables.min.js"></script>
-<script src="plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
-<script src="plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
-<script src="plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
-<script src="plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
-<script src="plugins/datatables-buttons/js/buttons.bootstrap4.min.js"></script>
-<!-- AdminLTE App -->
-<script src="dist/js/adminlte.min.js"></script>
-<!-- AdminLTE for demo purposes -->
-<script src="dist/js/demo.js"></script>
-<!-- Page specific script -->
 <script>
 
 $(function () {
+
+    FiltrarObservaciones();     
+
     $("#example2").DataTable({
       "responsive": true, "lengthChange": false, "autoWidth": false,
       "language": lenguaje_español
-    }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
-  })
-
-  $(function () {
+    });
+ 
     $("#example3").DataTable({
       "responsive": true, "lengthChange": false, "autoWidth": false,
       "language": lenguaje_español
-    }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
+    });
+
+    
   })
 
   var lenguaje_español = 

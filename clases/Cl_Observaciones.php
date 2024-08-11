@@ -1,48 +1,65 @@
 <?php
-
+require_once '../conexion/parametros.php';
+$parametro = new parametros();
 session_start();
 $idRol = $_SESSION['idRol'];   
 $idEquipoDelegado = $_SESSION['idEquipo'];
-
-include("conexion.php");
+$idUsuario = $_SESSION['idUsuario'];
 
 $tipo = $_GET["op"];
 
 
 if($tipo == "AceptarObservacion"){
 
-    $id = $_POST["id"];
+    $codObservacion = $_POST["codObservacion"];
+    $idPartido = $_POST["idPartido"];
     $estado = $_POST["estado"];
     $motivo = $_POST["motivo"];
-    $castigos = $_POST["castigos"];
+    $castigos = $_POST["castigos"];    
     $puntos = $_POST["puntos"];
     $goles = $_POST["goles"];
     $codEquipoObservado = $_POST["codEquipoObservado"];
+    $equipoLocal = $_POST["equipoLocal"];
+    $esquipoVisitante = $_POST["esquipoVisitante"];
+    $equipoObservado = $_POST["equipoObservado"];
 
-        $registrar = "UPDATE Partido SET estadoObservacion = '$estado', motivoRechazo = '$motivo' where id = $id";
-        $resultado = mysqli_query($conectar, $registrar);
+    $equipoNoObservado = '';
+    $equipoObservador = '';
+    if($equipoObservado == $equipoLocal){
+        $equipoNoObservado = $esquipoVisitante;
+        $equipoObservador = 'visitante';
+    }
+    else{
+        $equipoNoObservado = $equipoLocal;
+        $equipoObservador = 'local';
+    }
+
+    $resultado = $parametro->AceptarObservacion($codObservacion, $idPartido,$estado,$motivo,$castigos,$puntos,$goles,$codEquipoObservado,$idUsuario,$equipoObservado,$equipoNoObservado,$equipoObservador); 
+    echo $resultado;
+        // $registrar = "UPDATE Partido SET estadoObservacion = '$estado', motivoRechazo = '$motivo' where id = $id";
+        // $resultado = mysqli_query($conectar, $registrar);
     
-        if($resultado){
-            if($castigos == "puntos"){
-                $registrar = "UPDATE TablaPosicion SET puntos = puntos - $puntos  where idEquipo = $codEquipoObservado and idCampeonato = (SELECT id FROM Campeonato where estado = 'En Curso')";
-                $resultado = mysqli_query($conectar, $registrar);
+        // if($resultado){
+        //     if($castigos == "puntos"){
+        //         $registrar = "UPDATE TablaPosicion SET puntos = puntos - $puntos  where idEquipo = $codEquipoObservado and idCampeonato = (SELECT id FROM Campeonato where estado = 'En Curso')";
+        //         $resultado = mysqli_query($conectar, $registrar);
 
-                if($resultado){
-                    echo '1';
-                }
-                else{
-                    $registrar = "UPDATE Partido SET estadoObservacion = 'Pendiente', motivoRechazo = '' where id = $id";
-                    $resultado = mysqli_query($conectar, $registrar);
-                    echo '3';
-                }
-            }
-            else{
-                echo "1";
-            }
-        }
-        else{
-            echo '2';
-        }
+        //         if($resultado){
+        //             echo '1';
+        //         }
+        //         else{
+        //             $registrar = "UPDATE Partido SET estadoObservacion = 'Pendiente', motivoRechazo = '' where id = $id";
+        //             $resultado = mysqli_query($conectar, $registrar);
+        //             echo '3';
+        //         }
+        //     }
+        //     else{
+        //         echo "1";
+        //     }
+        // }
+        // else{
+        //     echo '2';
+        // }
 }
 
 
@@ -65,197 +82,73 @@ if($tipo == "DatosTarjeta"){
     }   
 }
 
-
-if($tipo == "ListaObservaciones"){
-
-    $condicion = "";
-
-    if($idRol == 3){
-        $condicion = "and p.equipoObservado = $idEquipoDelegado";
-    }
-
-    $consultar = "SELECT p.id as idPartido, e1.nombreEquipo as equipoLocal, e2.nombreEquipo as esquipoVisitante,s.nombreSede,c.nombre as nombreCampeonato,
-    p.fechaPartido,p.Modo,p.Observacion,e3.nombreEquipo as nombreEquipoObservado,p.equipoObservado FROM Partido as p 
-    LEFT JOIN Equipo as e1 on e1.id = p.idEquipoLocal
-    LEFT JOIN Equipo as e2 on e2.id = p.idEquipoVisitante
-    LEFT JOIN Equipo as e3 on e3.id = p.equipoObservado
-    LEFT join Campeonato as c on c.id = p.idCampeonato
-    LEFT join Sede as s on s.id = p.idSede
-    where p.estadoObservacion = 'Pendiente' and c.estado = 'En Curso' $condicion";
-    $resultado1 = mysqli_query($conectar, $consultar);
-
-        $tabla = "";
-        if($idRol == 3){
-            $tabla .= '<table id="example" class="table table-bordered table-striped"  method="POST">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th width="80px">Fecha</th>
-                    <th>Partido</th>
-                    <th>Equipo Observado</th>                       
-                    <th>Modo</th>
-                    <th>Observación</th> 
-                </tr>
-            </thead>
-            <tbody > ';
-        }
-        else{
-            $tabla .= '<table id="example" class="table table-bordered table-striped"  method="POST">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th width="80px">Fecha</th>
-                    <th>Partido</th>
-                    <th>Equipo Observado</th>                       
-                    <th>Modo</th>
-                    <th>Observación</th>
-                    <th width="80px">Acción</th>   
-                </tr>
-            </thead>
-            <tbody > ';
-        }
-       
-     
-        $cont = 0;
-        if ($resultado1) {
-            while ($listado = mysqli_fetch_array($resultado1)) {
-                $cont++;
-                $tabla .= "<tr>";
-                $tabla .= "<td data-title=''>" .  $cont . "</td>";
-                $tabla .= "<td data-title=''>" . $listado['fechaPartido'] . "</td>";
-                $tabla .= "<td data-title=''>" . $listado['equipoLocal'] . " - " . $listado['esquipoVisitante'] . "</td>";
-                $tabla .= "<td data-title=''>" . $listado['nombreEquipoObservado'] . "</td>";           
-                $tabla .= "<td data-title=''>" . $listado['Modo'] . "</td>";
-                $tabla .= "<td data-title=''>" . $listado['Observacion'] . "</td>";
-                if($idRol != 3){
-                $tabla .= "<td data-title=''><button type='button' class='btn btn-primary btn-sm checkbox-toggle' onclick='ConfirmarAceptarObservacion(" . chr(34) . $listado['idPartido'] . chr(34) . "," . chr(34) . $listado['equipoObservado'] . chr(34) . ")'><i class='fas fa-thumbs-up'></i></button>";      
-                $tabla .= " <button type='button' class='btn btn-danger btn-sm checkbox-toggle' onclick='RechazarObservacion(".$listado['idPartido'].")'><i class='fas fa-thumbs-down'></i></button>";
-                }
-                $tabla .= "</tr>";
-            }
-        }
-    
-        $tabla .= "</tbody>
-                
-                </table>";
-        echo  $tabla;   
-}
-
-
 if($tipo == "FiltrarObservaciones"){
 
 
     $idEquipo = $_POST["idEquipos"];
     $idCampeonato = $_POST["idCampeonato"];
-    $condicion = "";
-
-    if($idEquipo != 0){
-        $condicion ="and p.equipoObservado = $idEquipo";
-
-        $consultar = "SELECT p.id as idPartido, e1.nombreEquipo as equipoLocal, e2.nombreEquipo as esquipoVisitante, 
-        s.nombreSede,c.nombre as nombreCampeonato,p.motivoRechazo,
-        p.fechaPartido,p.Modo,p.Observacion,p.estadoObservacion FROM Partido as p 
-        LEFT JOIN Equipo as e1 on e1.id = p.idEquipoLocal
-        LEFT JOIN Equipo as e2 on e2.id = p.idEquipoVisitante
-        LEFT JOIN Equipo as e3 on e3.id = p.equipoObservado
-        LEFT join Campeonato as c on c.id = p.idCampeonato
-        LEFT join Sede as s on s.id = p.idSede
-        where p.idCampeonato = $idCampeonato and p.estadoObservacion != '' $condicion";
-        $resultado1 = mysqli_query($conectar, $consultar);
     
+
+    $resultado = $parametro->FiltrarObservaciones($idCampeonato,$idEquipo); 
+  
             $tabla = "";
             $tabla .= '<table id="example" class="table table-bordered table-striped"  method="POST">
                         <thead>
                             <tr>
                                 <th>#</th>
                                 <th>Fecha</th>
-                                <th>Partido</th>                            
-                                <th>Sede</th>
+                                <th>Partido</th> 
+                                 <th>Equipo Observado</th>                            
+                                
                                 <th>Torneo</th>
                                 <th>Modo</th>
-                                <th>Observación</th>
-                                <th>Motivo Rechazo</th>
+                                <th>Observación</th>                               
                                 <th>Estado</th>
+                                <th width="80px">Acción</th>   
                             </tr>
                         </thead>
                         <tbody > ';
          
             $cont = 0;
-            if ($resultado1) {
-                while ($listado = mysqli_fetch_array($resultado1)) {
+            if ($resultado->RowCount() > 0) {
+                while (!$resultado->EndOfSeek()) {
+                    $listado = $resultado->Row();
                     $cont++;
+                    $fechaRespuesta = '';
+                    if($listado->fechaRespuesta != ''){
+                        $fechaRespuesta =  date('d-m-Y',strtotime($listado->fechaRespuesta));
+                    }
                     $tabla .= "<tr>";
                     $tabla .= "<td data-title=''>" .  $cont . "</td>";
-                    $tabla .= "<td data-title=''>" . $listado['fechaPartido'] . "</td>";
-                    $tabla .= "<td data-title=''>" . $listado['equipoLocal'] . " - " . $listado['esquipoVisitante'] . "</td>";               
-                    $tabla .= "<td data-title=''>" . $listado['nombreSede'] . "</td>";
-                    $tabla .= "<td data-title=''>" . $listado['nombreCampeonato'] . "</td>";          
-                    $tabla .= "<td data-title=''>" . $listado['Modo'] . "</td>";
-                    $tabla .= "<td data-title=''>" . $listado['Observacion'] . "</td>";
-                    $tabla .= "<td data-title=''>" . $listado['motivoRechazo'] . "</td>";
-                    $tabla .= "<td data-title=''>" . $listado['estadoObservacion'] . "</td>";
+                    $tabla .= "<td data-title=''>" . $listado->fechaPartido . "</td>";
+                    $tabla .= "<td data-title=''>" . $listado->equipoLocal . " - " . $listado->esquipoVisitante . "</td>";               
+                    $tabla .= "<td data-title=''>" . $listado->equipoObservado . "</td>";
+                    $tabla .= "<td data-title=''>" . $listado->nombreCampeonato . "</td>";          
+                    $tabla .= "<td data-title=''>" . $listado->Modo . "</td>";
+                    $tabla .= "<td data-title=''>" . $listado->Observacion . "</td>";                   
+                    $tabla .= "<td data-title=''>" . $listado->estadoObservacion . "</td>";
+                    $tabla .= "<td data-title=''>";
+                    if($parametro->verificarPermisos($_SESSION['idUsuario'],'5') > 0 && $listado->estadoObservacion == 'Pendiente'){
+                        $tabla .= "<button type='button' class='btn btn-primary btn-sm checkbox-toggle' onclick='ConfirmarAceptarObservacion(" . chr(34) . $listado->idObservacion . chr(34) . "," . chr(34) . $listado->idPartido . chr(34) . "," . chr(34) . $listado->idEquipoObservado . chr(34) . "," . chr(34) . $listado->equipoLocal . chr(34) . "," . chr(34) . $listado->esquipoVisitante . chr(34) . "," . chr(34) . $listado->equipoObservado . chr(34) . ")'><i class='fas fa-thumbs-up'></i></button>";      
+                        $tabla .= " <button type='button' class='btn btn-danger btn-sm checkbox-toggle' onclick='RechazarObservacion(" . chr(34) . $listado->idObservacion . chr(34) . ",". chr(34).$listado->idPartido . chr(34) .")'><i class='fas fa-thumbs-down'></i></button>";
+                    }
+                    else{
+                        if($listado->estadoObservacion == 'Rechazado'){
+                            $tabla .= "<button type='button' title='Ver Motivo Rechazo' class='btn btn-secondary btn-sm checkbox-toggle' onclick='verMotivoRechazo(" . chr(34) . $listado->motivoRechazo . chr(34) . "," . chr(34) . $fechaRespuesta . chr(34) . "," . chr(34) . $listado->usuario . chr(34) . ")'><i class='fas fa-exclamation-triangle'></i></button>";      
+                        }
+                        else{
+                            if($listado->estadoObservacion == 'Aceptado'){
+                                $tabla .= "<button type='button' title='Ver Detalle Castigo' class='btn btn-success btn-sm checkbox-toggle' onclick='verAprobacion(" . chr(34) . $listado->castigo . chr(34) . "," . chr(34) . $fechaRespuesta . chr(34) . "," . chr(34) . $listado->usuario . chr(34) . ")'><i class='fas fa-exclamation-triangle'></i></button>";      
+                            }
+                        }
+                    }
+                    $tabla .= "</td>";
                     $tabla .= "</tr>";
                 }
             }
         
-            $tabla .= "</tbody>
-                    
-                    </table>";
-    }
-    else{
-        $consultar = "SELECT p.id as idPartido, e1.nombreEquipo as equipoLocal, e2.nombreEquipo as esquipoVisitante, e3.nombreEquipo as nombreEquipoObservado,
-        s.nombreSede,c.nombre as nombreCampeonato,p.motivoRechazo,
-        p.fechaPartido,p.Modo,p.Observacion,p.estadoObservacion FROM Partido as p 
-        LEFT JOIN Equipo as e1 on e1.id = p.idEquipoLocal
-        LEFT JOIN Equipo as e2 on e2.id = p.idEquipoVisitante
-        LEFT JOIN Equipo as e3 on e3.id = p.equipoObservado
-        LEFT join Campeonato as c on c.id = p.idCampeonato
-        LEFT join Sede as s on s.id = p.idSede
-        where p.idCampeonato = $idCampeonato and p.estadoObservacion != '' $condicion";
-        $resultado1 = mysqli_query($conectar, $consultar);
-    
-            $tabla = "";
-            $tabla .= '<table id="example" class="table table-bordered table-striped"  method="POST">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Fecha</th>
-                                <th>Partido</th>
-                                <th>Equipo Observado</th>
-                                <th>Sede</th>
-                                <th>Torneo</th>
-                                <th>Modo</th>
-                                <th>Observación</th>
-                                <th>Motivo Rechazo</th>
-                                <th>Estado</th>
-                            </tr>
-                        </thead>
-                        <tbody > ';
-         
-            $cont = 0;
-            if ($resultado1) {
-                while ($listado = mysqli_fetch_array($resultado1)) {
-                    $cont++;
-                    $tabla .= "<tr>";
-                    $tabla .= "<td data-title=''>" .  $cont . "</td>";
-                    $tabla .= "<td data-title=''>" . $listado['fechaPartido'] . "</td>";
-                    $tabla .= "<td data-title=''>" . $listado['equipoLocal'] . " - " . $listado['esquipoVisitante'] . "</td>";
-                    $tabla .= "<td data-title=''>" . $listado['nombreEquipoObservado'] . "</td>";
-                    $tabla .= "<td data-title=''>" . $listado['nombreSede'] . "</td>";
-                    $tabla .= "<td data-title=''>" . $listado['nombreCampeonato'] . "</td>";          
-                    $tabla .= "<td data-title=''>" . $listado['Modo'] . "</td>";
-                    $tabla .= "<td data-title=''>" . $listado['Observacion'] . "</td>";
-                    $tabla .= "<td data-title=''>" . $listado['motivoRechazo'] . "</td>";
-                    $tabla .= "<td data-title=''>" . $listado['estadoObservacion'] . "</td>";
-                    $tabla .= "</tr>";
-                }
-            }
-        
-            $tabla .= "</tbody>
-                    
-                    </table>";
-    }
+            $tabla .= "</tbody>                    
+            </table>";
 
-   
         echo  $tabla;   
 }
