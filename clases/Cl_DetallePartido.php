@@ -16,9 +16,12 @@ if($tipo == "DatosEquipo"){
     $idPartido = $_POST["id"];
 
     $datos = array();
-    $Consultar = "SELECT p.id,p.fechaPartido,e1.id as idEquipo1,e1.nombreEquipo as EquipoLocal,e2.id as idEquipo2, e2.nombreEquipo as EquipoVisitante from Partido as p
-    LEFT JOIN Equipo as e1 on e1.id = p.idEquipoLocal
-    LEFT JOIN Equipo as e2 on e2.id = p.idEquipoVisitante
+    $Consultar = "SELECT p.id,p.fechaPartido,e1.id as idEquipo1,e1.nombreEquipo as EquipoLocal,e2.id as idEquipo2, e2.nombreEquipo as EquipoVisitante 
+	from Partido as p
+    LEFT join inscripcion i on i.id = p.idEquipoLocal
+    LEFT JOIN Equipo as e1 on e1.id = i.idEquipo
+    LEFT join inscripcion i2 on i2.id = p.idEquipoVisitante
+    LEFT JOIN Equipo as e2 on e2.id = i2.idEquipo
     where p.id = $idPartido";
     $resultado = mysqli_query($conectar, $Consultar);
     $datos = mysqli_fetch_assoc($resultado);
@@ -79,7 +82,7 @@ if($tipo == "ListaPartidos2"){
                 $dato = $parametro->obtenerGoles($listado->EquipoVisitante,$listado->idEquipo1,$listado->idEquipo2,$listado->fechaPartido,$fecha);
                 $goles2 = $dato->goles;                
                 
-            $tabla .= '<div class="card col-md-2 text-center ml-3 mr-3">           
+            $tabla .= '<div class="card col-md-2 text-center ml-2 mr-2">           
                 <h5 class="pt-4">'.$listado->EquipoLocal .' - '.$listado->EquipoVisitante.'</h5>
                 <h5 class="pt-1"> '.$goles1.' - '.$goles2.'</h5><br>
                 <button type="button" class="btn btn-success btn-sm mb-2"  onclick="ModalVerPartidos('.$listado->id.')">Ver detalles</button>                  
@@ -192,12 +195,7 @@ if($tipo == "detalleEquipo1"){
     $idPartido = $_POST["id"];
     $nombreEquipo= $_POST["nombreEquipo"];
 
-    $consultar = "SELECT p.id, h.nombreHecho,concat(j.nombre, ' ',j.apellidos) as jugador,hp.Equipo from Partido as p
-    left join HechosPartido as hp on hp.idPartido = p.id
-    LEFT JOIN Hechos as h on h.id = hp.idHecho
-    LEFT join Jugador as j on j.id =  hp.idJugador
-    where p.id = $idPartido and hp.Equipo = '$nombreEquipo'";
-    $resultado1 = mysqli_query($conectar, $consultar);
+    $resultado = $parametro->detalleEquipo($idPartido,$nombreEquipo); 
 
         $tabla = "";
         $tabla .= '<table id="example2" class="table table-bordered table-striped"  method="POST">
@@ -211,20 +209,20 @@ if($tipo == "detalleEquipo1"){
                     <tbody > ';
      
         $cont = 0;
-        if ($resultado1) {
-            while ($listado = mysqli_fetch_array($resultado1)) {
-              
+        if ($resultado->RowCount() > 0) {
+            while (!$resultado->EndOfSeek()) {
+                $listado = $resultado->Row();
+
                 $cont++;
                 $tabla .= "<tr>";
                 $tabla .= "<td data-title=''>" .  $cont . "</td>";
-                $tabla .= "<td data-title=''>" . $listado['jugador'] . "</td>";
-                $tabla .= "<td data-title=''>" . $listado['nombreHecho'] . "</td>";
+                $tabla .= "<td data-title=''>" . $listado->jugador . "</td>";
+                $tabla .= "<td data-title=''>" . $listado->nombreAcontecimiento . "</td>";
                 $tabla .= "</tr>";
             }
         }
     
-        $tabla .= "</tbody>
-                
+        $tabla .= "</tbody>                
                 </table>";
         echo  $tabla;   
 }
@@ -235,12 +233,7 @@ if($tipo == "detalleEquipo2"){
     $idPartido = $_POST["id"];
     $nombreEquipo= $_POST["nombreEquipo"];
 
-    $consultar = "SELECT p.id, h.nombreHecho,concat(j.nombre, ' ',j.apellidos) as jugador,hp.Equipo from Partido as p
-    left join HechosPartido as hp on hp.idPartido = p.id
-    LEFT JOIN Hechos as h on h.id = hp.idHecho
-    LEFT join Jugador as j on j.id =  hp.idJugador
-    where p.id = $idPartido  and hp.Equipo = '$nombreEquipo'";
-    $resultado1 = mysqli_query($conectar, $consultar);
+    $resultado = $parametro->detalleEquipo($idPartido,$nombreEquipo);    
 
         $tabla = "";
         $tabla .= '<table id="example3" class="table table-bordered table-striped"  method="POST">
@@ -254,14 +247,14 @@ if($tipo == "detalleEquipo2"){
                     <tbody > ';
      
         $cont = 0;
-        if ($resultado1) {
-            while ($listado = mysqli_fetch_array($resultado1)) {
-              
+        if ($resultado->RowCount() > 0) {
+            while (!$resultado->EndOfSeek()) {
+                $listado = $resultado->Row();
                 $cont++;
                 $tabla .= "<tr>";
                 $tabla .= "<td data-title=''>" .  $cont . "</td>";
-                $tabla .= "<td data-title=''>" . $listado['jugador'] . "</td>";
-                $tabla .= "<td data-title=''>" . $listado['nombreHecho'] . "</td>";
+                $tabla .= "<td data-title=''>" . $listado->jugador . "</td>";
+                $tabla .= "<td data-title=''>" . $listado->nombreAcontecimiento . "</td>";
                 $tabla .= "</tr>";
             }
         }

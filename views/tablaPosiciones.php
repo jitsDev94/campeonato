@@ -315,12 +315,18 @@ if (!isset($_SESSION['idUsuario'])) {
         <div class="modal-dialog modal-xl">
             <div class="modal-content">               
                 <div class="modal-header">
-                    <h4 class="modal-title">Partidos del Equipo</h4>
+                    <h4 class="modal-title" id='lblPartidosEquipo'>Partidos del Equipo</h4>
                     <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
+                    <div class="row m-1">
+                        <div class="col-md-4 text-center" style="background: red; color:white; font-size:12px;"><h5>Partido Observado</h5></div>
+                        <div class="col-md-4 text-center" style="background: yellow; font-size:12px;"><h5>Partido con Walkover</h5></div>
+                        <div class="col-md-4 text-center" style="background: blue; color:white; font-size:12px;"><h5>Partido Normal</h5></div>
+                    </div>
+                    <br>
                     <div id="divContenedorDetallePartidos"></div>
                 </div>                 
                 <br>
@@ -1075,6 +1081,7 @@ if (!isset($_SESSION['idUsuario'])) {
                     nombreEquipo: nombreEquipo
                 },
                 success: function(data) {
+                    $("#lblPartidosEquipo").html('Lista de Partidos de <b>'+nombreEquipo+'<b>');
                     $("#divContenedorDetallePartidos").html('');
                    // $('#example2').DataTable().destroy();
                     $("#divContenedorDetallePartidos").html(data);

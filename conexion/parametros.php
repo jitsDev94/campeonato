@@ -351,11 +351,14 @@ class parametros
         }
        
         $consulta = "SELECT * FROM `partido` where idEquipoGanadorWalkover = $idEquipoGanadorWalkover and fechaPartido = '$fechaPartido';";
-
+        $consulta="SELECT p.*,e.nombreEquipo as nombreEquipo FROM partido p
+        LEFT join inscripcion i on i.id = p.idEquipoGanadorWalkover
+        LEFT join equipo e on e.id = i.idEquipo
+        where (idEquipoLocal = $idEquipoGanadorWalkover or idEquipoVisitante = $idEquipoGanadorWalkover) and fechaPartido = '$fechaPartido' and idEquipoGanadorWalkover is not null and idEquipoGanadorWalkover > 0";
         if(!$db->Query($consulta)) {
             return 0;
         }      
-        return $db->RowCount();
+        return $db;
     }
 
     public function obtenerGolesEquipo($EquipoLocal,$fechaPartido,$idEquipo1,$idEquipo2){
@@ -917,6 +920,33 @@ class parametros
         return $db->Row();
       
     }
+
+
+    public function detalleEquipo($idPartido,$nombreEquipo)
+	{       
+      
+    
+        $consulta = "SELECT p.id, h.nombreAcontecimiento,concat(j.nombre, ' ',j.apellidos) as jugador,hp.Equipo from Partido as p
+        left join acontecimientopartido as hp on hp.idPartido = p.id
+        LEFT JOIN acontecimiento as h on h.id = hp.idAcontecimiento
+        LEFT join Jugador as j on j.id =  hp.idJugador
+        where p.id = $idPartido and hp.Equipo = '$nombreEquipo'";
+
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return false;
+        }
+
+        if (!$db->Query($consulta)) {
+           return 0;
+        }
+      
+        return $db;
+      
+    }
+
 
     public function ListaPartidos2($fecha,$grupo)
 	{       

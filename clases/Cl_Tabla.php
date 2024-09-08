@@ -59,13 +59,16 @@ if($tipo == "DetallePartidosEquipos2"){
         while (!$resultado1->EndOfSeek()) {
             $listado = $resultado1->Row();
             $colorCard = '';
+            $walkover = '';
             $Observaciones = $parametro->verificarObservaciones($listado->idPartido,$listado->fechaPartido);
             $totalObservaciones = $Observaciones->RowCount();
             $equipoGanadorWalkover = $parametro->verificarEquipoGanadorWalkover($idEquipo,$listado->fechaPartido);
             if($totalObservaciones > 0){
                 $colorCard = "style='border-top-color: red;'";
             }
-            if($equipoGanadorWalkover > 0){
+            if($equipoGanadorWalkover->RowCount() > 0){
+                $rowE = $equipoGanadorWalkover->Row();
+                $walkover = "<div class='col-md-12 text-center pt-2'> <b>Ganador por Walkover: ".$rowE->nombreEquipo." </b></div>";
                 $colorCard = "style='border-top-color: yellow;'";
             }
             $tabla .= '        <div class="col-md-4">';
@@ -100,6 +103,9 @@ if($tipo == "DetallePartidosEquipos2"){
                                 $tabla .= "            <div class='col-md-12 text-center pt-2'><button type='button' class='btn btn-danger btn-sm checkbox-toggle' onclick='verAprobacion(" . chr(34) . $row->castigo . chr(34) . "," . chr(34) . $row->equipoObservado . chr(34) . "," . chr(34) . $row->observacion . chr(34) . "," . chr(34) . $row->estadoObservacion . chr(34) . ")'>Ver Detalle Observación</div>";
                             }
                             
+                        }
+                        if($walkover != ''){
+                            $tabla .= $walkover;
                         }
                         $tabla .= '        </div>';
             
