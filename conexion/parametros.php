@@ -989,6 +989,194 @@ class parametros
       
     }
 
+    public function RegistrarPago($MotivoGasto,$fechaPago,$totalPago)
+	{       
+
+      
+       
+        $consulta = "INSERT INTO Gasto(`motivoGasto`, `fecha`, `cantidad`, `precio`, `total`, `idCampeonato`) VALUES('$MotivoGasto','$fechaPago',1,$totalPago,$totalPago,(SELECT id FROM `campeonato` where estado = 'En Curso'))";
+
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return false;
+        }
+
+        if (!$db->Query($consulta)) {
+           return 0;
+        }
+      
+        return $db;
+      
+    }
+
+    public function RegistrarGasto($MotivoGasto,$fechaGasto,$cantidad,$precio,$totalGasto)
+	{       
+
+      
+       
+        $consulta = "INSERT INTO Gasto(`motivoGasto`, `fecha`, `cantidad`, `precio`, `total`, `idCampeonato`) VALUES('$MotivoGasto','$fechaGasto',$cantidad,$precio,$totalGasto,(SELECT id FROM `campeonato` where estado = 'En Curso'))";
+
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return false;
+        }
+
+        if (!$db->Query($consulta)) {
+           return 0;
+        }
+      
+        return $db;
+      
+    }
+
+    public function obtenerListadoGastos($idCampeonato)
+	{       
+
+        $condicion = "";
+     
+        if($idCampeonato != "" && $idCampeonato != 0){
+            //cuando se busco por el filtro de campeonato
+            $condicion .= " and idCampeonato = $idCampeonato";
+        }
+        
+       
+        $consulta = "SELECT * FROM Gasto where motivoGasto != 'Cancha' and motivoGasto != 'Arbitraje' $condicion order by fecha DESC";
+
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return false;
+        }
+
+        if (!$db->Query($consulta)) {
+           return 0;
+        }
+      
+        return $db;
+      
+    }
+
+    public function listarPagos($idCampeonato)
+	{       
+
+        $condicion = "";
+        if($idCampeonato == "" || $idCampeonato == 0){
+            $condicion = " and c.estado = 'En Curso'";
+        }
+        else{
+            $condicion = " and c.id = $idCampeonato";
+        }
+
+        $consulta = "SELECT * from (SELECT * FROM Gasto where motivoGasto = 'Cancha' or motivoGasto = 'Arbitraje') as consulta
+                    LEFT JOIN Campeonato as c on c.id = consulta.idCampeonato
+                    where 1=1 $condicion order by consulta.fecha desc";
+
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return false;
+        }
+
+        if (!$db->Query($consulta)) {
+           return 0;
+        }
+      
+        return $db;
+      
+    }
+
+    public function TotalPagoCancha($idCampeonato)
+	{       
+
+        $condicion = "";
+        if($idCampeonato == "" || $idCampeonato == 0){
+            $condicion = " and c.estado = 'En Curso'";
+        }
+        else{
+            $condicion = " and c.id = $idCampeonato";
+        }
+
+        $consulta = "SELECT SUM(g.total) as total FROM Gasto as g 
+        LEFT JOIN Campeonato as c on c.id = g.idCampeonato
+        where  motivoGasto = 'Cancha' $condicion";
+
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return false;
+        }
+
+        if (!$db->Query($consulta)) {
+           return 0;
+        }
+      
+        return $db;
+    }
+
+    public function TotalPagoArbitraje($idCampeonato)
+	{       
+
+        $condicion = "";
+        if($idCampeonato == "" || $idCampeonato == 0){
+            $condicion = "c.estado = 'En Curso'";
+        }
+        else{
+            $condicion = "c.id = $idCampeonato";
+        }
+
+        $consulta = "SELECT SUM(g.total) as total FROM Gasto as g 
+        LEFT JOIN Campeonato as c on c.id = g.idCampeonato
+        where motivoGasto = 'Arbitraje' and $condicion";
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return false;
+        }
+
+        if (!$db->Query($consulta)) {
+           return 0;
+        }
+      
+        return $db;
+    }
+
+    public function TotalGastosInternos($idCampeonato)
+	{       
+
+        $condicion = "";
+        
+        if($idCampeonato == "" || $idCampeonato == 0){
+            $condicion = "c.estado = 'En Curso'";
+        }
+        else{
+            $condicion = "c.id = $idCampeonato";
+        }
+           
+        $Consultar = "SELECT SUM(g.total) as total FROM Gasto as g 
+        LEFT JOIN Campeonato as c on c.id = g.idCampeonato
+        where motivoGasto != 'Cancha' and motivoGasto != 'Arbitraje' and $condicion";
+
+        $db = new MySQL();
+        if ($db->Error()) {
+            $db->Kill();
+            return false;
+        }
+
+        if (!$db->Query($Consultar)) {
+           return 0;
+        }
+      
+        return $db;
+    }
+
     public function obtenerListadoMultas($idCampeonato,$idEquipo,$idRol,$idEquipoDelegado)
 	{       
 

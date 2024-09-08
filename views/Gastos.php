@@ -1,6 +1,9 @@
 <?php
 
-include 'clases/conexion.php';
+require_once '../conexion/parametros.php';
+$parametro = new parametros();
+
+
 session_start();
 
 if (!isset($_SESSION['idUsuario'])) {
@@ -11,6 +14,11 @@ if (!isset($_SESSION['idUsuario'])) {
     $idEquipoDelegado = $_SESSION['idEquipo'];
     $nombreEquipoDelegado= $_SESSION['nombreEquipo'];
 }
+
+// if($parametro->verificarPermisos($_SESSION['idUsuario'],'11,43,42') == 0){
+//   echo "Su usuario no tiene permisos para entrar a esta pagina";
+//   exit();
+// }
 ?>
 
 <!DOCTYPE html>
@@ -18,24 +26,9 @@ if (!isset($_SESSION['idUsuario'])) {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Gastos</title>
-  <link rel="icon" type="image/jpg" href="img/image.png">
-  <!-- Google Font: Source Sans Pro -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
-  <!-- Ionicons -->
-  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
-   <!-- DataTables -->
-   <link rel="stylesheet" href="plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
-  <link rel="stylesheet" href="plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
-  <link rel="stylesheet" href="plugins/datatables-buttons/css/buttons.bootstrap4.min.css">
-  <!-- Theme style -->
-  <link rel="stylesheet" href="dist/css/adminlte.min.css">
-   <!-- SweetAlert2 -->
-   <link rel="stylesheet" href="plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css">
-  <!-- Toastr -->
-  <link rel="stylesheet" href="plugins/toastr/toastr.min.css">
+  <?php
+    require "../template/encabezado.php";
+    ?>
   
    <style>
     .card{
@@ -45,15 +38,15 @@ if (!isset($_SESSION['idUsuario'])) {
   </style>
 
 </head>
-<body class="hold-transition sidebar-mini layout-fixed sidebar-closed sidebar-collapse" onload="CargarDatos();">
+<body class="hold-transition sidebar-mini layout-fixed sidebar-closed sidebar-collapse">
 <div class="wrapper">
 
     <?php  
-        require "Navegador.php";
+        require "../template/Navegador.php";
     ?>
 
     <?php  
-        require "Menus.php";
+        require "../template/Menus.php";
     ?>
 
 <div class="content-wrapper">
@@ -63,13 +56,7 @@ if (!isset($_SESSION['idUsuario'])) {
         <div class="row mb-2">
           <div class="col-sm-6">
             <h1 class="m-0">Gastos</h1>
-          </div><!-- /.col
-          <div class="col-sm-6">
-            <ol class="breadcrumb float-sm-right">
-              <li class="breadcrumb-item"><a href="index.php">Inicio</a></li>
-              <li class="breadcrumb-item active">Dashboard</li>
-            </ol>
-          </div> /.col -->
+          </div>
         </div><!-- /.row -->
       </div><!-- /.container-fluid -->
     </div>
@@ -144,28 +131,22 @@ if (!isset($_SESSION['idUsuario'])) {
                             <form role="form" method="post"  id="formFiltroVenta">
                                 <div class="box-body">
                                     <div class="form-horizontal">  
-                                        <div class="row">
-                                                  
-                                          
+                                        <div class="row">                                                                                            
                                         <div class="col-md-3">
                                             <div class="form-group">
                                                 <label for="inputCasa" class="form-label"><b>Nombre Torneo</b></label> 
                                                 <select class="form-control" id="filCampeonato"> 
-                                                    <option value="0" selected disabled>Seleccionar Torneo...</option>
-                                                    <?php 
-                                                      $consultar = "SELECT * FROM Campeonato where estado = 'Concluido'";
-                                                      $resultado1 = mysqli_query($conectar, $consultar);
-                                                      while ($listado = mysqli_fetch_array($resultado1)) {                                                
-                                                    ?>
-                                                    <option value="<?php echo $listado['id']; ?>"><?php echo $listado['nombre']; ?></option>
-                                                    <?php }?>
+                                                  <?php 
+                                                      $parametro->DropDownListarTorneos();
+                                                  ?>
+                                                  
                                                 </select>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div style="margin-top:32px;">
                                               <button type="button" class="btn btn-primary" id="btn_add1" onclick="Filtrar();"><i class="fas fa-filter"></i>  Filtrar</button>
-                                              <button type="button" class="btn btn-secondary" id="botonDirectivaActual" onclick="CargarDatos();"> Mostrar Actual</button>
+                                           
                                             </div>
                                         </div>                                    
                                     </div>  
@@ -194,21 +175,7 @@ if (!isset($_SESSION['idUsuario'])) {
                     <!-- /.card-header -->
                     <div class="card-body">
                         <div id="contenerdor_tabla2" class="table-responsive">
-                            <table id="example2" class="table table-bordered table-striped">
-                                <thead>
-                                <tr>
-                                  <th>#</th>
-                                  <th>Motivo</th>
-                                  <th>Fecha</th>
-                                  <th>Cantidad</th>
-                                  <th>Precio</th>
-                                  <th>Total</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                    
-                                </tbody>
-                            </table>
+                           
                         </div>
                     </div>
                     <!-- /.card-body -->
@@ -251,20 +218,16 @@ if (!isset($_SESSION['idUsuario'])) {
             </div>
             <br>
         </section>
-  <!-- Control Sidebar -->
-  <aside class="control-sidebar control-sidebar-dark">
-        <!-- Control sidebar content goes here -->
-      </aside>
-      <!-- /.control-sidebar -->
+        <!-- Control Sidebar -->
+        <aside class="control-sidebar control-sidebar-dark">
+          <!-- Control sidebar content goes here -->
+        </aside>
+        <!-- /.control-sidebar -->
       </div>
 
-           <?php $año = date('Y'); ?>
-        <footer class="main-footer">
-            <div class="float-right d-none d-sm-block">
-            <b>Version</b> 1.0
-            </div>
-            <strong>Copyright &copy; Software Bolivia <?php echo $año ?></strong> Todos los derechos reservados.
-        </footer>
+      <?php
+      require "../template/footer.php";
+      ?>
     
     </div>
     <!-- ./wrapper -->
@@ -279,18 +242,16 @@ if (!isset($_SESSION['idUsuario'])) {
         <div class="modal-dialog">
           <div class="modal-content">
             <div class="modal-header">
-              <h4 class="modal-title" id="tituloDirectiva"><i class="nav-icon fas fa-cash-register"></i> Registro Nuevo Gasto</h4>
-              <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-              </button>
+              <h4 class="modal-title" id="tituloDirectiva"> Registro Nuevo Gasto</h4>
+              <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"> <span aria-hidden="true">&times;</span> </button>
             </div>
             <div class="modal-body">
                 <form method="POST" id="formEditarLote" class="row g-3">                                                     
                     <div class="col-md-6">
                       <div class="form-group">
-                      <br>
+                      
                           <label for="inputCasa" class="form-label"><b>Motivo de Pago(*)</b></label> 
-                          <select class="form-control" id="MotivoGasto" onchange="motivo();">                       
+                          <select class="form-control shadow-lg" id="MotivoGasto" onchange="motivo();">                       
                               <option value="Transporte">Transporte</option>
                               <option value="Primeros auxilios">Primeros Auxilios</option>
                               <option value="Balon">Balon</option>
@@ -300,40 +261,35 @@ if (!isset($_SESSION['idUsuario'])) {
                           </select>                       
                       </div>
                     </div>   
-                    <div class="col-md-6">
-                      <br>
+                    <div class="col-md-6">                      
+                        <label for="inputName" class="form-label"><b>Fecha Pago(*)</b></label>
+                        <input type="date" class="form-control shadow-lg" id ="fechaGasto" value='<?php echo date('Y-m-d'); ?>'>                         
+                    </div>    
+
+                    <div class="col-md-6" style='display:none;'>                    
                         <label for="inputName" class="form-label"><b>Campeonato(*)</b></label>
                         <input type="text" class="form-control shadow-lg" id ="nombreCampeonato2" disabled>                     
                     </div> 
-                    <div class="col-md-12" id="grupoOtros">
-                      <br>
+
+                    <div class="col-md-12" id="grupoOtros" style='display:none;'>                      
                         <label for="inputName" class="form-label"><b>Otros(*)</b></label>
                         <input type="text" class="form-control shadow-lg" id ="otros" placeholder="Ingresar motivo otros">                               
                     </div> 
-                    <div class="col-md-6" id="grupoOtros">
-                      <br>
+
+                    <div class="col-md-6" id="grupoOtros">                      
                         <label for="inputName" class="form-label"><b>cantidad(*)</b></label>
-                        <input type="text" class="form-control shadow-lg" id ="cantidad" placeholder="Ingresar cantidad">                 
+                        <input type="number" class="form-control shadow-lg" id ="cantidad" placeholder="Ingresar cantidad">                 
                     </div> 
-                    <div class="col-md-6" id="grupoOtros">
-                      <br>
+
+                    <div class="col-md-6" id="grupoOtros">                      
                         <label for="inputName" class="form-label"><b>Precio Unitario(*)</b></label>
-                        <input type="text" class="form-control shadow-lg" id ="precio" placeholder="Ingresar precio unitario">                    
+                        <input type="number" class="form-control shadow-lg" id ="precio" placeholder="Ingresar precio unitario">                    
                     </div> 
-                    <div class="col-md-6">
-                      <br>
+
+                    <div class="col-md-6">                      
                         <label for="inputName" class="form-label"><b>Total(*)</b></label>
-                        <input type="text" class="form-control shadow-lg" id ="totalGasto" placeholder="Ingresar monto del pago">                
-                    </div> 
-                    <div class="col-md-6">
-                        <br>
-                            <label for="inputName" class="form-label"><b>Fecha Pago(*)</b></label>
-                            <input type="date" class="form-control shadow-lg" id ="fechaGasto">                         
-                    </div>          
-                    
-                    <div class="col-md-6">               
-                        <input type="hidden" class="form-control" id ="idCampeonato2">                                          
-                    </div> 
+                        <input type="number" class="form-control shadow-lg" id ="totalGasto" placeholder="Ingresar monto del pago">                
+                    </div>                                           
                 </form>
                 <br><div id="cargando_add"></div>
             </div>
@@ -354,49 +310,32 @@ if (!isset($_SESSION['idUsuario'])) {
         <div class="modal-dialog">
           <div class="modal-content">
             <div class="modal-header">
-              <h4 class="modal-title" id="tituloDirectiva"><i class="nav-icon fas fa-cash-register"></i> Registro Nuevo Pago</h4>
+              <h4 class="modal-title" id="tituloDirectiva">  Registro Nuevo Pago</h4>
               <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
               </button>
             </div>
             <div class="modal-body">
                 <form method="POST" id="formEditarLote" class="row g-3">                                                     
-                    <div class="col-md-6" id="Equipos">
-                      <div class="form-group">
-                      <br>
+                    <div class="col-md-6" id="Equipos">                    
                           <label for="inputCasa" class="form-label"><b>Motivo de Pago(*)</b></label> 
                           <select class="form-control" id="MotivoPago">                       
                               <option value="Cancha">Pagar Cancha</option>
                               <option value="Arbitraje">Pagar Arbitraje</option>
-                          </select>                       
-                      </div>
+                          </select>                                           
+                    </div>  
+                    <div class="col-md-6" style='display:none;'>                     
+                        <label for="inputName" class="form-label"><b>Campeonato(*)</b></label>                      
+                        <input type="text" class="form-control" id ="nombreCampeonato" disabled>                                                                  
                     </div>  
                     <div class="col-md-6">
-                      <br>
-                        <label for="inputName" class="form-label"><b>Campeonato(*)</b></label>
-                        <div class="input-group">
-                            <div class="input-group-prepend">
-                            <span class="input-group-text"><i class="fas fa-trophy"></i></span>
-                            </div>
-                            <input type="text" class="form-control" id ="nombreCampeonato" disabled>                          
-                        </div>                 
-                    </div>  
-                    <div class="col-md-6">
-                      <br>
-                        <label for="inputName" class="form-label"><b>Total(*)</b></label>
-                        <div class="input-group">
-                            <div class="input-group-prepend">
-                            <span class="input-group-text"><i class="fas fa-dollar-sign"></i></span>
-                            </div>
-                            <input type="text" class="form-control" id ="totalPago" placeholder="Ingresar monto del pago">                          
-                        </div>                 
+                    
+                        <label for="inputName" class="form-label"><b>Total(*)</b></label>                       
+                        <input type="number" class="form-control" id ="totalPago" placeholder="Ingresar monto del pago">                                                                  
                     </div> 
-                    <div class="col-md-6">
-                        <br>
-                            <label for="inputName" class="form-label"><b>Fecha Pago(*)</b></label>
-                            <div class="input-group">                 
-                                <input type="date" class="form-control" id ="fechaPago">                          
-                            </div>                 
+                    <div class="col-md-6">                       
+                      <label for="inputName" class="form-label"><b>Fecha Pago(*)</b></label>                                          
+                      <input type="date" class="form-control" id ="fechaPago" value='<?php echo date('Y-m-d'); ?>'>                                                                      
                     </div>          
                    
                     <div class="col-md-6">               
@@ -419,141 +358,38 @@ if (!isset($_SESSION['idUsuario'])) {
   <script>
 
 
-        function CargarDatos(){
-
-          $("#botonDirectivaActual").hide();
-          CargarCampeonato();
-          ListaPagos();
-          ListarGastos();
-
-          TotalPagoCancha();
-          TotalPagoArbitraje();
-          TotalGastosInternos();
-          Totales();
-        }
-
         function Filtrar(){
 
           var idCampeonato = $("#filCampeonato").val();
 
           FiltrarGastosInternos();
-          FiltrarPagosCancha();
-          $("#botonDirectivaActual").show();
-          TotalPagoCancha(idCampeonato);
-          TotalPagoArbitraje(idCampeonato);
-          TotalGastosInternos(idCampeonato);
+          ListarPagos();
+      
+       
           Totales(idCampeonato);
 
         
         }
 
-        function TotalPagoCancha(idCampeonato){
+        function Totales(idCampeonato=''){
         
-            $.ajax({
-            url: 'clases/Cl_Gasto.php?op=TotalPagoCancha',
-            type: 'POST', 
-            data:{
-              idCampeonato: idCampeonato
-            },
-            success: function(data) {
-                    if(data == "error"){                       
-                        Swal.fire("Oops..!", "Error al cargar el total de pagos de la cancha", "warning");    
-                    }
-                    else {
-                      if(data == "" || data == null){
-                        $("#TotalGastosCancha").html("<h4>Bs. 0</h4>"); 
-                      }
-                      else{
-                        data = data.toString().split('').reverse().join('').replace(/(?=\d*\.?)(\d{3})/g,'$1,');
-                        data = data.split('').reverse().join('').replace(/^[\,]/,'');
-                        $("#TotalGastosCancha").html("<h4>Bs. "+data+"</h4>"); 
-                      }
-                                              
-                    }                 
-                }          
-            })    
-        }
-
-        function TotalPagoArbitraje(idCampeonato){
-        
-            $.ajax({
-            url: 'clases/Cl_Gasto.php?op=TotalPagoArbitraje',
-            type: 'POST', 
-            data:{
-              idCampeonato: idCampeonato
-            },
-            success: function(data) {
-                    if(data == "error"){                       
-                        Swal.fire("Oops..!", "Error al cargar el total de al arbtiro", "warning");    
-                    }
-                    else {
-                      if(data == "" || data == null){
-                        $("#TotalGastosArbitraje").html("<h4>Bs. 0</h4>"); 
-                      }
-                      else{
-                        data = data.toString().split('').reverse().join('').replace(/(?=\d*\.?)(\d{3})/g,'$1,');
-                        data = data.split('').reverse().join('').replace(/^[\,]/,'');
-                        $("#TotalGastosArbitraje").html("<h4>Bs. "+data+"</h4>"); 
-                      }
-                                              
-                    }                 
-                }          
-            })    
-        }
-
-        function TotalGastosInternos(idCampeonato){
-
-             $.ajax({
-             url: 'clases/Cl_Gasto.php?op=TotalGastosInternos',
-             type: 'POST', 
-             data:{
-              idCampeonato: idCampeonato
-            },
-             success: function(data) {
-                     if(data == "error"){                       
-                       Swal.fire("Oops..!", "Error al cargar el total de gastos internos de la directiva", "warning");    
-                     }
-                     else { 
-                      if(data == "" || data == null){
-                        $("#TotalGastosInternos").html("<h4>Bs. 0</h4>"); 
-                      }
-                      else{
-                        data = data.toString().split('').reverse().join('').replace(/(?=\d*\.?)(\d{3})/g,'$1,');
-                        data = data.split('').reverse().join('').replace(/^[\,]/,'');
-                        $("#TotalGastosInternos").html("<h4>Bs. "+data+"</h4>"); 
-                      }
-                                                
-                    }                 
-                 }          
-             })    
-        }
-
-
-        function Totales(idCampeonato){
-        
-            $.ajax({
-            url: 'clases/Cl_Gasto.php?op=TotalGastado',
-            type: 'POST', 
-            data:{
-              idCampeonato: idCampeonato
-            },
-            success: function(data) {
-                    if(data == "error"){                       
-                        Swal.fire("Oops..!", "Error al calcular el total gastado", "warning");    
-                    }
-                    else {
-                      if(data == "" || data == null){
-                        $("#Totales").html("<h4>Bs. 0</h4>"); 
-                      }
-                      else{
-                        data = data.toString().split('').reverse().join('').replace(/(?=\d*\.?)(\d{3})/g,'$1,');
-                        data = data.split('').reverse().join('').replace(/^[\,]/,'');
-                        $("#Totales").html("<h4>Bs. "+data+".00</h4>"); 
-                      }
-                                        
-                    }                 
-                }          
-            })    
+          $.ajax({
+              url: '../clases/Cl_Gasto.php?op=TotalGastado',
+              type: 'POST', 
+              dataType: 'json',
+              data:{
+                idCampeonato: idCampeonato
+              },
+              success: function(data) {
+                                
+                $("#TotalGastosCancha").html("<h4>Bs. "+data['totalGastoCancha']+"</h4>");               
+                $("#TotalGastosArbitraje").html("<h4>Bs. "+data['totalGastoArbitraje']+"</h4>");               
+                $("#TotalGastosInternos").html("<h4>Bs. "+data['totalGastosInternos']+"</h4>");               
+                $("#Totales").html("<h4>Bs. "+data['totalGastoGlobal']+"</h4>"); 
+                            
+              }                 
+                          
+          })    
         }
 
        
@@ -569,131 +405,56 @@ if (!isset($_SESSION['idUsuario'])) {
             }
         }
 
-        function CargarCampeonato(){
-            $.ajax({
-                url: 'clases/Cl_Partido.php?op=UltimoTorneo',
-                type: 'POST',
-                success: function(data) {
-                if(data == "error"){
-                    Swal.fire("Error..!", "Ha ocurrido un error al obtener el nombre del torneo actual", "error");      
-                }
-                else{
-                    var resp= $.parseJSON(data);
-                    $("#idCampeonato").val(resp.id); 
-                    $("#nombreCampeonato").val(resp.nombre); 
-                    $("#idCampeonato2").val(resp.id); 
-                    $("#nombreCampeonato2").val(resp.nombre);
-                }              
-                }            
-            })   
-        }
+     
        
-        function ModalRegistrarPagoCanchaArbitraje() { 
-           
-            let hoy = new Date();
-            document.getElementById("fechaPago").value = hoy.toJSON().slice(0,10); 
+        function ModalRegistrarPagoCanchaArbitraje() {                      
           $('#ModalRegistrarPagoCanchaArbitraje').modal('show');
         }
 
-        function ModalRegistrarGastosInternos(id) {    
+        function ModalRegistrarGastosInternos() {    
 
-            $("#grupoOtros").hide();        
-            let hoy = new Date();
-            document.getElementById("fechaGasto").value = hoy.toJSON().slice(0,10); 
+          //  $("#grupoOtros").hide();        
+            $("#otros").val('');
           $('#ModalRegistrarGastosInternos').modal('show');
         }
 
-      /*
-      function ConfirmarEliminar(id) {
-        Swal.fire({
-        title: 'Esta Seguro?',
-        text: "Ya no podra recurar la información!",
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Si, Eliminar!'
-        }).then((result) => {
-                if (result.isConfirmed) {
-                  EliminarDirectiva(id);                      
-                }
-        })
-      }
-
-      function EliminarDirectiva(id) {
-         
-         $.ajax({
-         url: 'clases/Cl_Campeonato.php?op=EliminarDirectiva',
-         type: 'POST',
-         data: {
-             id: id    
-             }, 
-             success: function(vs) {
-                 if (vs == 2) {
-                  Swal.fire("Error..!", "ha ocurrido un error al deshabilitar", "error");                     
-                 }else{
-                   if(vs== 1){
-                        Swal.fire('Exito..!','Eliminado correctamente.', 'success');
-                        location.reload();
-                   }           
-                 }                  
-             }
-         })         
-     }*/
-
-     function ListaPagos(){
+    function ListarPagos(){
         
+      var idCampeonato = $("#filCampeonato").val();
+
+     
       $("#contenerdor_tabla3").html('<div class="loading"> <center><i class="fa fa-spinner fa-pulse fa-5x" style="color:#3c8dbc"></i><br/>Cargando Pagos Partidos ...</center></div>');
         $.ajax({
-            url: 'clases/Cl_Gasto.php?op=ListarPagos',
+            url: '../clases/Cl_Gasto.php?op=ListarPagos',
             type: 'POST', 
+            data:{
+               
+               idCampeonato: idCampeonato
+             },
             success: function(data) {
                 $("#contenerdor_tabla3").html('');
                 $('#example3').DataTable().destroy();
-                $("#contenerdor_tabla3").html(data);   
-                //$("#botonDirectivaActual").hide(); 
+                $("#contenerdor_tabla3").html(data);                  
                 $("#example3").DataTable({
-                        "responsive": true, "lengthChange": false, "autoWidth": false,
+                        "responsive": true,
+                        "lengthChange": false, 
+                        "autoWidth": false,
                         "language": lenguaje_español
-                    }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
+                    });
             }          
         })         
     }
 
-
-     function ListarGastos(){
-      $("#contenerdor_tabla2").html('<div class="loading"> <center><i class="fa fa-spinner fa-pulse fa-5x" style="color:#3c8dbc"></i><br/>Cargando Gastos Internos ...</center></div>');
-        $.ajax({
-            url: 'clases/Cl_Gasto.php?op=ListarGastos',
-            type: 'POST', 
-            success: function(data) {
-                $("#contenerdor_tabla2").html('');
-                $('#example2').DataTable().destroy();
-                $("#contenerdor_tabla2").html(data);  
-                $("#example2").DataTable({
-                        "responsive": true, "lengthChange": false, "autoWidth": false,
-                        "language": lenguaje_español
-                    }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');  
-            }          
-        })         
-    }
-    
 
     function FiltrarGastosInternos(){
         
         
       var idCampeonato = $("#filCampeonato").val();
-
-      if(idCampeonato == null){
-        Swal.fire('Aviso..!','Debe seleccionar una opcion de filtro','warning');
-        return false;
-      }
-
-       
+ 
         $("#contenerdor_tabla2").html('<div class="loading"> <center><i class="fa fa-spinner fa-pulse fa-5x" style="color:#3c8dbc"></i><br/>Cargando Gastos Internos ...</center></div>');
  
         $.ajax({
-            url: 'clases/Cl_Gasto.php?op=FiltrarGastosInternos',
+            url: '../clases/Cl_Gasto.php?op=FiltrarGastosInternos',
             type: 'POST', 
             data:{
                
@@ -703,37 +464,17 @@ if (!isset($_SESSION['idUsuario'])) {
                 $("#contenerdor_tabla2").html('');
                 $('#example2').DataTable().destroy();
                 $("#contenerdor_tabla2").html(data);  
-                $("#botonDirectivaActual").show();
+                $("#example2").DataTable({
+                    "responsive": true,
+                    "lengthChange": false,
+                    "autoWidth": false,
+                    "language": lenguaje_español
+                });  
             }
         })         
     }
 
-    function FiltrarPagosCancha(){
-        
-        
-        var idCampeonato = $("#filCampeonato").val();
-  
-        if(idCampeonato == null){
-          Swal.fire('Aviso..!','Debe seleccionar una opcion de filtro','warning');
-          return false;
-        }
-  
-        $("#contenerdor_tabla3").html('<div class="loading"> <center><i class="fa fa-spinner fa-pulse fa-5x" style="color:#3c8dbc"></i><br/>Cargando Pagos Partidos ...</center></div>');
-          $.ajax({
-              url: 'clases/Cl_Gasto.php?op=FiltrarPagosCancha',
-              type: 'POST', 
-              data:{
-               
-                idCampeonato: idCampeonato
-              },
-              success: function(data) {
-                  $("#contenerdor_tabla3").html('');
-                  $('#example3').DataTable().destroy();
-                  $("#contenerdor_tabla3").html(data);  
-                  $("#botonDirectivaActual").show();
-              }          
-          })         
-      }
+   
 
 
       function RegistrarGasto() {
@@ -742,7 +483,7 @@ if (!isset($_SESSION['idUsuario'])) {
          var otros = $('#otros').val();
          var totalGasto = $('#totalGasto').val();
          var fechaGasto = $('#fechaGasto').val();
-         var idCampeonato2 = $('#idCampeonato2').val();
+       
          var cantidad = $('#cantidad').val();
          var precio = $('#precio').val();
         
@@ -760,15 +501,15 @@ if (!isset($_SESSION['idUsuario'])) {
             $("#cargando_add").html('<div class="loading"> <center><i class="fa fa-spinner fa-pulse fa-5x" style="color:#3c8dbc"></i><br/>Procesando ...</center></div>');
 
          
-              $.ajax({
-              url: 'clases/Cl_Gasto.php?op=RegistrarGasto',
+          $.ajax({
+              url: '../clases/Cl_Gasto.php?op=RegistrarGasto',
               type: 'POST',
               data: {
                 MotivoGasto: MotivoGasto,
                 otros: otros,
                 totalGasto: totalGasto,
                 fechaGasto: fechaGasto,
-                idCampeonato2: idCampeonato2,
+               
                 cantidad: cantidad,
                 precio: precio
               }, 
@@ -797,8 +538,7 @@ if (!isset($_SESSION['idUsuario'])) {
         var MotivoPago = $('#MotivoPago').val();
         var totalPago = $('#totalPago').val();
         var fechaPago = $('#fechaPago').val();
-        var idCampeonato = $('#idCampeonato').val();
-
+       
         if(totalPago == ""){
            Swal.fire("Campos Vacios..!", "Debe ingresar todos los campos requeridos", "warning");
            return false;
@@ -809,13 +549,12 @@ if (!isset($_SESSION['idUsuario'])) {
  
            
           $.ajax({
-              url: 'clases/Cl_Gasto.php?op=RegistrarPago',
+              url: '../clases/Cl_Gasto.php?op=RegistrarPago',
               type: 'POST',
               data: {
                 MotivoPago: MotivoPago,
                 totalPago: totalPago,
-                fechaPago: fechaPago,
-                idCampeonato: idCampeonato
+                fechaPago: fechaPago                
               }, 
               success: function(vs) {   
                 $("#cargando_add2").html('');
@@ -839,30 +578,17 @@ if (!isset($_SESSION['idUsuario'])) {
       </script>
 
 
-
-<!-- Option 1: Bootstrap Bundle with Popper -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-<!-- SweetAlert2 -->
-<script src="plugins/sweetalert2/sweetalert2.min.js"></script>
-<!-- Toastr -->
-<script src="plugins/toastr/toastr.min.js"></script>
-<!-- jQuery -->
-<script src="plugins/jquery/jquery.min.js"></script>
-<!-- Bootstrap 4 -->
-<script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-<!-- DataTables  & Plugins -->
-<script src="plugins/datatables/jquery.dataTables.min.js"></script>
-<script src="plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
-<script src="plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
-<script src="plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
-<script src="plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
-<script src="plugins/datatables-buttons/js/buttons.bootstrap4.min.js"></script>
-<!-- AdminLTE App -->
-<script src="dist/js/adminlte.min.js"></script>
-<!-- AdminLTE for demo purposes -->
-<script src="dist/js/demo.js"></script>
-<!-- Page specific script -->
+<?php
+      require "../template/piePagina.php";
+      ?>
 <script>
+
+        $(function() {
+           
+          FiltrarGastosInternos();                  
+          ListarPagos();               
+          Totales();
+        })
 
   var lenguaje_español = 
     {
